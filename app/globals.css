@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties for Theme Switching */
+:root,
+[data-theme='dark'] {
+  --bg:        #0F0F0D;
+  --surface:   #1A1A17;
+  --surface2:  #242420;
+  --border:    #2E2E29;
+  --border2:   #3D3D37;
+  --muted:     #6B6B62;
+  --secondary: #A8A89E;
+  --primary:   #E8E4DC;
+  --rust:      #D4521A;
+  --rust-lt:   #F07040;
+  --rust-dim:  #7A2E0A;
+  --rust-bg:   #1F1208;
+
+  /* Navbar scrolled background RGB (for rgba with opacity) */
+  --bg-rgb: 15, 15, 13;      /* #0F0F0D in RGB */
+
+  /* Hero image overlay — dark needs heavier overlay */
+  --hero-overlay: rgba(15, 15, 13, 0.72);
+  /* Card image overlay */
+  --card-overlay: rgba(15, 15, 13, 0.15);
+}
+
+[data-theme='light'] {
+  --bg:        #F5F0E8;
+  --surface:   #EDE7DC;
+  --surface2:  #E4DCCF;
+  --border:    #D4CCC0;
+  --border2:   #B8AFA3;
+  --muted:     #8C857A;
+  --secondary: #5C5650;
+  --primary:   #1C1917;
+  --rust:      #C4430F;   /* slightly darker rust — better contrast on light */
+  --rust-lt:   #D4521A;
+  --rust-dim:  #F2D5C8;
+  --rust-bg:   #FBF0EB;
+
+  /* Navbar scrolled background RGB (for rgba with opacity) */
+  --bg-rgb: 245, 240, 232;   /* #F5F0E8 in RGB */
+
+  /* Light needs lighter overlay — image shows through more */
+  --hero-overlay: rgba(245, 240, 232, 0.55);
+  --card-overlay: rgba(245, 240, 232, 0.1);
+}
+
+/* Map Tailwind custom classes to CSS vars */
+.bg-ni-bg        { background-color: var(--bg) !important; }
+.bg-ni-surface   { background-color: var(--surface) !important; }
+.bg-ni-surface2  { background-color: var(--surface2) !important; }
+.text-ni-primary { color: var(--primary) !important; }
+.text-ni-secondary { color: var(--secondary) !important; }
+.text-ni-muted   { color: var(--muted) !important; }
+.text-ni-rust    { color: var(--rust) !important; }
+.text-ni-rust-lt { color: var(--rust-lt) !important; }
+.bg-ni-rust      { background-color: var(--rust) !important; }
+.bg-ni-rust-lt   { background-color: var(--rust-lt) !important; }
+.bg-ni-rust-bg   { background-color: var(--rust-bg) !important; }
+.border-ni-border  { border-color: var(--border) !important; }
+.border-ni-border2 { border-color: var(--border2) !important; }
+.border-ni-rust    { border-color: var(--rust) !important; }
+.border-ni-rust-dim { border-color: var(--rust-dim) !important; }
+.hover\:bg-ni-rust:hover { background-color: var(--rust) !important; }
+.hover\:bg-ni-rust-lt:hover { background-color: var(--rust-lt) !important; }
+.hover\:bg-ni-surface2:hover { background-color: var(--surface2) !important; }
+.hover\:text-ni-rust-lt:hover { color: var(--rust-lt) !important; }
+.hover\:text-ni-primary:hover { color: var(--primary) !important; }
+
+/* StatsBar gap-px grid trick — needs bg-ni-border to switch too */
+.bg-ni-border { background-color: var(--border) !important; }
+
+/* Transition for all theme-switchable elements */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+
+/* But NOT for transforms/opacity — those have their own durations */
+.animate-fade-up, .transition-all {
+  transition-property: opacity, transform, background-color, border-color, color;
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Remove default focus outline, add custom */
+*:focus-visible {
+  outline: 2px solid #D4521A;
+  outline-offset: 2px;
+}
