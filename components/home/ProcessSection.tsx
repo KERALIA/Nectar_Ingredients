@@ -1,26 +1,13 @@
 'use client'
 
-import React, { useRef, useState, useEffect } from 'react'
+import React from 'react'
 import { processSteps } from '../../lib/data'
 import SectionHeading from '../ui/SectionHeading'
+import { useScrollReveal } from '../../lib/hooks'
 
 export default function ProcessSection() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
+  // H-1: useScrollReveal replaces the copy-pasted IntersectionObserver pattern
+  const { ref, visible } = useScrollReveal()
 
   return (
     <section className="py-24 border-y border-ni-border">
@@ -35,7 +22,7 @@ export default function ProcessSection() {
           ref={ref}
           className={`mt-16 grid grid-cols-1 lg:grid-cols-3 gap-px bg-ni-border transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
         >
-          {processSteps.map((step, i) => (
+          {processSteps.map((step) => (
             <div key={step.tag} className="bg-ni-bg p-8 lg:p-10">
               <p className="font-body text-xs font-medium tracking-widest text-ni-rust uppercase mb-6">
                 {step.tag}

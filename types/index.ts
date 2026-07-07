@@ -14,6 +14,8 @@ export interface Product {
   imageSrc: string
   rawImageSrc: string
   swatchImageSrc: string
+  packagingSize?: string
+  usageApplications?: string[]
 }
 
 export interface Stat {
@@ -25,4 +27,9 @@ export interface ProcessStep {
   tag: string
   heading: string
   body: string
+}
+
+export interface ExtendedRangeItem {
+  name: string
+  forms: string
 }

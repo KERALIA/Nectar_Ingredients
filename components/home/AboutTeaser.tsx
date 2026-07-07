@@ -1,26 +1,13 @@
 'use client'
 
-import React, { useRef, useState, useEffect } from 'react'
+import React from 'react'
 import Button from '../ui/Button'
 import Image from 'next/image'
+import { useScrollReveal } from '../../lib/hooks'
 
 export default function AboutTeaser() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
+  // H-1: useScrollReveal replaces the copy-pasted IntersectionObserver pattern
+  const { ref, visible } = useScrollReveal()
 
   return (
     <section className="py-24 border-y border-ni-border">
@@ -53,7 +40,7 @@ export default function AboutTeaser() {
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/3' }}>
           <Image
             src="/Images/Facility_Photo.jpg"
-            alt="Nectar Ingredients manufacturing facility"
+            alt="Nectar Ingredients manufacturing facility in Surendranagar, Gujarat"
             fill
             className="object-cover object-center"
             sizes="(max-width: 1024px) 100vw, 50vw"

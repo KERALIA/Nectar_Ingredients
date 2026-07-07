@@ -14,6 +14,9 @@ export default function AboutPage() {
           {/* Left — text */}
           <div>
             <p className="font-body text-xs tracking-widest text-ni-rust uppercase mb-4">OUR STORY</p>
+            <p className="font-body text-sm text-ni-rust uppercase tracking-widest mt-2 mb-4">
+              Your success is our business
+            </p>
             <h1 className="font-heading text-display font-semibold text-ni-primary leading-tight">
               We've been making powders since before it was trendy.
             </h1>
@@ -54,7 +57,7 @@ export default function AboutPage() {
       </section>
 
       {/* Section 2 — Values: 3 column grid */}
-      <section className="py-24">
+      <section className="py-24 border-b border-ni-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <p className="font-body text-xs tracking-widest text-ni-rust uppercase mb-4">HOW WE WORK</p>
           <h2 className="font-heading text-section font-semibold text-ni-primary mb-16">Three things we don't compromise on.</h2>
@@ -86,6 +89,44 @@ export default function AboutPage() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* Section 3 — Bottom CTA: prevents the "dead end" UX problem */}
+      <section className="py-20 bg-ni-surface">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+          {/* Left — message */}
+          <div>
+            <p className="font-body text-xs tracking-widest text-ni-rust uppercase mb-4">WORK WITH US</p>
+            <h2 className="font-heading text-section font-semibold text-ni-primary">
+              Ready to source from us?
+            </h2>
+            <p className="font-body text-base text-ni-muted leading-relaxed mt-4 max-w-md">
+              Browse our full range of 24 single-ingredient powders, request 1 kg samples,
+              or send us your spec sheet — we respond within one business day.
+            </p>
+            <div className="flex flex-wrap gap-4 mt-8">
+              <Button variant="primary" size="md" href="/products">Browse All Powders →</Button>
+              <Button variant="ghost" size="md" href="/contact">Send an Inquiry</Button>
+            </div>
+          </div>
+
+          {/* Right — quick credential stats */}
+          <div className="grid grid-cols-2 gap-px bg-ni-border">
+            {[
+              { value: '24',   label: 'Products available' },
+              { value: '1 kg', label: 'Minimum sample size' },
+              { value: '2 MT', label: 'Monthly capacity' },
+              { value: '2011', label: 'Year established' },
+            ].map(stat => (
+              <div key={stat.label} className="bg-ni-bg px-6 py-8">
+                <p className="font-heading text-3xl font-semibold text-ni-rust">{stat.value}</p>
+                <p className="font-body text-sm text-ni-muted mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
 

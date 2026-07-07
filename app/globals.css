@@ -21,6 +21,8 @@
   /* Navbar scrolled background RGB (for rgba with opacity) */
   --bg-rgb: 15, 15, 13;      /* #0F0F0D in RGB */
 
+  --vh100: 100vh;
+
   /* Hero image overlay — dark needs heavier overlay */
   --hero-overlay: rgba(15, 15, 13, 0.72);
   /* Card image overlay */
@@ -86,11 +88,19 @@
   transition-property: opacity, transform, background-color, border-color, color;
 }
 
-/* Smooth scroll */
-html { scroll-behavior: smooth; }
+/* Smooth scroll is now configured on the html element attributes */
 
 /* Remove default focus outline, add custom */
 *:focus-visible {
   outline: 2px solid #D4521A;
   outline-offset: 2px;
 }
+
+@supports (height: 100svh) {
+  :root { --vh100: 100svh; }
+}
+
+/* Horizontal overflow safety */
+html, body { overflow-x: hidden; width: 100%; }
+* { max-width: 100%; }
+.scrollbar-hide { max-width: none; }

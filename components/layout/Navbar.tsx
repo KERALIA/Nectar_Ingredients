@@ -87,44 +87,63 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen((prev) => !prev)}
-            className="md:hidden font-body text-ni-secondary text-xl p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg"
-            aria-label="Toggle menu"
+            className="md:hidden font-body text-ni-secondary p-3 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
           >
-            {mobileOpen ? '✕' : '☰'}
+            <svg
+              className="w-6 h-6 stroke-current transition-transform duration-300"
+              viewBox="0 0 24 24"
+              fill="none"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {mobileOpen ? (
+                <path d="M18 6L6 18M6 6l12 12" />
+              ) : (
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
           </button>
         </div>
       </nav>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-ni-surface border-b border-ni-border px-6 py-4 flex flex-col">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`block py-4 border-b border-ni-border font-body text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg ${
-                pathname === link.href
-                  ? 'text-ni-rust'
-                  : 'text-ni-secondary hover:text-ni-primary'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-          {/* Theme toggle — mobile */}
-          <div className="mt-4 flex justify-center">
-            <ThemeToggle />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            href="/contact"
-            className="mt-4 w-full justify-center"
+ 
+      {/* Mobile drawer with slide-down & fade animation */}
+      <div 
+        className={`md:hidden fixed top-16 left-0 right-0 z-40 bg-ni-surface border-b border-ni-border px-6 py-6 flex flex-col max-h-[80vh] overflow-y-auto transition-all duration-300 ease-out ${
+          mobileOpen 
+            ? 'opacity-100 translate-y-0 pointer-events-auto' 
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}
+      >
+        {NAV_LINKS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`block py-4 border-b border-ni-border font-body text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg ${
+              pathname === link.href
+                ? 'text-ni-rust'
+                : 'text-ni-secondary hover:text-ni-primary'
+            }`}
           >
-            Get Samples →
-          </Button>
+            {link.label}
+          </Link>
+        ))}
+        {/* Theme toggle — mobile */}
+        <div className="mt-6 flex justify-center">
+          <ThemeToggle />
         </div>
-      )}
+        <Button
+          variant="outline"
+          size="sm"
+          href="/contact"
+          className="mt-6 w-full justify-center"
+        >
+          Get Samples →
+        </Button>
+      </div>
     </>
   )
 }

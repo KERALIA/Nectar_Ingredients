@@ -1,28 +1,15 @@
 'use client'
 
-import React, { useRef, useState, useEffect } from 'react'
+import React from 'react'
 import SectionHeading from '../ui/SectionHeading'
 import Button from '../ui/Button'
 import ProductCard from '../products/ProductCard'
 import { products } from '../../lib/data'
+import { useScrollReveal } from '../../lib/hooks'
 
 export default function FeaturedProducts() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
+  // H-1: useScrollReveal replaces the copy-pasted IntersectionObserver pattern
+  const { ref, visible } = useScrollReveal()
 
   const featuredProducts = products.filter(p => p.featured)
 
@@ -40,14 +27,16 @@ export default function FeaturedProducts() {
 
         <div className="mt-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-ni-border">
-            {featuredProducts.map(p => (
-              <ProductCard key={p.id} product={p} showDescription={false} highlighted={false} />
+            {/* C-6: Dynamic count + O-2: priority for above-fold images */}
+            {featuredProducts.map((p, i) => (
+              <ProductCard key={p.id} product={p} showDescription={false} highlighted={false} priority={i < 4} />
             ))}
           </div>
         </div>
 
         <div className="mt-10 text-center">
-          <Button variant="outline" size="md" href="/products">View all 12 powders →</Button>
+          {/* C-6: Dynamic product count instead of hardcoded "12" */}
+          <Button variant="outline" size="md" href="/products">View all {products.length} powders →</Button>
         </div>
       </div>
     </section>

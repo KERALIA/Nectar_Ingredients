@@ -38,9 +38,18 @@ export default function Footer() {
             Pure dehydrated powders from Surendranagar, Gujarat.
             Single-ingredient, batch-tested, direct from facility.
           </p>
-          <p className="font-body text-sm text-ni-rust mt-3">
+          <a
+            href="mailto:hello@nectaringredients.com"
+            className="font-body text-sm text-ni-rust hover:text-ni-rust-lt transition-colors mt-3 block"
+          >
             hello@nectaringredients.com
-          </p>
+          </a>
+          <a
+            href="tel:+919879838281"
+            className="font-body text-sm text-ni-secondary hover:text-ni-rust transition-colors mt-1 block"
+          >
+            +91 98798 38281
+          </a>
         </div>
 
         {/* Column 2 — Company links */}

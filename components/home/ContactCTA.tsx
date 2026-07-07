@@ -1,25 +1,12 @@
 'use client'
 
-import React, { useRef, useState, useEffect } from 'react'
+import React from 'react'
 import Button from '../ui/Button'
+import { useScrollReveal } from '../../lib/hooks'
 
 export default function ContactCTA() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
+  // H-1: useScrollReveal replaces the copy-pasted IntersectionObserver pattern
+  const { ref, visible } = useScrollReveal()
 
   return (
     <section className="py-20 bg-ni-surface border-t border-ni-border">

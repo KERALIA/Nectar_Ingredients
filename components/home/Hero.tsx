@@ -6,7 +6,9 @@ import Link from 'next/link'
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-ni-bg">
+    <section className="relative flex flex-col justify-start md:justify-center overflow-hidden bg-ni-bg pt-28 md:pt-24 pb-12 md:pb-0"
+      style={{ minHeight: 'var(--vh100)' }}
+    >
 
       {/* Subtle radial rust accent — no image */}
       <div
@@ -14,6 +16,7 @@ export default function Hero() {
         style={{
           background: 'radial-gradient(ellipse 70% 50% at 75% 0%, rgba(212,82,26,0.07) 0%, transparent 65%)'
         }}
+        aria-hidden="true"
       />
 
       {/* Main content */}
@@ -25,10 +28,10 @@ export default function Hero() {
         </span>
 
         {/* Headline — "powder" in ni-rust, everything else ni-primary */}
-        <h1 className="font-heading text-hero font-semibold text-ni-primary leading-none tracking-tight max-w-4xl">
+        <h1 className="font-heading text-hero font-semibold text-ni-primary leading-[1.05] tracking-tight max-w-4xl">
           From field to{' '}
-          <span className="text-ni-rust">powder</span>,<br />
-          nothing in between.
+          <span className="text-ni-rust">powder</span>,{' '}
+          <span className="block sm:inline">nothing in between.</span>
         </h1>
 
         {/* Subtext */}
