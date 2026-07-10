@@ -32,12 +32,11 @@ export default function Hero() {
 
             {/* Headline */}
             <h1 className="font-heading text-[2rem] sm:text-5xl md:text-6xl font-bold text-neutral-900 dark:text-neutral-50 leading-tight">
-              {/* Break whitespace-nowrap into fluid text for small screens */}
-              <span className="block">
+              <span className="block whitespace-nowrap">
                 From field to{' '}
-                <span className="font-serif italic font-medium text-brand-orange">Powder</span>,
+                <span className="font-serif italic font-medium text-brand-orange">Powders</span>,
               </span>
-              <span className="block mt-1 sm:mt-2">Nothing in between</span>
+              <span className="block whitespace-nowrap mt-1 sm:mt-2">Nothing in between</span>
             </h1>
 
             {/* Subtext */}
