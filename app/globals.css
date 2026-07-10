@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Mobile / Cross-browser Base Fixes ─────────────────────────────────── */
+html {
+  /* Prevent font scaling on orientation change — iOS Safari */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Smooth scrolling — respects prefers-reduced-motion below */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  /* Remove 300ms tap delay on mobile — makes site feel native */
+  touch-action: manipulation;
+  /* Remove iOS tap highlight flash */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Horizontal overflow safety */
+html, body { overflow-x: hidden; width: 100%; }
+* { max-width: 100%; box-sizing: border-box; }
+.scrollbar-hide { max-width: none; }
+
+/* ─── CSS Custom Properties for Theme Switching ──────────────────────────── */
+:root,
+[data-theme='dark'] {
+  --bg:           #1A1A1A;     /* Deep Charcoal */
+  --surface:      #222222;
+  --surface2:     #2A2A2A;
+  --surface-glass: rgba(26, 26, 26, 0.6);
+  --sage:         #1E2118;
+  --border:       #333333;
+  --border2:      #444444;
+  --muted:        #717171;     /* Stone Gray */
+  --secondary:    #A8A89E;
+  --primary:      #F5F0E8;     /* Off-white / soft cream */
+  --rust:         #BC4B20;     /* Terracotta — THE accent */
+  --rust-lt:      #D45E30;
+  --rust-dim:     #7A2E0A;
+  --rust-bg:      #2A1A10;
+  --bg-rgb:       26, 26, 26;
+  --hero-overlay: rgba(26, 26, 26, 0.72);
+  --card-overlay: rgba(26, 26, 26, 0.15);
+
+  --vh100: 100vh;
+
+  /* Ambient glow token — terracotta at 15% opacity for dark */
+  --glow-color:   rgba(188, 75, 32, 0.15);
+  --glow-color-strong: rgba(188, 75, 32, 0.25);
+
+  /* Glass morphism tokens */
+  --glass-bg:     rgba(26, 26, 26, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Category badge tokens */
+  --cat-veg-bg:     rgba(16, 185, 129, 0.1);
+  --cat-veg-text:   #6EE7B7;
+  --cat-veg-border: rgba(16, 185, 129, 0.2);
+  --cat-fruit-bg:     rgba(168, 85, 247, 0.1);
+  --cat-fruit-text:   #C4B5FD;
+  --cat-fruit-border: rgba(168, 85, 247, 0.2);
+  --cat-spice-bg:     rgba(245, 158, 11, 0.1);
+  --cat-spice-text:   #FCD34D;
+  --cat-spice-border: rgba(245, 158, 11, 0.2);
+
+  /* Form tokens */
+  --input-bg:     #222222;
+  --input-border: #333333;
+  --input-focus:  #BC4B20;
+
+  /* Shadow tokens */
+  --shadow-premium: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-card:    0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-hover:   0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='light'] {
+  --bg:           #FDFCF8;     /* Clean Cream */
+  --surface:      #FFFFFF;
+  --surface2:     #F6F4EF;
+  --surface-glass: rgba(253, 252, 248, 0.6);
+  --sage:         #F1F5E9;
+  --border:       #E2DDD5;
+  --border2:      #C8C2B8;
+  --muted:        #717171;     /* Stone Gray */
+  --secondary:    #717171;     /* Stone Gray body text */
+  --primary:      #1A1A1A;     /* Deep Charcoal headings */
+  --rust:         #BC4B20;     /* Terracotta — same in both themes */
+  --rust-lt:      #D45E30;
+  --rust-dim:     #F2D5C8;
+  --rust-bg:      #FAF0EB;
+  --bg-rgb:       253, 252, 248;
+  --hero-overlay: rgba(253, 252, 248, 0.55);
+  --card-overlay: rgba(253, 252, 248, 0.1);
+
+  /* Ambient glow — terracotta at 10% opacity for light */
+  --glow-color:   rgba(188, 75, 32, 0.10);
+  --glow-color-strong: rgba(188, 75, 32, 0.18);
+
+  /* Glass morphism tokens */
+  --glass-bg:     rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.06);
+
+  /* Category badge tokens */
+  --cat-veg-bg:     rgba(16, 185, 129, 0.08);
+  --cat-veg-text:   #047857;
+  --cat-veg-border: rgba(16, 185, 129, 0.2);
+  --cat-fruit-bg:     rgba(168, 85, 247, 0.08);
+  --cat-fruit-text:   #7C3AED;
+  --cat-fruit-border: rgba(168, 85, 247, 0.2);
+  --cat-spice-bg:     rgba(245, 158, 11, 0.08);
+  --cat-spice-text:   #B45309;
+  --cat-spice-border: rgba(245, 158, 11, 0.2);
+
+  /* Form tokens */
+  --input-bg:     #FFFFFF;
+  --input-border: #E2DDD5;
+  --input-focus:  #BC4B20;
+
+  /* Shadow tokens */
+  --shadow-premium: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-card:    0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-hover:   0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* ─── Map Tailwind custom classes to CSS vars (FOUC-safe) ─────────────────── */
+.bg-ni-bg        { background-color: var(--bg); }
+.bg-ni-surface   { background-color: var(--surface); }
+.bg-ni-surface2  { background-color: var(--surface2); }
+.bg-ni-sage      { background-color: var(--sage); }
+.text-ni-primary { color: var(--primary); }
+.text-ni-secondary { color: var(--secondary); }
+.text-ni-muted   { color: var(--muted); }
+.text-ni-rust    { color: var(--rust); }
+.text-brand-orange { color: var(--rust); }
+.text-ni-rust-lt { color: var(--rust-lt); }
+.bg-ni-rust      { background-color: var(--rust); }
+.bg-ni-rust-lt   { background-color: var(--rust-lt); }
+.bg-ni-rust-bg   { background-color: var(--rust-bg); }
+.border-ni-border  { border-color: var(--border); }
+.border-ni-border2 { border-color: var(--border2); }
+.border-ni-rust    { border-color: var(--rust); }
+.border-ni-rust-dim { border-color: var(--rust-dim); }
+.bg-ni-border    { background-color: var(--border); }
+
+/* Hover utilities */
+.hover\:bg-ni-rust:hover { background-color: var(--rust); }
+.hover\:bg-ni-rust-lt:hover { background-color: var(--rust-lt); }
+.hover\:bg-ni-surface2:hover { background-color: var(--surface2); }
+.hover\:text-ni-rust-lt:hover { color: var(--rust-lt); }
+.hover\:text-ni-primary:hover { color: var(--primary); }
+
+/* Glass morphism utility */
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Premium shadows */
+.shadow-premium { box-shadow: var(--shadow-premium); }
+.shadow-card    { box-shadow: var(--shadow-card); }
+.hover\:shadow-hover:hover { box-shadow: var(--shadow-hover); }
+
+/* Category badge utilities */
+.cat-badge-vegetable {
+  background-color: var(--cat-veg-bg);
+  color: var(--cat-veg-text);
+  border: 1px solid var(--cat-veg-border);
+}
+.cat-badge-fruit {
+  background-color: var(--cat-fruit-bg);
+  color: var(--cat-fruit-text);
+  border: 1px solid var(--cat-fruit-border);
+}
+.cat-badge-spice {
+  background-color: var(--cat-spice-bg);
+  color: var(--cat-spice-text);
+  border: 1px solid var(--cat-spice-border);
+}
+
+/* ─── Theme transition — only for color/bg, NOT layout props ─────────────── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+
+/* Transforms and opacity have their own animation durations */
+.animate-fade-up, .transition-all {
+  transition-property: opacity, transform, background-color, border-color, color, box-shadow;
+}
+
+/* Remove default focus outline, add custom */
+*:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: 2px;
+}
+
+/* Use svh for mobile browsers — accounts for dynamic toolbar height */
+@supports (height: 100svh) {
+  :root { --vh100: 100svh; }
+}
+
+/* ─── iOS Safe Area Support ───────────────────────────────────────────────── */
+/* Adds padding for iPhone notch / Dynamic Island / home indicator */
+.safe-top    { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-left   { padding-left: env(safe-area-inset-left); }
+.safe-right  { padding-right: env(safe-area-inset-right); }
+
+/* ─── Mobile Form Fix — prevent iOS zoom on input focus ─────────────────── */
+/* iOS Safari zooms in when font-size < 16px on inputs */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* ─── Scrollbar hide utility ─────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

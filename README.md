@@ -1,87 +1,168 @@
-# Nectar Ingredients Website
+# Nectar Ingredients
 
-A premium, modern, responsive website built with **Next.js**, **React 19**, **TypeScript**, and **Tailwind CSS** for **Nectar Ingredients**—a clean-label manufacturer of single-ingredient dehydrated vegetable, fruit, and spice powders based in Surendranagar, Gujarat (established 2011).
+**Official website for Nectar Ingredients Pvt. Ltd.** — manufacturer of single-ingredient dehydrated vegetable, fruit, and spice powders based in Surendranagar, Gujarat, India. Est. 2011.
 
-## 🚀 Features
+🌐 **Live site:** [nectaringredients.com](https://nectaringredients.com)
 
-- **Product Catalog**: Explore a curated catalog of 24 single-ingredient vegetable, fruit, and spice powders.
-- **Sample Basket**: A custom sample-request flow allowing businesses and users to add products to a request basket (minimum 1 kg sample size) and submit inquiry forms.
-- **Modern UI/UX**: 
-  - Sleek, custom-tailored dark and light mode styling with clean transitions.
-  - High-performance responsive layouts optimized for all device sizes.
-  - Modern animations (counters, fading elements, theme toggling).
-  - Zero third-party bloat (using vanilla React state and context).
-- **SEO & Performance Optimized**: Pre-configured metadata structure, semantic markup, sitemap, and robots configurations.
+---
 
-## 🛠️ Technology Stack
+## About
 
-- **Framework**: Next.js 16.2+ (App Router)
-- **Library**: React 19
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS & Vanilla CSS Variables
-- **Icons**: Custom SVG icons for minimal bundle sizes
+Nectar Ingredients supplies clean-label dehydrated powders to food businesses, nutraceutical companies, cloud kitchens, and home kitchens across India. No fillers, no additives — just concentrated, single-ingredient powder.
 
-## 📂 Project Structure
+This repository contains the full source code for the public-facing product catalog and inquiry website.
 
-```text
-├── app/                  # Next.js App Router (pages: about, contact, products, home)
-├── components/           # Reusable UI components & section blocks
-│   ├── home/             # Home page specific sections (Hero, StatsBar, ProcessSection, etc.)
-│   ├── layout/           # Shared layout components (Header, Footer)
-│   ├── products/         # Product-specific catalog components
-│   └── ui/               # Core atomic components (Button, Tag, ThemeToggle, etc.)
-├── context/              # Global React Contexts (e.g. Sample Basket state)
-├── lib/                  # Utilities, custom hooks, and static data arrays
-├── public/               # Static assets (images, icons)
-├── types/                # TypeScript interfaces and global declarations
-├── tailwind.config.ts    # Custom Tailwind theme tokens (colors, fonts, keyframes)
-└── tsconfig.json         # TypeScript compiler configurations
+---
+
+## Tech Stack
+
+| Layer         | Technology |
+|---------------|-----------|
+| Framework     | [Next.js 15](https://nextjs.org/) (App Router) |
+| Language      | TypeScript |
+| Styling       | [Tailwind CSS v3](https://tailwindcss.com/) + CSS Custom Properties |
+| Fonts         | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) + [Inter](https://fonts.google.com/specimen/Inter) via `next/font` |
+| Images        | `next/image` (AVIF + WebP output) |
+| Deployment    | Vercel (recommended) |
+
+---
+
+## Features
+
+- 🌙 **Dark / Light mode** — system-aware with FOUC-free localStorage persistence
+- 📦 **Sample basket** — add up to N products and send a single WhatsApp inquiry
+- 🔍 **Live search** — filter products by name, description, category, and SKU across all pages
+- 🏷️ **Category filter + sort** — by vegetable / fruit / spice, alphabetically or by featured
+- 📋 **Product drawer** — detailed spec sheet (SKU, mesh, packaging, applications) as a slide-up on mobile, slide-in on desktop
+- 📱 **Mobile-first** — bottom-sheet product drawer, horizontal scroll swatch strip, iOS safe-area support
+- ⚡ **Optimised** — AVIF/WebP images, gzip compression, font preloading, SVH mobile viewport
+
+---
+
+## Project Structure
+
+```
+nectar-ingredients/
+├── app/
+│   ├── layout.tsx          # Root layout with Navbar, Footer, providers
+│   ├── globals.css         # Design tokens, Tailwind overrides, mobile fixes
+│   ├── page.tsx            # Home page
+│   ├── about/page.tsx      # About page
+│   ├── contact/page.tsx    # Contact / inquiry form (WhatsApp integration)
+│   ├── products/           # Products catalog
+│   ├── robots.ts           # robots.txt generation
+│   └── sitemap.ts          # Sitemap generation
+│
+├── components/
+│   ├── home/               # Hero, StatsBar, SwatchStrip, ProcessSection, etc.
+│   ├── layout/             # Navbar, Footer
+│   ├── products/           # ProductCard, ProductGrid, ProductDrawer, etc.
+│   └── ui/                 # Button, Tag, AnimatedCounter, ThemeToggle, etc.
+│
+├── context/
+│   ├── SampleBasketContext.tsx
+│   └── SearchContext.tsx
+│
+├── lib/
+│   ├── data.ts             # Product data (25 SKUs + extended range)
+│   └── hooks.ts            # useScrollReveal hook
+│
+├── public/
+│   ├── Images/             # Product images (PNG)
+│   └── NECTAR_BROCHURE.pdf
+│
+└── types/                  # TypeScript type definitions
 ```
 
-## 💻 Getting Started
+---
+
+## Getting Started
 
 ### Prerequisites
 
-Make sure you have [Node.js](https://nodejs.org/) (v18.0.0 or higher recommended) installed.
+- Node.js `>= 18.17.0`
+- npm `>= 9`
 
 ### Installation
 
-1. Clone or copy the project files to your directory.
-2. Navigate to the project root and install the dependencies:
-   ```bash
-   npm install
-   ```
-
-### Running Locally
-
-To start the local development server with Turbopack:
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/nectar-ingredients.git
+cd nectar-ingredients
+
+# Install dependencies
+npm install
+
+# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the website.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Production Build
+### Build for Production
 
-To build the application for production deployment:
 ```bash
 npm run build
-```
-
-This runs the TypeScript compiler and generates an optimized production build under the `.next/` directory.
-
-To start the production server locally:
-```bash
 npm run start
 ```
 
-### Linting
+---
 
-To run ESLint and check for code styling/issues:
-```bash
-npm run lint
+## Deployment
+
+This project is optimised for **Vercel** deployment:
+
+1. Push to GitHub
+2. Import into [Vercel](https://vercel.com)
+3. Set root directory to `/` (default)
+4. Deploy — no environment variables required
+
+The project uses Next.js App Router and is fully compatible with Vercel's edge network.
+
+---
+
+## Adding or Editing Products
+
+All product data lives in [`lib/data.ts`](./lib/data.ts).
+
+Each product object follows the `Product` type defined in [`types/index.ts`](./types/index.ts):
+
+```typescript
+{
+  id: string              // Unique ID
+  slug: string            // URL-safe identifier
+  name: string            // Display name
+  tagline: string         // Short descriptor
+  category: 'vegetable' | 'fruit' | 'spice'
+  swatchHex: string       // Color for UI glow effects
+  weights: string[]       // e.g. ['1kg', '5kg', '25kg']
+  sku: string             // e.g. 'NI-TOM-001'
+  mesh: string            // e.g. '80 mesh'
+  description: string
+  featured: boolean
+  imageSrc: string        // Path in /public/Images/
+  swatchImageSrc: string  // Same as imageSrc in most cases
+  packagingSize?: string
+  usageApplications?: string[]
+}
 ```
 
-## 📄 License
+---
 
-This project is private and proprietary to Nectar Ingredients. All rights reserved.
+## Contact
+
+**Nectar Ingredients Pvt. Ltd.**
+Shop No. 18 & 19, Second Floor, Brahmanand Chamber
+Opp. M.P. Shah Arts & Science College, S.T. Road
+Surendranagar, Gujarat 363001, India
+
+📞 +91 98798 38281
+📧 hello@nectaringredients.com
+💬 [WhatsApp](https://wa.me/919879838281)
+
+---
+
+## License
+
+All rights reserved © Nectar Ingredients Pvt. Ltd.
+This source code is provided for reference only. Unauthorised copying, modification, or redistribution is not permitted.
