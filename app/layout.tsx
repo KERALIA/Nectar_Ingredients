@@ -72,6 +72,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  appleWebApp: {
+    title: 'Nectar Ingredients',
+  },
 }
 
 export const viewport: Viewport = {
@@ -97,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="apple-mobile-web-app-title" content="Nectar Ingredients" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
