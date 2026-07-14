@@ -3,6 +3,7 @@ import StatsBar from '../components/home/StatsBar'
 import FeaturedProducts from '../components/home/FeaturedProducts'
 import ProcessSection from '../components/home/ProcessSection'
 import AboutTeaser from '../components/home/AboutTeaser'
+import FAQSection from '../components/home/FAQSection'
 import ContactCTA from '../components/home/ContactCTA'
 
 export default function HomePage() {
@@ -13,6 +14,7 @@ export default function HomePage() {
       <FeaturedProducts />
       <ProcessSection />
       <AboutTeaser />
+      <FAQSection />
       <ContactCTA />
     </>
   )

@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ProductGrid from '../../components/products/ProductGrid'
 import SectionHeading from '../../components/ui/SectionHeading'
 import Button from '../../components/ui/Button'
 import { extendedRange, products } from '../../lib/data'
 import { useSampleBasket } from '../../context/SampleBasketContext'
+import { useSearch } from '../../context/SearchContext'
 
 // Fix #4: Persistent Sample Box callout so new users discover
 // the sampling feature even before they interact with a product card.
@@ -49,6 +51,15 @@ function SampleBoxBanner() {
 
 export default function ProductsClient() {
   const [highlightedSlug, setHighlightedSlug] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const { setSearchTerm } = useSearch()
+
+  useEffect(() => {
+    const query = searchParams.get('search')
+    if (query) {
+      setSearchTerm(query)
+    }
+  }, [searchParams, setSearchTerm])
 
   useEffect(() => {
     const hash = window.location.hash

@@ -1,7 +1,13 @@
 import Button from '../../components/ui/Button'
 import Image from 'next/image'
 
-export const metadata = { title: 'About — Nectar Ingredients' }
+export const metadata = {
+  title: 'About Us',
+  description: 'Discover the story of Nectaringredients, our single-ingredient dehydration facility in Surendranagar, Gujarat, and our strict quality control standards.',
+  alternates: {
+    canonical: '/about',
+  },
+}
 
 export default function AboutPage() {
   return (
@@ -47,7 +53,7 @@ export default function AboutPage() {
           <div className="relative w-full overflow-hidden rounded-[24px] border border-ni-border/50" style={{ aspectRatio: '4/3' }}>
             <Image
               src="/Images/Facility_Photo.jpg"
-              alt="Nectar Ingredients manufacturing facility, Ankleshwar Gujarat"
+              alt="Nectaringredients state-of-the-art dehydration and manufacturing facility in Surendranagar, Gujarat"
               fill
               className="object-cover object-center transition-transform duration-500 hover:scale-105"
               sizes="(max-width: 1024px) 100vw, 50vw"

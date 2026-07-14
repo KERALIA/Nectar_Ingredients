@@ -33,10 +33,10 @@ export default function Hero() {
             {/* Headline */}
             <h1 className="font-heading text-[2rem] sm:text-5xl md:text-6xl font-bold text-neutral-900 dark:text-neutral-50 leading-tight">
               <span className="block whitespace-nowrap">
-                From field to{' '}
-                <span className="font-serif italic font-medium text-brand-orange">Powders</span>,
+                Pure{' '}
+                <span className="font-serif italic font-medium text-brand-orange">Nectaringredients</span>
               </span>
-              <span className="block whitespace-nowrap mt-1 sm:mt-2">Nothing in between</span>
+              <span className="block whitespace-nowrap mt-1 sm:mt-2">From Field to Powders</span>
             </h1>
 
             {/* Subtext */}
@@ -84,7 +84,7 @@ export default function Hero() {
                 <div className="relative w-full h-[100px] sm:h-[115px] lg:h-[120px] flex items-center justify-center bg-pw-tomato/10 rounded-[14px] lg:rounded-[16px] p-2 overflow-hidden">
                   <Image
                     src="/Images/Tomato_Powder.webp"
-                    alt="Tomato Powder"
+                    alt="Pure single-source dehydrated Tomato Powder from Nectaringredients"
                     fill
                     className="object-contain p-2 hover:scale-110 transition-transform duration-300"
                     sizes="180px"
@@ -107,7 +107,7 @@ export default function Hero() {
                 <div className="relative w-full h-[100px] sm:h-[115px] lg:h-[120px] flex items-center justify-center bg-pw-turmeric/10 rounded-[14px] lg:rounded-[16px] p-2 overflow-hidden">
                   <Image
                     src="/Images/Turmeric_Powder.webp"
-                    alt="Turmeric Powder"
+                    alt="Traceable single-ingredient dehydrated Turmeric Powder by Nectaringredients"
                     fill
                     className="object-contain p-2 hover:scale-110 transition-transform duration-300"
                     sizes="180px"

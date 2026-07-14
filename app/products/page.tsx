@@ -1,11 +1,18 @@
-import ProductGrid from '../../components/products/ProductGrid'
+import { Suspense } from 'react'
 import ProductsClient from './ProductsClient'
 
 export const metadata = {
-  title: 'Products — Nectar Ingredients',
-  description: '24 single-ingredient dehydrated food powders. Available from 1kg samples to 25kg commercial bags.',
+  title: 'Our Dehydrated Powders',
+  description: 'Browse the full range of 24 pure single-ingredient dehydrated food powders manufactured by Nectaringredients. Built for commercial food brands and kitchens.',
+  alternates: {
+    canonical: '/products',
+  },
 }
 
 export default function ProductsPage() {
-  return <ProductsClient />
+  return (
+    <Suspense fallback={<div className="pt-32 text-center text-ni-muted">Loading powders...</div>}>
+      <ProductsClient />
+    </Suspense>
+  )
 }

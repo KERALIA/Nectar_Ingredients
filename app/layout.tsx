@@ -27,13 +27,21 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://nectaringredients.vercel.app'),
   title: {
-    default: 'Nectar Ingredients — Pure Dehydrated Food Powders',
-    template: '%s — Nectar Ingredients',
+    default: 'Pure Nectaringredients — Field to Powder Purity',
+    template: '%s | Nectaringredients',
   },
-  description:
-    'Manufacturer of single-ingredient dehydrated vegetable, fruit, and spice powders for food businesses and home kitchens. Based in Surendranagar, Gujarat. Est. 2011.',
+  description: 'Your premier source for high-quality, sustainably sourced agricultural and herbal ingredients. Discover pure Nectaringredients today.',
+  alternates: {
+    canonical: '/',
+  },
+  verification: {
+    google: 'dqGk0aQeb5quQT8plRGRSkTttYmBadNp-urZcXYNh0I',
+  },
   keywords: [
+    'Nectaringredients',
+    'nectaringredient',
     'dehydrated powder',
     'vegetable powder',
     'fruit powder',
@@ -47,19 +55,18 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Nectar Ingredients Pvt. Ltd.' }],
   creator: 'Nectar Ingredients Pvt. Ltd.',
-  metadataBase: new URL('https://nectaringredients.com'),
   openGraph: {
-    title: 'Nectar Ingredients — Pure Dehydrated Food Powders',
-    description:
-      'Single-ingredient dehydrated powders. No fillers, no additives. Direct from our facility in Surendranagar, Gujarat.',
+    title: 'Pure Nectaringredients — Field to Powder Purity',
+    description: 'Your premier source for high-quality, sustainably sourced agricultural and herbal ingredients. Discover pure Nectaringredients today.',
     type: 'website',
     locale: 'en_IN',
-    siteName: 'Nectar Ingredients',
+    siteName: 'Nectaringredients',
+    url: 'https://nectaringredients.vercel.app',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nectar Ingredients — Pure Dehydrated Food Powders',
-    description: 'Single-ingredient dehydrated powders. No fillers, no additives.',
+    title: 'Pure Nectaringredients — Field to Powder Purity',
+    description: 'Your premier source for high-quality, sustainably sourced agricultural and herbal ingredients. Discover pure Nectaringredients today.',
   },
   robots: {
     index: true,
@@ -78,16 +85,34 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': 'Nectaringredients',
+    'url': 'https://nectaringredients.vercel.app',
+    'logo': 'https://nectaringredients.vercel.app/logo.png',
+    'sameAs': [],
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Inline theme-flash prevention script — must run synchronously before paint */}
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
               try {
                 var t = localStorage.getItem('ni-theme');
-                document.documentElement.setAttribute('data-theme', t || 'dark');
+                if (t === 'dark' || t === 'light') {
+                  document.documentElement.setAttribute('data-theme', t);
+                } else {
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                }
               } catch(e) {}
             })();
           `

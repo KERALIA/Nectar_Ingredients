@@ -44,7 +44,7 @@ export default function AboutTeaser() {
         <div className="relative w-full overflow-hidden rounded-[24px] shadow-premium border border-ni-border/20 group" style={{ aspectRatio: '4/3' }}>
           <Image
             src="/Images/Facility_Photo.jpg"
-            alt="Nectar Ingredients manufacturing facility in Surendranagar, Gujarat"
+            alt="Nectaringredients premium food powder manufacturing facility in Surendranagar, Gujarat"
             fill
             className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
             sizes="(max-width: 1024px) 100vw, 50vw"

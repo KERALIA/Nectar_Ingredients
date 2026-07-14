@@ -114,7 +114,16 @@ export default function ChatWidget() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message…"
               disabled={isSending}
-              style={{ flex: 1, border: "1px solid #eadfd0", borderRadius: 8, padding: "8px 10px", fontSize: 14, outline: "none" }}
+              style={{
+                flex: 1,
+                border: "1px solid #eadfd0",
+                borderRadius: 8,
+                padding: "8px 10px",
+                fontSize: 14,
+                outline: "none",
+                backgroundColor: "#ffffff",
+                color: "#1a1a1a",
+              }}
             />
             <button
               type="submit"
