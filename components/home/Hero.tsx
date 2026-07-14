@@ -27,7 +27,7 @@ export default function Hero() {
           <div className="space-y-6 sm:space-y-8 animate-fade-up relative z-10 w-full lg:max-w-[90%]">
             {/* Eyebrow tag */}
             <span className="font-body text-[10px] font-semibold tracking-[0.15em] text-ni-rust border border-ni-rust/20 px-4 py-1.5 inline-block uppercase rounded-2xl bg-ni-rust/5">
-              SURENDRANAGAR, GUJARAT — EST. 2011
+              SURENDRANAGAR, GUJARAT — EST. 2021
             </span>
 
             {/* Headline */}
