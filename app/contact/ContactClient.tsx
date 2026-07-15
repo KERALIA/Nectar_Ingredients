@@ -124,17 +124,11 @@ export default function ContactClient() {
     }
 
     try {
-      const response = await fetch(
-        process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL as string,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type':  'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify(formData),
-        },
-      )
+      const response = await fetch('/api/web-form-router', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
 
       const data = await response.json()
 

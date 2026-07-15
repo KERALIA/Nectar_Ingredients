@@ -2,9 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 
-const CHATBOT_ENDPOINT = process.env.NEXT_PUBLIC_SUPABASE_CHATBOT_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -34,11 +31,10 @@ export default function ChatWidget() {
         .slice(0, -1) // backend appends the new user message itself
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const response = await fetch(CHATBOT_ENDPOINT, {
+      const response = await fetch("/api/chatbot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ message: trimmed, history }),
       });
