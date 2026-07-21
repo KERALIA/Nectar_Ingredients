@@ -8,6 +8,8 @@ import Button from '../../components/ui/Button'
 import { extendedRange, products } from '../../lib/data'
 import { useSampleBasket } from '../../context/SampleBasketContext'
 import { useSearch } from '../../context/SearchContext'
+import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
 
 // Fix #4: Persistent Sample Box callout so new users discover
 // the sampling feature even before they interact with a product card.
@@ -49,10 +51,32 @@ function SampleBoxBanner() {
   )
 }
 
-export default function ProductsClient() {
+interface ProductsClientProps {
+  initialPrices?: Record<string, number>
+}
+
+export default function ProductsClient({ initialPrices = {} }: ProductsClientProps) {
   const [highlightedSlug, setHighlightedSlug] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [mounted, setMounted] = useState(false)
   const searchParams = useSearchParams()
   const { setSearchTerm } = useSearch()
+  const supabase = createClient()
+
+  useEffect(() => {
+    setMounted(true)
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
 
   useEffect(() => {
     const query = searchParams.get('search')
@@ -113,7 +137,13 @@ export default function ProductsClient() {
         {/* Fix #4: Sample Box discovery banner */}
         <SampleBoxBanner />
 
-        <ProductGrid showFilter={true} showDescription={true} highlightedSlug={highlightedSlug} />
+        <ProductGrid
+          showFilter={true}
+          showDescription={true}
+          highlightedSlug={highlightedSlug}
+          prices={initialPrices}
+          user={user}
+        />
 
         {/* Extended dehydrated range */}
         <section className="mt-24 pt-16 border-t border-ni-border/15">

@@ -6,6 +6,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useSearch } from '../../context/SearchContext'
+import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
+import SignInButton from '@/components/auth/SignInButton'
+import UserMenu from '@/components/auth/UserMenu'
+import CartIcon from '@/components/cart/CartIcon'
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -21,6 +26,26 @@ export default function Navbar() {
   const router = useRouter()
   const { searchTerm, setSearchTerm, isSearchOpen, setIsSearchOpen } = useSearch()
   const inputRef = useRef<HTMLInputElement>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    setMounted(true)
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    fetchUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,7 +88,7 @@ export default function Navbar() {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-[var(--surface-glass)] backdrop-blur-xl border-b border-ni-border/30 shadow-premium'
+            ? 'glass-panel-premium border-b border-ni-border/30 shadow-premium'
             : 'bg-transparent'
         }`}
         // Support iPhone notch / Dynamic Island
@@ -116,11 +141,12 @@ export default function Navbar() {
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search powders..."
-                className={`transition-all duration-300 ease-in-out bg-ni-surface2 border border-ni-border2/30 rounded-full text-xs text-ni-primary placeholder:text-ni-muted focus:outline-none focus:ring-2 focus:ring-ni-rust ${
+                className={`transition-all transition-spring duration-400 bg-ni-surface2 border border-ni-border2/30 rounded-full text-xs text-ni-primary placeholder:text-ni-muted focus:outline-none focus:ring-2 focus:ring-ni-rust ${
                   isSearchOpen ? 'w-48 px-4 py-1.5 ml-1 opacity-100' : 'w-0 p-0 border-0 opacity-0 pointer-events-none'
                 }`}
               />
             </div>
+            <CartIcon />
             <ThemeToggle />
             <Button
               variant="primary"
@@ -130,32 +156,40 @@ export default function Navbar() {
             >
               Get Samples
             </Button>
+            {mounted && (
+              <div className="flex items-center gap-3 border-l border-ni-border/30 pl-3 ml-1">
+                {user ? <UserMenu /> : <SignInButton />}
+              </div>
+            )}
           </div>
 
           {/* Mobile hamburger — 44×44px touch target */}
-          <button
-            onClick={() => setMobileOpen((prev) => !prev)}
-            className="md:hidden text-ni-secondary p-3 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg rounded-full"
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-menu"
-          >
-            <svg
-              className="w-6 h-6 stroke-current transition-transform duration-300"
-              viewBox="0 0 24 24"
-              fill="none"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          <div className="md:hidden flex items-center gap-2">
+            <CartIcon />
+            <button
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="text-ni-secondary p-3 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg rounded-full"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
             >
-              {mobileOpen ? (
-                <path d="M18 6L6 18M6 6l12 12" />
-              ) : (
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+              <svg
+                className="w-6 h-6 stroke-current transition-transform duration-300"
+                viewBox="0 0 24 24"
+                fill="none"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                {mobileOpen ? (
+                  <path d="M18 6L6 18M6 6l12 12" />
+                ) : (
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -165,7 +199,7 @@ export default function Navbar() {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`md:hidden fixed top-16 left-0 right-0 z-40 bg-ni-surface border-b border-ni-border/30 shadow-premium px-4 sm:px-6 py-6 flex flex-col max-h-[calc(100svh-4rem)] overflow-y-auto transition-all duration-300 ease-out ${
+        className={`md:hidden fixed top-16 left-0 right-0 z-40 bg-ni-surface border-b border-ni-border/30 shadow-premium px-4 sm:px-6 py-6 flex flex-col max-h-[calc(100svh-4rem)] overflow-y-auto transition-all transition-spring duration-500 ${
           mobileOpen
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-4 pointer-events-none'
@@ -219,6 +253,12 @@ export default function Navbar() {
         >
           Get Samples →
         </Button>
+
+        {mounted && (
+          <div className="mt-4 flex justify-center border-t border-ni-border/10 pt-4">
+            {user ? <UserMenu /> : <SignInButton />}
+          </div>
+        )}
       </div>
     </>
   )

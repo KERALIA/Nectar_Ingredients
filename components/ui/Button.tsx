@@ -21,11 +21,11 @@ const sizeClasses: Record<'sm' | 'md' | 'lg', string> = {
 
 const variantClasses: Record<'primary' | 'ghost' | 'outline', string> = {
   primary:
-    'bg-ni-rust hover:bg-ni-rust-lt text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg',
+    'bg-ni-rust hover:bg-ni-rust-lt text-white hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg',
   ghost:
-    'bg-transparent border border-ni-border2 text-ni-secondary hover:border-ni-secondary hover:text-ni-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg',
+    'bg-transparent border border-ni-border2 text-ni-secondary hover:border-ni-secondary hover:text-ni-primary hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg',
   outline:
-    'bg-transparent border border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg',
+    'bg-transparent border border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg',
 }
 
 export default function Button({

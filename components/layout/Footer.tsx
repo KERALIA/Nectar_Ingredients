@@ -86,10 +86,19 @@ export default function Footer() {
 
       {/* Row 2 — bottom bar */}
       <div className="border-t border-ni-border/15">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-body text-xs text-ni-muted">
             © {new Date().getFullYear()} Nectar Ingredients Pvt. Ltd.
           </p>
+          <div className="flex gap-4 text-xs font-body text-ni-muted">
+            <Link href="/privacy" className="hover:text-ni-rust transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ni-rust">
+              Privacy Policy
+            </Link>
+            <span>·</span>
+            <Link href="/terms" className="hover:text-ni-rust transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ni-rust">
+              Terms of Service
+            </Link>
+          </div>
           <p className="font-body text-xs text-ni-muted">
             Made in Surendranagar 🇮🇳 · All rights reserved
           </p>

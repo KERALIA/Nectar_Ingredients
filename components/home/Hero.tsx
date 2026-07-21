@@ -78,7 +78,7 @@ export default function Hero() {
 
               {/* Card 1: Tomato — top-left */}
               <div
-                className="absolute top-0 left-0 w-[150px] sm:w-[170px] lg:w-[180px] h-[190px] sm:h-[210px] lg:h-[220px] glass-panel rounded-[20px] lg:rounded-[24px] p-3 sm:p-4 shadow-premium animate-float flex flex-col justify-between"
+                className="absolute top-0 left-0 w-[150px] sm:w-[170px] lg:w-[180px] h-[190px] sm:h-[210px] lg:h-[220px] glass-panel-premium rounded-[20px] lg:rounded-[24px] p-3 sm:p-4 shadow-premium animate-float flex flex-col justify-between hover:scale-[1.03] hover:shadow-hover hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 style={{ animationDelay: '0s' }}
               >
                 <div className="relative w-full h-[100px] sm:h-[115px] lg:h-[120px] flex items-center justify-center bg-pw-tomato/10 rounded-[14px] lg:rounded-[16px] p-2 overflow-hidden">
@@ -101,7 +101,7 @@ export default function Hero() {
 
               {/* Card 2: Turmeric — bottom-right */}
               <div
-                className="absolute bottom-0 right-0 w-[150px] sm:w-[170px] lg:w-[180px] h-[190px] sm:h-[210px] lg:h-[220px] glass-panel rounded-[20px] lg:rounded-[24px] p-3 sm:p-4 shadow-premium animate-float flex flex-col justify-between"
+                className="absolute bottom-0 right-0 w-[150px] sm:w-[170px] lg:w-[180px] h-[190px] sm:h-[210px] lg:h-[220px] glass-panel-premium rounded-[20px] lg:rounded-[24px] p-3 sm:p-4 shadow-premium animate-float flex flex-col justify-between hover:scale-[1.03] hover:shadow-hover hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 style={{ animationDelay: '1.5s' }}
               >
                 <div className="relative w-full h-[100px] sm:h-[115px] lg:h-[120px] flex items-center justify-center bg-pw-turmeric/10 rounded-[14px] lg:rounded-[16px] p-2 overflow-hidden">

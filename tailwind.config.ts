@@ -60,6 +60,14 @@ const config: Config = {
         'display': ['clamp(2rem, 4vw, 3.2rem)',   { lineHeight: '1.12', letterSpacing: '-0.025em' }],
         'section': ['clamp(1.5rem, 3vw, 2.2rem)', { lineHeight: '1.2',  letterSpacing: '-0.02em' }],
       },
+      boxShadow: {
+        card: '0 6px 20px -4px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03)',
+        hover: '0 20px 40px -10px rgba(0, 0, 0, 0.12), 0 8px 24px -6px rgba(188, 75, 32, 0.08)',
+        premium: '0 24px 64px -12px rgba(0, 0, 0, 0.2)',
+      },
+      transitionTimingFunction: {
+        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
       animation: {
         'fade-up':    'fadeUp 0.6s ease forwards',
         'fade-in':    'fadeIn 0.4s ease forwards',
@@ -67,6 +75,7 @@ const config: Config = {
         'float':      'float 6s ease-in-out infinite',
         'shimmer':    'shimmer 2s linear infinite',
         'glow-pulse': 'glowPulse 4s ease-in-out infinite',
+        'scale-up':   'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
       },
       keyframes: {
         fadeUp:    { '0%': { opacity: '0', transform: 'translateY(24px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
@@ -75,6 +84,7 @@ const config: Config = {
         float:     { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-10px)' } },
         shimmer:   { '100%': { transform: 'translateX(100%)' } },
         glowPulse: { '0%, 100%': { opacity: '0.8', filter: 'blur(40px)' }, '50%': { opacity: '1', filter: 'blur(55px)' } },
+        scaleUp:   { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
       },
     },
   },

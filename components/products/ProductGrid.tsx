@@ -8,6 +8,7 @@ import CategoryFilter from './CategoryFilter'
 import ProductSearchBar from './ProductSearchBar'
 import ProductDrawer from './ProductDrawer'
 import { useSearch } from '../../context/SearchContext'
+import { User } from '@supabase/supabase-js'
 
 type Category = 'all' | 'vegetable' | 'fruit' | 'spice'
 type SortMode = 'default' | 'alpha' | 'featured'
@@ -17,9 +18,18 @@ interface ProductGridProps {
   showFilter?: boolean
   limit?: number
   highlightedSlug?: string | null
+  prices?: Record<string, number>
+  user?: User | null
 }
 
-export default function ProductGrid({ showDescription = false, showFilter = false, limit, highlightedSlug = null }: ProductGridProps) {
+export default function ProductGrid({
+  showDescription = false,
+  showFilter = false,
+  limit,
+  highlightedSlug = null,
+  prices = {},
+  user = null,
+}: ProductGridProps) {
   const [active, setActive] = useState<Category>('all')
   const { searchTerm, setSearchTerm } = useSearch()
   const [sortMode, setSortMode] = useState<SortMode>('default')
@@ -111,6 +121,8 @@ export default function ProductGrid({ showDescription = false, showFilter = fals
             showDescription={showDescription}
             highlighted={highlightedSlug === p.slug}
             onOpenDrawer={handleOpenDrawer}
+            price={prices[p.sku]}
+            user={user}
           />
         ))}
       </div>
@@ -133,6 +145,8 @@ export default function ProductGrid({ showDescription = false, showFilter = fals
         product={drawerProduct}
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
+        price={drawerProduct ? prices[drawerProduct.sku] : undefined}
+        user={user}
       />
     </div>
   )

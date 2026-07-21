@@ -5,6 +5,10 @@ import { Product } from '../../types'
 import Tag from '../ui/Tag'
 import Image from 'next/image'
 import { useSampleBasket } from '../../context/SampleBasketContext'
+import { User } from '@supabase/supabase-js'
+import { computeListPrice, formatINR } from '@/lib/pricing'
+import { useCart } from '@/context/CartContext'
+import { createClient } from '@/lib/supabase/client'
 
 interface ProductCardProps {
   product: Product
@@ -12,12 +16,40 @@ interface ProductCardProps {
   highlighted?: boolean
   onOpenDrawer?: (product: Product) => void
   priority?: boolean
+  price?: number
+  user?: User | null
 }
 
-export default function ProductCard({ product, showDescription = false, highlighted = false, onOpenDrawer, priority = false }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  showDescription = false,
+  highlighted = false,
+  onOpenDrawer,
+  priority = false,
+  price,
+  user = null,
+}: ProductCardProps) {
   const [imgError, setImgError] = useState(false)
   const { toggleBasket, isInBasket } = useSampleBasket()
+  const { addToCart } = useCart()
   const inBasket = isInBasket(product.id)
+
+  const handleSignIn = async () => {
+    try {
+      const supabase = createClient()
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/'
+
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(currentPath)}`,
+        },
+      })
+    } catch (err) {
+      console.error('Sign in error:', err)
+    }
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (onOpenDrawer && (e.key === 'Enter' || e.key === ' ')) {
@@ -52,8 +84,8 @@ export default function ProductCard({ product, showDescription = false, highligh
             style={{ aspectRatio: '4/3' }}
           >
             {/* Ambient circular swatch color glow behind the product image */}
-            <div 
-              className="absolute w-24 h-24 rounded-full filter blur-[20px] opacity-[0.25] pointer-events-none transition-transform duration-500 group-hover:scale-125"
+            <div
+              className="absolute w-24 h-24 rounded-full filter blur-[20px] opacity-[0.25] pointer-events-none transition-all duration-500 group-hover:scale-[1.4] group-hover:opacity-[0.35]"
               style={{ backgroundColor: product.swatchHex }}
             />
             <Image
@@ -117,6 +149,14 @@ export default function ProductCard({ product, showDescription = false, highligh
 
             {/* Specifications divider & details */}
             <div className="mt-auto pt-4 border-t border-ni-border/40 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-body text-xs font-semibold text-ni-primary uppercase tracking-wider">
+                  List Price
+                </span>
+                <span className="font-body text-sm font-bold text-ni-rust">
+                  {price !== undefined ? `${formatINR(computeListPrice(price))}/kg` : 'Price on request'}
+                </span>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="font-body text-xs text-ni-secondary">
                   {product.weights.join(' · ')}
@@ -152,28 +192,79 @@ export default function ProductCard({ product, showDescription = false, highligh
           </>
         )}
 
-        {/* Action button — Add to Sample Box at the bottom */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            toggleBasket({
-              id: product.id,
-              slug: product.slug,
-              name: product.name,
-              sku: product.sku,
-              category: product.category,
-            })
-          }}
-          aria-label={inBasket ? `Remove ${product.name} from sample box` : `Add ${product.name} to sample box`}
-          aria-pressed={inBasket}
-          className={`w-full font-body text-[10px] font-bold uppercase tracking-widest py-3 transition-all duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
-            inBasket
-              ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
-              : 'bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-md'
-          }`}
-        >
-          {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
-        </button>
+        {!showDescription ? (
+          /* Homepage action */
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleBasket({
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                sku: product.sku,
+                category: product.category,
+              })
+            }}
+            aria-label={inBasket ? `Remove ${product.name} from sample box` : `Add ${product.name} to sample box`}
+            aria-pressed={inBasket}
+            className={`w-full font-body text-[10px] font-bold uppercase tracking-widest py-3 transition-all duration-300 rounded-full active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
+              inBasket
+                ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
+                : 'bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-hover hover:-translate-y-0.5'
+            }`}
+          >
+            {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
+          </button>
+        ) : (
+          /* Catalog actions (Sample box + Cart/Login) */
+          <div className="flex flex-col gap-2 mt-auto">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleBasket({
+                  id: product.id,
+                  slug: product.slug,
+                  name: product.name,
+                  sku: product.sku,
+                  category: product.category,
+                })
+              }}
+              aria-label={inBasket ? `Remove ${product.name} from sample box` : `Add ${product.name} to sample box`}
+              aria-pressed={inBasket}
+              className={`w-full font-body text-[10px] font-bold uppercase tracking-widest py-2.5 transition-all duration-300 rounded-full active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
+                inBasket
+                  ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
+                  : 'bg-transparent border border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white hover:-translate-y-0.5'
+              }`}
+            >
+              {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
+            </button>
+
+            {price !== undefined && (
+              user ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    addToCart(product.sku, product.name, price)
+                  }}
+                  className="w-full font-body text-[10px] font-bold uppercase tracking-widest py-2.5 bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer"
+                >
+                  Add to Cart
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleSignIn()
+                  }}
+                  className="w-full font-body text-[10px] font-bold uppercase tracking-widest py-2.5 bg-transparent border border-ni-border2 text-ni-secondary hover:border-ni-secondary hover:text-ni-primary hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-secondary cursor-pointer"
+                >
+                  Sign in to Order
+                </button>
+              )
+            )}
+          </div>
+        )}
       </div>
     </article>
   )

@@ -1,14 +1,20 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Product } from '../../types'
 import { useSampleBasket } from '../../context/SampleBasketContext'
+import { User } from '@supabase/supabase-js'
+import { computeListPrice, formatINR } from '@/lib/pricing'
+import { useCart } from '@/context/CartContext'
+import { createClient } from '@/lib/supabase/client'
 
 interface ProductDrawerProps {
   product: Product | null
   isOpen: boolean
   onClose: () => void
+  price?: number
+  user?: User | null
 }
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -19,10 +25,34 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   ).filter((el) => !el.closest('[aria-hidden="true"]'))
 }
 
-export default function ProductDrawer({ product, isOpen, onClose }: ProductDrawerProps) {
+export default function ProductDrawer({
+  product,
+  isOpen,
+  onClose,
+  price,
+  user = null,
+}: ProductDrawerProps) {
   const { toggleBasket, isInBasket } = useSampleBasket()
+  const { addToCart } = useCart()
   const panelRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<HTMLElement | null>(null)
+
+  const handleSignIn = async () => {
+    try {
+      const supabase = createClient()
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/'
+
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(currentPath)}`,
+        },
+      })
+    } catch (err) {
+      console.error('Sign in error:', err)
+    }
+  }
 
   // Manage focus
   useEffect(() => {
@@ -93,7 +123,7 @@ export default function ProductDrawer({ product, isOpen, onClose }: ProductDrawe
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-md transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -118,7 +148,7 @@ export default function ProductDrawer({ product, isOpen, onClose }: ProductDrawe
         aria-label={`${product.name} technical specifications`}
         className={`
           fixed z-50 bg-ni-surface shadow-premium flex flex-col
-          transition-transform duration-300 ease-in-out
+          transition-spring
 
           /* Mobile — bottom sheet */
           bottom-0 left-0 right-0
@@ -204,6 +234,7 @@ export default function ProductDrawer({ product, isOpen, onClose }: ProductDrawe
             <div className="mt-6 sm:mt-8 space-y-2">
               {[
                 { label: 'SKU',                  value: product.sku,                              isMono: true },
+                { label: 'List Price',           value: price !== undefined ? `${formatINR(computeListPrice(price))}/kg` : 'Price on request' },
                 { label: 'Category',             value: product.category,                         isCapitalize: true },
                 { label: 'Mesh / Particle Size', value: product.mesh },
                 { label: 'Standard Packaging',   value: product.packagingSize || '25 KG Corrugated Box' },
@@ -255,32 +286,50 @@ export default function ProductDrawer({ product, isOpen, onClose }: ProductDrawe
           className="flex-none px-5 sm:px-8 py-4 border-t border-ni-border/15 bg-ni-surface"
           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
         >
-          <button
-            onClick={() =>
-              toggleBasket({
-                id: product.id,
-                slug: product.slug,
-                name: product.name,
-                sku: product.sku,
-                category: product.category,
-              })
-            }
-            aria-label={
-              inBasket
-                ? `Remove ${product.name} from sample box`
-                : `Add ${product.name} to sample box`
-            }
-            aria-pressed={inBasket}
-            className={`w-full font-body text-xs font-bold uppercase tracking-widest py-4 transition-all duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface ${
-              inBasket
-                ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
-                : 'bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-premium'
-            }`}
-          >
-            {inBasket
-              ? '✓ Added to Sample Box — Remove'
-              : `Add ${product.name} to Sample Box →`}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <button
+              onClick={() =>
+                toggleBasket({
+                  id: product.id,
+                  slug: product.slug,
+                  name: product.name,
+                  sku: product.sku,
+                  category: product.category,
+                })
+              }
+              aria-label={
+                inBasket
+                  ? `Remove ${product.name} from sample box`
+                  : `Add ${product.name} to sample box`
+              }
+              aria-pressed={inBasket}
+              className={`flex-1 font-body text-xs font-bold uppercase tracking-widest py-3.5 transition-all duration-200 rounded-full active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface ${
+                inBasket
+                  ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
+                  : 'bg-transparent border border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white hover:-translate-y-0.5'
+              }`}
+            >
+              {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
+            </button>
+
+            {price !== undefined && (
+              user ? (
+                <button
+                  onClick={() => addToCart(product.sku, product.name, price)}
+                  className="flex-1 font-body text-xs font-bold uppercase tracking-widest py-3.5 bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface cursor-pointer"
+                >
+                  Add to Cart
+                </button>
+              ) : (
+                <button
+                  onClick={handleSignIn}
+                  className="flex-1 font-body text-xs font-bold uppercase tracking-widest py-3.5 bg-transparent border border-ni-border2 text-ni-secondary hover:border-ni-secondary hover:text-ni-primary hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface cursor-pointer"
+                >
+                  Sign in to Order
+                </button>
+              )
+            )}
+          </div>
         </div>
 
       </div>

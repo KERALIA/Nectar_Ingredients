@@ -53,87 +53,54 @@ export default function ChatWidget() {
   }
 
   return (
-    <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 1000, fontFamily: "inherit" }}>
+    <div className="fixed bottom-5 right-5 z-[1000] font-body flex flex-col items-end">
       {isOpen && (
-        <div
-          style={{
-            width: 340,
-            height: 460,
-            background: "#fffaf3",
-            border: "1px solid #eadfd0",
-            borderRadius: 16,
-            boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
-            display: "flex",
-            flexDirection: "column",
-            marginBottom: 12,
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ background: "#b5541f", color: "#fff", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: 600 }}>Nectar Ingredients</span>
+        <div className="w-[340px] h-[460px] bg-ni-surface border border-ni-border/60 rounded-2xl shadow-premium flex flex-col mb-3 overflow-hidden animate-scale-up">
+          <div className="bg-ni-rust text-white px-4 py-3.5 flex justify-between items-center">
+            <span className="font-bold text-sm">Nectar Ingredients</span>
             <button
               onClick={() => setIsOpen(false)}
               aria-label="Close chat"
-              style={{ background: "none", border: "none", color: "#fff", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
+              className="bg-transparent border-none text-white text-xl cursor-pointer leading-none hover:opacity-80 transition-opacity"
             >
               ×
             </button>
           </div>
 
-          <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 flex flex-col gap-2 bg-ni-surface2/30">
             {messages.map((m, i) => (
               <div
                 key={i}
-                style={{
-                  alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                  background: m.role === "user" ? "#b5541f" : "#f1e8dc",
-                  color: m.role === "user" ? "#fff" : "#3a2f22",
-                  padding: "8px 12px",
-                  borderRadius: 12,
-                  maxWidth: "80%",
-                  fontSize: 14,
-                  lineHeight: 1.4,
-                  whiteSpace: "pre-wrap",
-                }}
+                className={`max-w-[80%] px-3.5 py-2 rounded-xl text-sm leading-relaxed whitespace-pre-wrap transition-all ${
+                  m.role === "user"
+                    ? "self-end bg-ni-rust text-white rounded-br-none"
+                    : "self-start bg-ni-surface2 text-ni-primary rounded-bl-none border border-ni-border/10"
+                }`}
               >
                 {m.content}
               </div>
             ))}
             {isSending && (
-              <div style={{ alignSelf: "flex-start", color: "#8a7a63", fontSize: 13, padding: "4px 12px" }}>Typing…</div>
+              <div className="self-start text-ni-muted text-xs px-3 py-1">Typing…</div>
             )}
           </div>
 
-          <form onSubmit={sendMessage} style={{ display: "flex", borderTop: "1px solid #eadfd0", padding: 8, gap: 8 }}>
+          <form onSubmit={sendMessage} className="flex border-t border-ni-border/20 p-2 gap-2 bg-ni-surface">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message…"
               disabled={isSending}
-              style={{
-                flex: 1,
-                border: "1px solid #eadfd0",
-                borderRadius: 8,
-                padding: "8px 10px",
-                fontSize: 14,
-                outline: "none",
-                backgroundColor: "#ffffff",
-                color: "#1a1a1a",
-              }}
+              className="flex-1 bg-ni-surface2 border border-ni-border2/30 rounded-lg px-2.5 py-2 text-sm text-ni-primary placeholder:text-ni-muted outline-none focus:ring-2 focus:ring-ni-rust/50 focus:border-ni-rust transition-all"
             />
             <button
               type="submit"
               disabled={isSending || !input.trim()}
-              style={{
-                background: "#b5541f",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                padding: "0 14px",
-                fontSize: 14,
-                cursor: isSending ? "default" : "pointer",
-                opacity: isSending || !input.trim() ? 0.6 : 1,
-              }}
+              className={`bg-ni-rust text-white border-none rounded-lg px-3.5 text-sm active:scale-[0.97] transition-all cursor-pointer ${
+                isSending || !input.trim()
+                  ? "opacity-60 cursor-default"
+                  : "hover:bg-ni-rust-lt"
+              }`}
             >
               Send
             </button>
@@ -144,20 +111,9 @@ export default function ChatWidget() {
       <button
         onClick={() => setIsOpen((v) => !v)}
         aria-label={isOpen ? "Close chat" : "Open chat"}
+        className="w-14 h-14 rounded-full bg-ni-rust text-white border-none flex items-center justify-center text-2xl shadow-lg hover:shadow-hover hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
-          background: "#b5541f",
-          color: "#fff",
-          border: "none",
-          boxShadow: "0 8px 20px rgba(181,84,31,0.4)",
-          cursor: "pointer",
-          fontSize: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginLeft: "auto",
+          boxShadow: "0 8px 20px var(--glow-color-strong)",
         }}
       >
         {isOpen ? "×" : "💬"}

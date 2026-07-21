@@ -6,6 +6,8 @@ import Footer from '../components/layout/Footer'
 import { ThemeProvider } from '../components/ui/ThemeProvider'
 import SampleBasketProvider from '../context/SampleBasketContext'
 import SearchProvider from '../context/SearchContext'
+import { CartProvider } from '../context/CartContext'
+import CartDrawer from '../components/cart/CartDrawer'
 import SampleBasketBadge from '../components/ui/SampleBasketBadge'
 import ChatWidget from '../components/ChatWidget'
 
@@ -128,12 +130,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <ThemeProvider>
           <SearchProvider>
-            <SampleBasketProvider>
-              <Navbar />
-              <main aria-label="Main content">{children}</main>
-              <Footer />
-              <SampleBasketBadge />
-            </SampleBasketProvider>
+            <CartProvider>
+              <SampleBasketProvider>
+                <Navbar />
+                <main aria-label="Main content">{children}</main>
+                <Footer />
+                <SampleBasketBadge />
+                <CartDrawer />
+              </SampleBasketProvider>
+            </CartProvider>
           </SearchProvider>
         </ThemeProvider>
         <ChatWidget />

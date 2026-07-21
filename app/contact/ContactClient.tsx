@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { products } from '../../lib/data'
 import { useSampleBasket } from '../../context/SampleBasketContext'
+import OrderBanner from '@/components/ui/OrderBanner'
 
 // ─── Styling helpers ────────────────────────────────────────────────────────
 const inputBase = 'bg-[var(--input-bg)] border px-4 py-3 text-base sm:text-sm font-body text-ni-primary w-full transition-all duration-300 rounded-lg outline-none focus:ring-1 focus:ring-[var(--input-focus)]'
@@ -183,6 +184,7 @@ export default function ContactClient() {
 
         {/* Left — form */}
         <div className="lg:col-span-3">
+          <OrderBanner />
           {/* ── Success toast ──────────────────────────────────────────────── */}
           {successMessage && (
             <div
