@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import ProductsClient from './ProductsClient'
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Our Dehydrated Powders',
   description: 'Browse the full range of 24 pure single-ingredient dehydrated food powders manufactured by Nectaringredients. Built for commercial food brands and kitchens.',
