@@ -234,7 +234,6 @@ export default function ProductDrawer({
             <div className="mt-6 sm:mt-8 space-y-2">
               {[
                 { label: 'SKU',                  value: product.sku,                              isMono: true },
-                { label: 'List Price',           value: price !== undefined ? (price === 0 ? 'Not Available' : `${formatINR(computeListPrice(price))}/kg`) : 'Price on request' },
                 { label: 'Category',             value: product.category,                         isCapitalize: true },
                 { label: 'Mesh / Particle Size', value: product.mesh },
                 { label: 'Standard Packaging',   value: product.packagingSize || '25 KG Corrugated Box' },

@@ -163,14 +163,6 @@ export default function ProductCard({
 
              {/* Specifications divider & details */}
             <div className="mt-auto pt-4 border-t border-ni-border/40 mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-body text-xs font-semibold text-ni-primary uppercase tracking-wider">
-                  List Price
-                </span>
-                <span className="font-body text-sm font-bold text-ni-rust">
-                  {price !== undefined ? (price === 0 ? 'Not Available' : `${formatINR(computeListPrice(price))}/kg`) : 'Price on request'}
-                </span>
-              </div>
               <div className="flex items-center justify-between">
                 <span className="font-body text-xs text-ni-secondary">
                   {product.weights.join(' · ')}
