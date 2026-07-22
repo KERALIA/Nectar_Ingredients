@@ -231,16 +231,16 @@ export default function OrderSummary({
             </span>
             <div className="divide-y divide-ni-border/10 border-b border-ni-border/10">
               {cart.map((item) => (
-                <div key={item.sku} className="flex justify-between items-center py-3 text-xs font-body">
+                <div key={item.sku} className="flex justify-between items-center py-4 font-body">
                   <div className="min-w-0 pr-4">
-                    <span className="block font-bold text-ni-primary truncate">
+                    <span className="block text-base sm:text-lg font-semibold text-ni-primary truncate">
                       {item.name}
                     </span>
-                    <span className="block font-mono text-[9px] text-ni-muted mt-0.5">
+                    <span className="block font-mono text-xs sm:text-sm text-ni-muted mt-1">
                       {item.sku} · {item.qty_kg} kg @ {formatINR(item.list_price)}/kg
                     </span>
                   </div>
-                  <span className="font-bold text-ni-secondary flex-shrink-0">
+                  <span className="text-base sm:text-lg font-semibold text-ni-secondary flex-shrink-0">
                     {formatINR(item.list_price * item.qty_kg)}
                   </span>
                 </div>

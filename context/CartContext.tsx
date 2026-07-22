@@ -49,6 +49,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart, hydrated])
 
   const addToCart = useCallback((sku: string, name: string, basePrice: number) => {
+    if (basePrice <= 0) {
+      console.warn(`[Cart] Blocked programmatic addition of SKU ${sku} due to invalid or zero price: ${basePrice}`)
+      return
+    }
     setCart((prev) => {
       const existing = prev.find((item) => item.sku === sku)
       if (existing) {

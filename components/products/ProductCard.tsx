@@ -9,6 +9,7 @@ import { User } from '@supabase/supabase-js'
 import { computeListPrice, formatINR } from '@/lib/pricing'
 import { useCart } from '@/context/CartContext'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface ProductCardProps {
   product: Product
@@ -29,6 +30,7 @@ export default function ProductCard({
   price,
   user = null,
 }: ProductCardProps) {
+  const router = useRouter()
   const [imgError, setImgError] = useState(false)
   const { toggleBasket, isInBasket } = useSampleBasket()
   const { addToCart } = useCart()
@@ -51,21 +53,33 @@ export default function ProductCard({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (onOpenDrawer && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault()
+  const handleClick = (e: React.MouseEvent) => {
+    if (onOpenDrawer) {
       onOpenDrawer(product)
+    } else {
+      router.push(`/products#product-${product.slug}`)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (onOpenDrawer) {
+        onOpenDrawer(product)
+      } else {
+        router.push(`/products#product-${product.slug}`)
+      }
     }
   }
 
   return (
     <article
       id={`product-${product.slug}`}
-      role={onOpenDrawer ? 'button' : undefined}
-      tabIndex={onOpenDrawer ? 0 : undefined}
-      onClick={onOpenDrawer ? () => onOpenDrawer(product) : undefined}
-      onKeyDown={onOpenDrawer ? handleKeyDown : undefined}
-      aria-label={onOpenDrawer ? `View details for ${product.name}` : undefined}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      aria-label={`View details for ${product.name}`}
       className={`
         flex flex-col h-full group cursor-pointer
         transition-all duration-300 rounded-[24px] overflow-hidden shadow-card hover:shadow-hover hover:-translate-y-1
@@ -147,14 +161,14 @@ export default function ProductCard({
               </div>
             )}
 
-            {/* Specifications divider & details */}
+             {/* Specifications divider & details */}
             <div className="mt-auto pt-4 border-t border-ni-border/40 mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-body text-xs font-semibold text-ni-primary uppercase tracking-wider">
                   List Price
                 </span>
                 <span className="font-body text-sm font-bold text-ni-rust">
-                  {price !== undefined ? `${formatINR(computeListPrice(price))}/kg` : 'Price on request'}
+                  {price !== undefined ? (price === 0 ? 'Not Available' : `${formatINR(computeListPrice(price))}/kg`) : 'Price on request'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -193,7 +207,7 @@ export default function ProductCard({
         )}
 
         {!showDescription ? (
-          /* Homepage action */
+          /* Homepage action — Add to Sample Box */
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -216,7 +230,7 @@ export default function ProductCard({
             {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
           </button>
         ) : (
-          /* Catalog actions (Sample box + Cart/Login) */
+          /* Catalog actions — Add to Sample Box */
           <div className="flex flex-col gap-2 mt-auto">
             <button
               onClick={(e) => {
@@ -239,30 +253,6 @@ export default function ProductCard({
             >
               {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
             </button>
-
-            {price !== undefined && (
-              user ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    addToCart(product.sku, product.name, price)
-                  }}
-                  className="w-full font-body text-[10px] font-bold uppercase tracking-widest py-2.5 bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer"
-                >
-                  Add to Cart
-                </button>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleSignIn()
-                  }}
-                  className="w-full font-body text-[10px] font-bold uppercase tracking-widest py-2.5 bg-transparent border border-ni-border2 text-ni-secondary hover:border-ni-secondary hover:text-ni-primary hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-secondary cursor-pointer"
-                >
-                  Sign in to Order
-                </button>
-              )
-            )}
           </div>
         )}
       </div>

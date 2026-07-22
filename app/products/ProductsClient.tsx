@@ -103,7 +103,7 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
   }, [])
 
   return (
-    <div className="pt-16 bg-ni-bg min-h-screen overflow-x-hidden">
+    <div className="pt-24 bg-ni-bg min-h-screen overflow-x-hidden">
 
       {/* Page header */}
       <div className="border-b border-ni-border/15 relative overflow-hidden">

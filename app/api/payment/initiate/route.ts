@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { generateSignature } from '@/lib/paytm-checksum'
+import { formatINR } from '@/lib/pricing'
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +33,47 @@ export async function POST(request: Request) {
     // Validate ownership
     if (order.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Send Telegram Notification immediately on order creation
+    try {
+      const tgToken = process.env.TELEGRAM_BOT_TOKEN
+      const chatId = process.env.TELEGRAM_CHAT_ID
+
+      if (tgToken && chatId) {
+        const items = Array.isArray(order.items) ? order.items : []
+        const itemsText = items.map((i: any) =>
+          `- ${i.name} (SKU: ${i.sku}) — ${i.qty_kg} kg @ ${formatINR(i.list_price)}/kg`
+        ).join('\n')
+
+        const tgPayload = {
+          chat_id: chatId,
+          text: `🛍️ *New Order Placed (Pending Payment/Setup)!*\n\n` +
+                `📦 *Order ID (Ref):* ${order.id.slice(0, 8)}\n` +
+                `💳 *Payment Method:* ${order.payment_method.toUpperCase()}\n` +
+                `💸 *Total Amount:* ${formatINR(order.final_total)}\n\n` +
+                `👤 *Customer Info & Address:*\n${order.delivery_address}\n\n` +
+                `📋 *Items ordered:*\n${itemsText}\n\n` +
+                `🔗 [Open Admin Portal](${new URL(request.url).origin}/admin)`,
+          parse_mode: 'Markdown'
+        }
+
+        await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tgPayload)
+        }).then(res => {
+          if (!res.ok) {
+            console.error(`Telegram bot API returned non-OK status: ${res.status} ${res.statusText}`)
+          } else {
+            console.log(`Telegram notification sent successfully for order ${order.id}`)
+          }
+        })
+      } else {
+        console.warn("TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set - skipping Telegram notification.")
+      }
+    } catch (tgErr) {
+      console.error(`Failed to send Telegram notification for order ${order.id}:`, tgErr)
     }
 
     // Validate state (must be payable)

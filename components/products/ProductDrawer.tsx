@@ -234,7 +234,7 @@ export default function ProductDrawer({
             <div className="mt-6 sm:mt-8 space-y-2">
               {[
                 { label: 'SKU',                  value: product.sku,                              isMono: true },
-                { label: 'List Price',           value: price !== undefined ? `${formatINR(computeListPrice(price))}/kg` : 'Price on request' },
+                { label: 'List Price',           value: price !== undefined ? (price === 0 ? 'Not Available' : `${formatINR(computeListPrice(price))}/kg`) : 'Price on request' },
                 { label: 'Category',             value: product.category,                         isCapitalize: true },
                 { label: 'Mesh / Particle Size', value: product.mesh },
                 { label: 'Standard Packaging',   value: product.packagingSize || '25 KG Corrugated Box' },
@@ -303,32 +303,14 @@ export default function ProductDrawer({
                   : `Add ${product.name} to sample box`
               }
               aria-pressed={inBasket}
-              className={`flex-1 font-body text-xs font-bold uppercase tracking-widest py-3.5 transition-all duration-200 rounded-full active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface ${
+              className={`w-full font-body text-xs font-bold uppercase tracking-widest py-3.5 transition-all duration-200 rounded-full active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface ${
                 inBasket
                   ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
-                  : 'bg-transparent border border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white hover:-translate-y-0.5'
+                  : 'bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-premium hover:-translate-y-0.5'
               }`}
             >
               {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
             </button>
-
-            {price !== undefined && (
-              user ? (
-                <button
-                  onClick={() => addToCart(product.sku, product.name, price)}
-                  className="flex-1 font-body text-xs font-bold uppercase tracking-widest py-3.5 bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface cursor-pointer"
-                >
-                  Add to Cart
-                </button>
-              ) : (
-                <button
-                  onClick={handleSignIn}
-                  className="flex-1 font-body text-xs font-bold uppercase tracking-widest py-3.5 bg-transparent border border-ni-border2 text-ni-secondary hover:border-ni-secondary hover:text-ni-primary hover:-translate-y-0.5 active:scale-[0.97] transition-all duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface cursor-pointer"
-                >
-                  Sign in to Order
-                </button>
-              )
-            )}
           </div>
         </div>
 

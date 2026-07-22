@@ -17,6 +17,7 @@ const isValidEmail = (v: string) =>
 interface FormErrors {
   name?: string
   email?: string
+  phone?: string
   address?: string
   product?: string
 }
@@ -24,6 +25,7 @@ interface FormErrors {
 function validate(
   name: string,
   email: string,
+  phone: string,
   address: string,
   basketCount: number,
 ): FormErrors {
@@ -31,6 +33,11 @@ function validate(
   if (!name.trim())              errors.name    = 'Your name is required.'
   if (!email.trim())             errors.email   = 'Email address is required.'
   else if (!isValidEmail(email)) errors.email   = 'Please enter a valid email address.'
+  if (!phone.trim()) {
+    errors.phone = 'Phone number is required.'
+  } else if (!/^\+?[0-9\s-]{8,15}$/.test(phone.trim())) {
+    errors.phone = 'Please enter a valid phone number.'
+  }
   if (!address.trim())           errors.address = 'Your address is required.'
   if (basketCount === 0)         errors.product = 'Please select at least one product.'
   return errors
@@ -78,7 +85,7 @@ export default function ContactClient() {
   // Re-validate whenever relevant state changes (after first submit attempt)
   useEffect(() => {
     if (submitted) {
-      setErrors(validate(name, email, address, mounted ? basket.length : 0))
+      setErrors(validate(name, email, phone, address, mounted ? basket.length : 0))
     }
   }, [name, email, address, basket, mounted, submitted])
 
@@ -90,7 +97,7 @@ export default function ContactClient() {
 
     // Run client-side validation before hitting the network
     setSubmitted(true)
-    const errs = validate(name, email, address, mounted ? basket.length : 0)
+    const errs = validate(name, email, phone, address, mounted ? basket.length : 0)
     setErrors(errs)
 
     if (Object.keys(errs).length > 0) {
@@ -98,6 +105,8 @@ export default function ContactClient() {
         ? 'contact-name'
         : errs.email
         ? 'contact-email'
+        : errs.phone
+        ? 'contact-phone'
         : errs.address
         ? 'contact-address'
         : 'contact-product'
@@ -169,13 +178,16 @@ export default function ContactClient() {
     showError(field) ? inputInvalid : inputValid
 
   return (
-    <div className="pt-16 bg-ni-bg min-h-screen overflow-x-hidden">
+    <div className="pt-24 bg-ni-bg min-h-screen overflow-x-hidden">
 
       {/* Page header */}
       <div className="border-b border-ni-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <p className="font-body text-xs font-semibold uppercase tracking-widest text-[#C05621] mb-4">CONTACT US</p>
+          <p className="font-body text-xs font-semibold uppercase tracking-widest text-[#C05621] mb-2">PLACE AN ORDER OR INQUIRY — BULK ORDERS ACCEPTED HERE</p>
           <h1 className="font-heading text-display font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">Let's talk powder.</h1>
+          <p className="font-body text-base text-ni-muted mt-3 max-w-2xl leading-relaxed">
+            Submit your commercial bulk ingredient orders, custom mesh inquiries, or sample box requests directly to our plant management.
+          </p>
         </div>
       </div>
 
@@ -268,17 +280,24 @@ export default function ContactClient() {
             {/* Phone */}
             <div>
               <label htmlFor="contact-phone" className="font-body text-[11px] font-semibold text-ni-primary uppercase tracking-widest block mb-2">
-                <span className="label-highlight-optional">Phone / WhatsApp</span> <span className="normal-case tracking-normal font-normal text-ni-muted/70">(Optional)</span>
+                <span className="label-highlight-required">Phone / WhatsApp <span className="text-red-500" aria-hidden="true">*</span></span>
               </label>
               <input
                 id="contact-phone"
                 type="tel"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
+                onBlur={() => handleBlur('phone')}
                 placeholder="+91 98765 43210"
-                className={inputValid}
+                className={inputClass('phone')}
                 autoComplete="tel"
+                required
+                aria-required="true"
+                aria-invalid={!!showError('phone')}
+                aria-describedby={showError('phone') ? 'contact-phone-error' : undefined}
               />
+              <FieldError msg={showError('phone')} />
+              {showError('phone') && <span id="contact-phone-error" className="sr-only">{showError('phone')}</span>}
               <p className="font-body text-xs text-ni-muted mt-1.5">For faster replies, we may reach out via WhatsApp.</p>
             </div>
 

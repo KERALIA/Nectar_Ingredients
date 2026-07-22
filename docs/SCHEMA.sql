@@ -6,7 +6,7 @@
 -- 1. Create product_prices table (source of truth for live pricing)
 CREATE TABLE IF NOT EXISTS public.product_prices (
   sku         TEXT PRIMARY KEY,
-  base_price  NUMERIC(12, 2) NOT NULL CHECK (base_price > 0),
+  base_price  NUMERIC(12, 2) NOT NULL CHECK (base_price >= 0),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

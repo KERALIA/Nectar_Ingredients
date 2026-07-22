@@ -136,7 +136,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <main aria-label="Main content">{children}</main>
                 <Footer />
                 <SampleBasketBadge />
-                <CartDrawer />
               </SampleBasketProvider>
             </CartProvider>
           </SearchProvider>

@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="pt-16 bg-ni-bg min-h-screen overflow-x-hidden">
+    <div className="pt-24 bg-ni-bg min-h-screen overflow-x-hidden">
 
       {/* Section 1 — Story: two column */}
       <section className="border-b border-ni-border">

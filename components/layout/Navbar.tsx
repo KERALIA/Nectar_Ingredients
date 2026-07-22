@@ -86,13 +86,17 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md ${
           scrolled
-            ? 'glass-panel-premium border-b border-ni-border/30 shadow-premium'
-            : 'bg-transparent'
+            ? 'border-b border-ni-border/30 shadow-premium'
+            : 'border-b border-ni-border/20 shadow-sm'
         }`}
         // Support iPhone notch / Dynamic Island
-        style={{ paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
+        style={{
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+          backgroundColor: 'var(--surface)'
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
@@ -146,7 +150,6 @@ export default function Navbar() {
                 }`}
               />
             </div>
-            <CartIcon />
             <ThemeToggle />
             <Button
               variant="primary"
@@ -156,16 +159,10 @@ export default function Navbar() {
             >
               Get Samples
             </Button>
-            {mounted && (
-              <div className="flex items-center gap-3 border-l border-ni-border/30 pl-3 ml-1">
-                {user ? <UserMenu /> : <SignInButton />}
-              </div>
-            )}
           </div>
 
           {/* Mobile hamburger — 44×44px touch target */}
           <div className="md:hidden flex items-center gap-2">
-            <CartIcon />
             <button
               onClick={() => setMobileOpen((prev) => !prev)}
               className="text-ni-secondary p-3 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg rounded-full"
@@ -253,12 +250,6 @@ export default function Navbar() {
         >
           Get Samples →
         </Button>
-
-        {mounted && (
-          <div className="mt-4 flex justify-center border-t border-ni-border/10 pt-4">
-            {user ? <UserMenu /> : <SignInButton />}
-          </div>
-        )}
       </div>
     </>
   )
