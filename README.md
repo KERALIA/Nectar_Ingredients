@@ -2,7 +2,7 @@
 
 **Official website for Nectar Ingredients Pvt. Ltd.** — manufacturer of single-ingredient dehydrated vegetable, fruit, and spice powders based in Surendranagar, Gujarat, India. Est. 2011.
 
-🌐 **Live site:** [nectaringredients.com](https://nectaringredients.vercel.app)
+🌐 **Live site:** [nectaringredients.vercel.app](https://nectaringredients.vercel.app)
 
 ---
 
