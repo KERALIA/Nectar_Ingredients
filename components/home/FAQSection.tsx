@@ -1,75 +1,126 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useScrollReveal } from '../../lib/hooks'
 
-interface FAQItem {
-  question: string
-  answer: string
-}
+type FAQItem = { question: string; answer: string }
+
+const faqs: FAQItem[] = [
+  {
+    question: 'What is a single-ingredient nectaringredient powder?',
+    answer: `A nectaringredient is a pure, single-source dehydrated powder made by Nectaringredients. Unlike multi-ingredient mixtures, each powder has nothing added — no fillers, no preservatives, and no flow agents — just 100% pure dehydrated vegetable, fruit, or spice.`,
+  },
+  {
+    question: 'What order quantities do you support?',
+    answer: `We ship 1 kg samples for trialling a new ingredient right up to 25 kg commercial bags and 500 kg bulk lots. Contact us with your monthly requirement and we'll confirm availability and pricing within one business day.`,
+  },
+  {
+    question: 'Where are Nectaringredients powders manufactured?',
+    answer: `Every powder is processed, quality-tested, and packaged at our dedicated facility in Surendranagar, Gujarat. We source raw agricultural material directly from farms to guarantee field-to-powder purity.`,
+  },
+  {
+    question: 'How do I search your product range?',
+    answer: `Use our live search bar on the Products page. You can type full names or partial terms — "tomato", "turmeric", "nectar in" — and the catalog filters instantly without a page reload.`,
+  },
+  {
+    question: 'Do you provide batch certificates and lab reports?',
+    answer: `Yes. Batch certificates covering moisture, colour (Hunter Lab), and mesh fineness are available on request for every order. Custom third-party testing can be arranged for larger commercial contracts.`,
+  },
+]
 
 export default function FAQSection() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const { ref, visible } = useScrollReveal()
 
-  const faqs: FAQItem[] = [
-    {
-      question: 'What is a single-ingredient nectaringredient powder?',
-      answer: 'A nectaringredient refers to a pure, single-source dehydrated powder made by Nectaringredients. Unlike multi-ingredient mixtures, each nectaringredient has nothing added—no fillers, no preservatives, and no flow agents—just 100% pure dehydrated vegetable, fruit, or spice.',
-    },
-    {
-      question: 'How do I search for products using progressive terms like nectar in, nectar ing, or nectar ingr?',
-      answer: 'When using our autocomplete product search bar, you can type shorthand terms like "nectar in", "nectar ing", "nectar ingr", or even partial variations like "nectaringre" or "nectaringred" to instantly filter our inventory. Our search is optimized to map progressive user keystrokes to exact products immediately.',
-    },
-    {
-      question: 'Where are Nectaringredients powders manufactured?',
-      answer: 'Every single nectaringredient is processed, quality-tested, and packaged at our dedicated facility in Surendranagar, Gujarat. We source raw agricultural materials directly from farms to guarantee field-to-powder purity.',
-    },
-  ]
-
-  const toggle = (idx: number) => {
-    setActiveIndex(activeIndex === idx ? null : idx)
-  }
+  const toggle = (idx: number) => setActiveIndex(activeIndex === idx ? null : idx)
 
   return (
-    <section className="py-24 bg-transparent border-t border-ni-border/10">
-      <div className="max-w-4xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <p className="font-body text-xs font-semibold uppercase tracking-widest text-[#C05621] mb-4">FAQ</p>
-          <h2 className="font-heading text-section font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
+    <section className="py-[var(--space-section)] bg-transparent border-t border-ni-border/10">
+      <div
+        ref={ref}
+        className={`max-w-3xl mx-auto px-4 sm:px-6 transition-all duration-700 ${
+          visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+      >
+        {/* Heading */}
+        <div className="text-center mb-14">
+          <p className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-ni-rust mb-4">
+            FAQ
+          </p>
+          <h2
+            className="font-heading font-bold text-ni-primary tracking-[-0.02em]"
+            style={{ fontSize: 'var(--text-h2)' }}
+          >
             Frequently Asked Questions
           </h2>
-          <p className="font-body text-base text-neutral-600 dark:text-neutral-300 mt-4">
-            Answers to common questions about Nectaringredients products, sourcing, and search features.
+          <p
+            className="font-body text-ni-secondary mt-4 leading-relaxed"
+            style={{ fontSize: 'var(--text-base)' }}
+          >
+            Answers to common questions about our products, sourcing, and ordering.
           </p>
         </div>
 
-        <div className="space-y-4">
+        {/* Accordion */}
+        <div className="divide-y divide-ni-border/20">
           {faqs.map((faq, idx) => {
             const isOpen = activeIndex === idx
             return (
-              <div
-                key={idx}
-                className="glass-panel rounded-[20px] overflow-hidden transition-all duration-300 border border-ni-border/10"
-              >
+              <div key={idx} className="group">
                 <button
                   onClick={() => toggle(idx)}
-                  className="w-full px-6 py-5 sm:px-8 sm:py-6 flex items-center justify-between text-left focus:outline-none group"
                   aria-expanded={isOpen}
+                  className="w-full flex items-center justify-between gap-4 py-5 text-left
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust
+                             focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg"
                 >
-                  <span className="font-heading text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-50 transition-colors group-hover:text-ni-rust">
+                  <span
+                    className="font-heading font-bold text-ni-primary group-hover:text-ni-rust transition-colors duration-200"
+                    style={{ fontSize: 'var(--text-base)' }}
+                  >
                     {faq.question}
                   </span>
-                  <span className="ml-4 flex-shrink-0 w-6 h-6 rounded-full bg-ni-rust/10 flex items-center justify-center text-ni-rust group-hover:bg-ni-rust group-hover:text-white transition-all duration-300">
-                    {isOpen ? '−' : '+'}
+
+                  {/* Animated chevron */}
+                  <span
+                    className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center
+                                border border-ni-border/40 text-ni-muted
+                                group-hover:border-ni-rust group-hover:text-ni-rust
+                                transition-all duration-300
+                                ${isOpen ? 'bg-ni-rust border-ni-rust !text-white rotate-180' : ''}`}
+                    aria-hidden="true"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M2 4l4 4 4-4" />
+                    </svg>
                   </span>
                 </button>
+
+                {/* Answer panel — grid-template-rows trick: no height JS, no CLS */}
                 <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isOpen ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'
-                  }`}
+                  className="grid transition-all duration-300"
+                  style={{
+                    gridTemplateRows: isOpen ? '1fr' : '0fr',
+                    transitionTimingFunction: 'var(--ease-out-expo)',
+                  }}
                 >
-                  <p className="px-6 pb-6 sm:px-8 sm:pb-8 font-body text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed border-t border-ni-border/5 pt-4">
-                    {faq.answer}
-                  </p>
+                  <div className="overflow-hidden">
+                    <p
+                      className="font-body text-ni-secondary leading-[1.7] pb-5"
+                      style={{ fontSize: 'var(--text-sm)' }}
+                    >
+                      {faq.answer}
+                    </p>
+                  </div>
                 </div>
               </div>
             )

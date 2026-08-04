@@ -1,10 +1,16 @@
 import React from 'react'
 import { Metadata } from 'next'
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000';
+
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for Nectar Ingredients Pvt. Ltd. direct customer checkout.',
-  alternates: { canonical: '/terms' },
+  alternates: { canonical: `${baseUrl}/terms` },
 }
 
 export default function TermsPage() {

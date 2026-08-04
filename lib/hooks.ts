@@ -27,3 +27,22 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(threshol
 
   return { ref, visible }
 }
+
+/**
+ * useDebounce — delays updating the returned value until after `delay` ms
+ * have elapsed since the last change. Use for search inputs to avoid
+ * re-rendering on every keystroke.
+ *
+ * @param value - The value to debounce
+ * @param delay - Delay in milliseconds (default 300)
+ */
+export function useDebounce<T>(value: T, delay = 300): T {
+  const [debounced, setDebounced] = useState<T>(value)
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+
+  return debounced
+}

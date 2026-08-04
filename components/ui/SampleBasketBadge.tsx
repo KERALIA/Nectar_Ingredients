@@ -48,7 +48,7 @@ export default function SampleBasketBadge() {
       {/* ── Expanded panel ───────────────────────────────────────────── */}
       <div
         className={`
-          w-80 glass-panel rounded-2xl shadow-premium border border-ni-border/20
+          w-80 bg-white dark:bg-[#1A1A1D] text-ni-primary rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800
           transition-all duration-300 origin-bottom-right
           ${isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 translate-y-2 pointer-events-none'}
         `}
@@ -57,7 +57,7 @@ export default function SampleBasketBadge() {
         aria-hidden={!isOpen}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-ni-border/15">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-neutral-200 dark:border-neutral-800">
           <div>
             <p className="font-body text-[10px] font-bold tracking-widest uppercase text-ni-muted">
               Sample Basket
@@ -68,7 +68,7 @@ export default function SampleBasketBadge() {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-ni-muted hover:text-ni-primary hover:bg-ni-surface2 transition-all text-sm"
+            className="w-7 h-7 flex items-center justify-center rounded-full text-ni-muted hover:text-ni-primary hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all text-sm"
             aria-label="Close basket panel"
           >
             ✕
@@ -100,7 +100,7 @@ export default function SampleBasketBadge() {
                 <button
                   onClick={() => setItemQuantity(item.id, item.quantity - 1)}
                   aria-label={`Decrease quantity of ${item.name}`}
-                  className="w-5 h-5 flex items-center justify-center rounded text-ni-muted hover:text-ni-primary hover:bg-ni-surface2 transition-all text-xs font-bold leading-none"
+                  className="w-5 h-5 flex items-center justify-center rounded text-ni-muted hover:text-ni-primary hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all text-xs font-bold leading-none"
                 >
                   −
                 </button>
@@ -110,12 +110,12 @@ export default function SampleBasketBadge() {
                   value={item.quantity}
                   onChange={(e) => setItemQuantity(item.id, parseInt(e.target.value, 10) || 1)}
                   aria-label={`Quantity for ${item.name} in kg`}
-                  className="w-8 text-center font-body text-xs text-ni-primary bg-ni-surface2 border border-ni-border/30 rounded py-0.5 outline-none focus:ring-1 focus:ring-ni-rust appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-8 text-center font-body text-xs text-ni-primary bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded py-0.5 outline-none focus:ring-1 focus:ring-ni-rust appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <button
                   onClick={() => setItemQuantity(item.id, item.quantity + 1)}
                   aria-label={`Increase quantity of ${item.name}`}
-                  className="w-5 h-5 flex items-center justify-center rounded text-ni-muted hover:text-ni-primary hover:bg-ni-surface2 transition-all text-xs font-bold leading-none"
+                  className="w-5 h-5 flex items-center justify-center rounded text-ni-muted hover:text-ni-primary hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all text-xs font-bold leading-none"
                 >
                   +
                 </button>
@@ -125,17 +125,20 @@ export default function SampleBasketBadge() {
               {/* Remove */}
               <button
                 onClick={() => removeFromBasket(item.id)}
-                className="font-body text-[10px] text-ni-muted hover:text-red-400 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+                className="w-6 h-6 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center font-bold text-xs flex-shrink-0 cursor-pointer"
                 aria-label={`Remove ${item.name} from basket`}
+                title="Remove item"
               >
-                ✕
+                <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
             </li>
           ))}
         </ul>
 
         {/* CTA */}
-        <div className="px-4 pb-4 pt-2 border-t border-ni-border/15">
+        <div className="px-4 pb-4 pt-2 border-t border-neutral-200 dark:border-neutral-800">
           <button
             onClick={() => { setIsOpen(false); router.push('/contact') }}
             className="w-full bg-ni-rust text-white font-body text-xs font-bold uppercase tracking-widest py-3 rounded-full hover:bg-ni-rust-lt hover:shadow-premium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2"
@@ -153,11 +156,10 @@ export default function SampleBasketBadge() {
         onClick={() => setIsOpen((prev) => !prev)}
         className={`
           flex items-center gap-2 px-4 py-2.5
-          glass-panel rounded-full shadow-premium
+          bg-white dark:bg-[#1A1A1D] rounded-full shadow-2xl border border-neutral-200 dark:border-neutral-800
           transition-all duration-200
           hover:scale-105 active:scale-95
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg
-          ${isOpen ? 'bg-ni-surface2' : 'bg-[var(--surface-glass)]'}
         `}
         aria-label={`Sample basket — ${totalItems} item${totalItems !== 1 ? 's' : ''}. Click to ${isOpen ? 'close' : 'view'}.`}
         aria-expanded={isOpen}

@@ -72,7 +72,7 @@ async function processInquiry(payload: {
         body: JSON.stringify({
           customerName: name,
           customerEmail: email,
-          customerPhone: phone || '',
+          customerPhone: (phone || '').replace(/^\+/, '').trim().replace(/\s+/, '-'),
           customerAddress: address,
           company: company || '',
           items: items,

@@ -10,6 +10,8 @@ import { CartProvider } from '../context/CartContext'
 import CartDrawer from '../components/cart/CartDrawer'
 import SampleBasketBadge from '../components/ui/SampleBasketBadge'
 import ChatWidget from '../components/ChatWidget'
+import Preloader from '../components/ui/Preloader'
+import SmoothScrollProvider from '../components/providers/SmoothScrollProvider'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -31,12 +33,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://nectaringredients.vercel.app'),
   title: {
-    default: 'Pure Nectaringredients — Field to Powder Purity',
-    template: '%s | Nectaringredients',
+    default: 'Nectar Ingredients | Premium Food Ingredients Supplier',
+    template: '%s',
   },
-  description: 'Your premier source for high-quality, sustainably sourced agricultural and herbal ingredients. Discover pure Nectaringredients today.',
+  description: 'Leading B2B manufacturer and bulk supplier of pure dehydrated vegetable, fruit, and spice powders in Surendranagar, Gujarat.',
   alternates: {
-    canonical: '/',
+    canonical: 'https://nectaringredients.vercel.app/',
   },
   verification: {
     google: 'dqGk0aQeb5quQT8plRGRSkTttYmBadNp-urZcXYNh0I',
@@ -58,17 +60,17 @@ export const metadata: Metadata = {
   authors: [{ name: 'Nectar Ingredients Pvt. Ltd.' }],
   creator: 'Nectar Ingredients Pvt. Ltd.',
   openGraph: {
-    title: 'Pure Nectaringredients — Field to Powder Purity',
-    description: 'Your premier source for high-quality, sustainably sourced agricultural and herbal ingredients. Discover pure Nectaringredients today.',
+    title: 'Nectar Ingredients | Premium Food Ingredients Supplier',
+    description: 'Leading B2B manufacturer and bulk supplier of pure dehydrated vegetable, fruit, and spice powders in Surendranagar, Gujarat.',
     type: 'website',
     locale: 'en_IN',
-    siteName: 'Nectaringredients',
-    url: 'https://nectaringredients.vercel.app',
+    siteName: 'Nectar Ingredients',
+    url: 'https://nectaringredients.vercel.app/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pure Nectaringredients — Field to Powder Purity',
-    description: 'Your premier source for high-quality, sustainably sourced agricultural and herbal ingredients. Discover pure Nectaringredients today.',
+    title: 'Nectar Ingredients | Premium Food Ingredients Supplier',
+    description: 'Leading B2B manufacturer and bulk supplier of pure dehydrated vegetable, fruit, and spice powders in Surendranagar, Gujarat.',
   },
   robots: {
     index: true,
@@ -100,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <meta name="apple-mobile-web-app-title" content="Nectar Ingredients" />
         <script
@@ -128,19 +130,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         suppressHydrationWarning
         className={`${plusJakartaSans.variable} ${inter.variable} font-body bg-ni-bg text-ni-primary antialiased`}
       >
-        <ThemeProvider>
-          <SearchProvider>
-            <CartProvider>
-              <SampleBasketProvider>
-                <Navbar />
-                <main aria-label="Main content">{children}</main>
-                <Footer />
-                <SampleBasketBadge />
-              </SampleBasketProvider>
-            </CartProvider>
-          </SearchProvider>
-        </ThemeProvider>
-        <ChatWidget />
+        <Preloader />
+        <SmoothScrollProvider>
+          <ThemeProvider>
+            <SearchProvider>
+              <CartProvider>
+                <SampleBasketProvider>
+                  <Navbar />
+                  <main aria-label="Main content">{children}</main>
+                  <Footer />
+                  <SampleBasketBadge />
+                </SampleBasketProvider>
+              </CartProvider>
+            </SearchProvider>
+          </ThemeProvider>
+          <ChatWidget />
+        </SmoothScrollProvider>
       </body>
     </html>
   )

@@ -35,7 +35,7 @@ export default function Footer() {
             </span>
           </Link>
           <p className="font-body text-sm text-ni-muted mt-4 max-w-xs leading-relaxed">
-            Pure dehydrated powders from Surendranagar, Gujarat.
+            Pure dehydrated powders from Surendranagar, Gujarat, India.
             Single-ingredient, batch-tested, direct from facility.
           </p>
           <a
@@ -100,7 +100,7 @@ export default function Footer() {
             </Link>
           </div>
           <p className="font-body text-xs text-ni-muted">
-            Made in Surendranagar 🇮🇳 · All rights reserved
+            Made in Surendranagar, Gujarat, India 🇮🇳 · All rights reserved
           </p>
         </div>
       </div>

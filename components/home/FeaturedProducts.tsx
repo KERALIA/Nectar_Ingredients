@@ -8,36 +8,48 @@ import { products } from '../../lib/data'
 import { useScrollReveal } from '../../lib/hooks'
 
 export default function FeaturedProducts() {
-  // H-1: useScrollReveal replaces the copy-pasted IntersectionObserver pattern
   const { ref, visible } = useScrollReveal()
-
   const featuredProducts = products.filter(p => p.featured)
 
   return (
-    <section className="py-32 bg-transparent">
+    <section className="py-[var(--space-section)] bg-transparent">
       <div
         ref={ref}
-        className={`max-w-7xl mx-auto px-6 lg:px-8 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
+                    transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
       >
-        <SectionHeading
-          tag="PRODUCTS"
-          heading="Pure ingredients, nothing added"
-          sub="Each powder is single-source, batch-tested, and available from 1kg samples to 25kg commercial bags."
-        />
-
-        <div className="mt-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
-            {/* C-6: Dynamic count + O-2: priority for above-fold images */}
-            {featuredProducts.map((p, i) => (
-              <ProductCard key={p.id} product={p} showDescription={false} highlighted={false} priority={i < 4} />
-            ))}
+        {/* ── Section header: two-column editorial split ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
+          <SectionHeading
+            tag="PRODUCTS"
+            heading="Pure ingredients, nothing added"
+            sub="Each powder is single-source, batch-tested, and available from 1 kg samples to 25 kg commercial bags."
+          />
+          <div className="flex-shrink-0">
+            <Button variant="outline" size="md" href="/products" className="rounded-full whitespace-nowrap">
+              View all {products.length} powders →
+            </Button>
           </div>
         </div>
 
-        <div className="mt-16 text-center">
-          {/* C-6: Dynamic product count instead of hardcoded "12" */}
-          <Button variant="outline" size="md" href="/products">View all {products.length} powders →</Button>
-        </div>
+        {/* ── Symmetrical 4-column grid ── */}
+        {featuredProducts.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.slice(0, 4).map((p, i) => (
+              <div
+                key={p.id}
+                className={`reveal ${visible ? 'is-visible' : ''} reveal-delay-${Math.min(i + 1, 4)} h-full`}
+              >
+                <ProductCard
+                  product={p}
+                  showDescription={false}
+                  highlighted={false}
+                  priority={i < 4}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

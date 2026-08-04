@@ -1,10 +1,16 @@
 import React from 'react'
 import { Metadata } from 'next'
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000';
+
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Privacy Policy for Nectar Ingredients Pvt. Ltd. direct customer checkout.',
-  alternates: { canonical: '/privacy' },
+  alternates: { canonical: `${baseUrl}/privacy` },
 }
 
 export default function PrivacyPage() {

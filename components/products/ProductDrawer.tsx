@@ -1,13 +1,10 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Product } from '../../types'
 import { useSampleBasket } from '../../context/SampleBasketContext'
 import { User } from '@supabase/supabase-js'
-import { computeListPrice, formatINR } from '@/lib/pricing'
-import { useCart } from '@/context/CartContext'
-import { createClient } from '@/lib/supabase/client'
 
 interface ProductDrawerProps {
   product: Product | null
@@ -25,6 +22,31 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   ).filter((el) => !el.closest('[aria-hidden="true"]'))
 }
 
+const TARGET_REPLACED_IMAGES = new Set([
+  '/Images/Amla_Powder.webp',
+  '/Images/Annatto_Colour.webp',
+  '/Images/Banana_Powder.webp',
+  '/Images/Beetroot_Powder.webp',
+  '/Images/Butter_Powder.webp',
+  '/Images/Caramel_Colour.webp',
+  '/Images/Carrot_Powder.webp',
+  '/Images/Cheese_Powder.webp',
+  '/Images/Cream_Powder.webp',
+  '/Images/Curd_Powder.webp',
+  '/Images/Garlic_Powder.webp',
+  '/Images/Ginger_Powder.webp',
+  '/Images/Lemon_Powder.webp',
+  '/Images/Mango_Powder.webp',
+  '/Images/Onion_Powder.webp',
+  '/Images/Orange_Powder.webp',
+  '/Images/Pomegranate_Powder.webp',
+  '/Images/Spinach_Powder.webp',
+  '/Images/Strawberry_Powder.webp',
+  '/Images/Tamarind_Powder.webp',
+  '/Images/Tomato_Powder.webp',
+  '/Images/Turmeric_Powder.webp',
+])
+
 export default function ProductDrawer({
   product,
   isOpen,
@@ -32,27 +54,10 @@ export default function ProductDrawer({
   price,
   user = null,
 }: ProductDrawerProps) {
+  const isReplacedImage = product?.imageSrc ? TARGET_REPLACED_IMAGES.has(product.imageSrc) : false
   const { toggleBasket, isInBasket } = useSampleBasket()
-  const { addToCart } = useCart()
   const panelRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<HTMLElement | null>(null)
-
-  const handleSignIn = async () => {
-    try {
-      const supabase = createClient()
-      const origin = typeof window !== 'undefined' ? window.location.origin : ''
-      const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/'
-
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(currentPath)}`,
-        },
-      })
-    } catch (err) {
-      console.error('Sign in error:', err)
-    }
-  }
 
   // Manage focus
   useEffect(() => {
@@ -123,7 +128,7 @@ export default function ProductDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-md transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-md transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -131,15 +136,7 @@ export default function ProductDrawer({
       />
 
       {/*
-        Drawer Panel
-        ─ Mobile (< md):   bottom sheet — slides up from the bottom, full width
-        ─ Desktop (>= md): right panel — slides in from the right, max-w-xl
-      */}
-      {/*
-        Drawer Panel — three-zone layout:
-          1. Fixed header  : drag handle + close button (always visible)
-          2. Scrollable body : image + all content (overflow-y-auto)
-          3. Sticky CTA footer : "Add to Sample Box" always pinned at bottom
+        Product Detail Modal Container — 100% Solid Opaque Background for all 40 powders!
       */}
       <div
         ref={panelRef}
@@ -147,111 +144,121 @@ export default function ProductDrawer({
         aria-modal="true"
         aria-label={`${product.name} technical specifications`}
         className={`
-          fixed z-50 bg-ni-surface shadow-premium flex flex-col
-          transition-spring
+          fixed z-50 bg-[#FDFCF8] dark:bg-[#18181B] text-neutral-900 dark:text-white shadow-2xl flex flex-col overflow-hidden
+          transition-all duration-500 ease-out border border-neutral-300 dark:border-white/15
 
-          /* Mobile — bottom sheet */
-          bottom-0 left-0 right-0
-          max-h-[92svh] rounded-t-[28px]
-          md:rounded-none
+          /* Mobile layout */
+          bottom-0 left-0 right-0 max-h-[92svh] rounded-t-[32px] md:rounded-[32px]
 
-          /* Desktop — right panel */
-          md:bottom-auto md:inset-y-0 md:right-0 md:left-auto
-          md:w-full md:max-w-xl md:h-full
+          /* Laptop / Desktop Floating Card layout */
+          md:top-6 md:bottom-6 md:right-6 md:left-auto md:w-full md:max-w-xl md:h-[calc(100vh-3rem)]
 
           ${isOpen
-            ? 'translate-y-0 md:translate-x-0'
-            : 'translate-y-full md:translate-y-0 md:translate-x-full'
+            ? 'translate-y-0 md:translate-x-0 opacity-100'
+            : 'translate-y-full md:translate-y-0 md:translate-x-full opacity-0'
           }
         `}
       >
-        {/* ── Zone 1: Fixed top bar (drag handle + close button) ─────────── */}
-        <div className="flex-none relative">
-          {/* Drag handle — mobile visual cue */}
-          <div className="md:hidden flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-ni-border2/50" aria-hidden="true" />
+        {/* Fixed top bar with Close Button & Ambient Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-white/10 relative z-20 bg-[#FDFCF8] dark:bg-[#18181B]">
+          <div className="flex items-center gap-2">
+            <span
+              className="w-3 h-3 rounded-full ring-2 ring-white/20 shadow-sm"
+              style={{ backgroundColor: product.swatchHex || '#BC4B20' }}
+            />
+            <span className="font-body text-xs font-black uppercase tracking-widest text-[#BC4B20]">
+              {product.category}
+            </span>
           </div>
 
-          {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-2 right-4 md:top-4 md:right-5 z-10 w-10 h-10 flex items-center justify-center font-body text-lg text-ni-muted hover:text-ni-primary hover:bg-ni-surface2 transition-all rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
+            className="w-9 h-9 flex items-center justify-center font-body text-sm font-bold text-neutral-500 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-white/10 transition-all rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC4B20]"
             aria-label="Close specifications"
           >
             ✕
           </button>
         </div>
 
-        {/* ── Zone 2: Scrollable body ─────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
-
-          {/* Product image */}
+        {/*
+          Scrollable Body Section — Assigned to mouse wheel scroll!
+        */}
+        <div
+          className="flex-1 overflow-y-auto overscroll-contain touch-pan-y"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
+          {/* Product Image Area with Swatch Glow */}
           {product.imageSrc && (
             <div
-              className="relative w-full overflow-hidden flex items-center justify-center p-6 bg-gradient-to-br from-ni-surface2/50 to-ni-surface"
+              className="relative w-full overflow-hidden flex items-center justify-center p-8 bg-neutral-100/70 dark:bg-white/[0.04] border-b border-neutral-200/60 dark:border-white/10"
               style={{ aspectRatio: '16/9' }}
             >
-              {/* Ambient swatch color glow */}
               <div
-                className="absolute w-32 h-32 rounded-full filter blur-[24px] opacity-[0.25] pointer-events-none"
-                style={{ backgroundColor: product.swatchHex }}
+                className="absolute w-40 h-40 rounded-full filter blur-[32px] opacity-35 pointer-events-none"
+                style={{ backgroundColor: product.swatchHex || '#BC4B20' }}
               />
               <Image
                 src={product.imageSrc}
-                alt={`${product.name} — product photograph`}
+                alt={`${product.name} — product visual`}
                 fill
-                className="relative object-contain p-8 transition-transform duration-500 hover:scale-105"
+                className={`relative object-contain drop-shadow-xl transition-transform duration-500 ${
+                  isReplacedImage
+                    ? 'p-2 scale-110 sm:scale-115 hover:scale-125'
+                    : 'p-6 hover:scale-105'
+                }`}
                 sizes="(max-width: 768px) 100vw, 512px"
                 priority
               />
             </div>
           )}
 
-          {/* Content */}
-          <div className="px-5 sm:px-8 pt-2 pb-6 relative z-[1]">
-            {/* Category + title */}
-            <div className="flex items-center gap-3 mb-1 mt-4 sm:mt-6">
-              <span
-                className="inline-block w-3 h-3 rounded-full"
-                style={{ backgroundColor: product.swatchHex }}
-                aria-hidden="true"
-              />
-              <span className="font-body text-[10px] font-bold tracking-[0.2em] text-ni-rust uppercase">
-                {product.category}
-              </span>
-            </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 mt-2 leading-tight">
-              {product.name}
-            </h2>
-            <p className="font-body text-xs font-semibold text-ni-muted uppercase tracking-wider mt-1">
-              {product.tagline}
-            </p>
-            <p className="font-body text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mt-4">
-              {product.description}
-            </p>
+          {/* Content Specs Body — High Contrast Typography */}
+          <div className="p-6 sm:p-8 space-y-6">
+            <div>
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white leading-tight">
+                  {product.name}
+                </h2>
+                <span className="font-mono text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-200/80 dark:bg-white/10 px-2.5 py-1 rounded-lg border border-neutral-300/60 dark:border-white/10">
+                  {product.sku}
+                </span>
+              </div>
 
-            {/* Technical Specifications */}
-            <div className="mt-6 sm:mt-8 space-y-2">
+              {product.tagline && (
+                <p className="font-body text-xs font-black text-[#BC4B20] uppercase tracking-wider mt-1.5">
+                  {product.tagline}
+                </p>
+              )}
+
+              <p className="font-body text-sm text-neutral-700 dark:text-neutral-200 font-medium leading-relaxed mt-3">
+                {product.description}
+              </p>
+            </div>
+
+            {/* Technical Specs Cards Grid */}
+            <div className="space-y-2.5">
+              <h3 className="font-body text-xs font-black uppercase tracking-widest text-neutral-900 dark:text-white mb-2">
+                Technical Specifications
+              </h3>
               {[
-                { label: 'SKU',                  value: product.sku,                              isMono: true },
-                { label: 'Category',             value: product.category,                         isCapitalize: true },
-                { label: 'Mesh / Particle Size', value: product.mesh },
+                { label: 'Category',             value: product.category, isCapitalize: true },
+                { label: 'Mesh / Particle Size', value: product.mesh || '80–100 Mesh Fine' },
                 { label: 'Standard Packaging',   value: product.packagingSize || '25 KG Corrugated Box' },
                 { label: 'Available Weights',    value: product.weights.join(' · ') },
-              ].map((spec, idx) => (
+                { label: 'Purity Standard',      value: '100% Pure Single-Ingredient' },
+              ].map((spec) => (
                 <div
                   key={spec.label}
-                  className={`flex justify-between items-center px-4 py-3 sm:py-3.5 rounded-lg border border-ni-border/10 ${
-                    idx % 2 === 0 ? 'bg-ni-surface2/40' : 'bg-transparent'
-                  }`}
+                  className="flex justify-between items-center px-4 py-3.5 rounded-2xl border border-neutral-200/80 dark:border-white/10 bg-white dark:bg-white/[0.05] shadow-xs"
                 >
-                  <span className="font-body text-xs font-bold text-ni-primary uppercase tracking-wider">
+                  <span className="font-body text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
                     {spec.label}
                   </span>
                   <span
-                    className={`font-body text-sm text-ni-secondary text-right ${
-                      spec.isMono ? 'font-mono text-xs font-semibold' : ''
-                    } ${spec.isCapitalize ? 'capitalize' : ''}`}
+                    className={`font-body text-xs font-semibold text-neutral-700 dark:text-neutral-200 text-right ${
+                      spec.isCapitalize ? 'capitalize' : ''
+                    }`}
                   >
                     {spec.value}
                   </span>
@@ -259,17 +266,17 @@ export default function ProductDrawer({
               ))}
             </div>
 
-            {/* Industry Applications */}
+            {/* Industry Applications Tags */}
             {product.usageApplications && product.usageApplications.length > 0 && (
-              <div className="mt-6 sm:mt-8">
-                <h3 className="font-body text-xs font-bold tracking-widest text-ni-muted uppercase mb-3">
-                  Target Applications
+              <div>
+                <h3 className="font-body text-xs font-black uppercase tracking-widest text-neutral-900 dark:text-white mb-3">
+                  Recommended Applications
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {product.usageApplications.map((app) => (
                     <span
                       key={app}
-                      className="font-body text-[10px] font-bold uppercase tracking-widest text-ni-secondary border border-ni-border/20 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-ni-surface2/60"
+                      className="font-body text-[10px] font-extrabold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-white/15 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-white/[0.06]"
                     >
                       {app}
                     </span>
@@ -280,39 +287,29 @@ export default function ProductDrawer({
           </div>
         </div>
 
-        {/* ── Zone 3: Sticky CTA footer ───────────────────────────────────── */}
-        <div
-          className="flex-none px-5 sm:px-8 py-4 border-t border-ni-border/15 bg-ni-surface"
-          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-        >
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <button
-              onClick={() =>
-                toggleBasket({
-                  id: product.id,
-                  slug: product.slug,
-                  name: product.name,
-                  sku: product.sku,
-                  category: product.category,
-                })
-              }
-              aria-label={
-                inBasket
-                  ? `Remove ${product.name} from sample box`
-                  : `Add ${product.name} to sample box`
-              }
-              aria-pressed={inBasket}
-              className={`w-full font-body text-xs font-bold uppercase tracking-widest py-3.5 transition-all duration-200 rounded-full active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-surface ${
-                inBasket
-                  ? 'bg-ni-surface2 text-ni-primary hover:bg-ni-border'
-                  : 'bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-premium hover:-translate-y-0.5'
-              }`}
-            >
-              {inBasket ? '✓ In Sample Box' : 'Add to Sample Box'}
-            </button>
-          </div>
+        {/* Fixed Sticky CTA Footer — Solid High Contrast Surface */}
+        <div className="p-6 border-t border-neutral-200 dark:border-white/10 bg-[#FDFCF8] dark:bg-[#18181B] z-20">
+          <button
+            onClick={() =>
+              toggleBasket({
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                sku: product.sku,
+                category: product.category,
+              })
+            }
+            aria-label={inBasket ? `Remove ${product.name} from sample box` : `Add ${product.name} to sample box`}
+            aria-pressed={inBasket}
+            className={`w-full font-body text-xs font-black uppercase tracking-wider py-4 transition-all duration-300 rounded-full flex items-center justify-center gap-2 active:scale-[0.98] ${
+              inBasket
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'bg-[#BC4B20] text-white shadow-card hover:bg-[#D45E30] hover:shadow-hover hover:-translate-y-0.5'
+            }`}
+          >
+            {inBasket ? '✓ Added to Sample Box' : 'Add to Sample Box +'}
+          </button>
         </div>
-
       </div>
     </>
   )

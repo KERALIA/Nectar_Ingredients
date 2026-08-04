@@ -43,7 +43,6 @@ export default function ProductGrid({
       const slug = hash.replace('#product-', '')
       const matched = products.find(p => p.slug === slug)
       if (matched) {
-        // Small delay so the page layout settles before drawer slides in
         setTimeout(() => {
           setDrawerProduct(matched)
           setIsDrawerOpen(true)
@@ -51,6 +50,15 @@ export default function ProductGrid({
       }
     }
   }, [])
+
+  // Reset category filter if highlighted product is in a different category
+  useEffect(() => {
+    if (!highlightedSlug) return
+    const matched = products.find(p => p.slug === highlightedSlug)
+    if (matched && active !== 'all' && matched.category !== active) {
+      setActive('all')
+    }
+  }, [highlightedSlug, active])
 
   // H-6 Fix: Memoize categoryFiltered so it only recomputes when `active` changes,
   // not on every state update (e.g. isDrawerOpen toggling).
@@ -101,7 +109,7 @@ export default function ProductGrid({
   }
 
   return (
-    <div className="overflow-x-hidden">
+    <div>
       {/* Search + Sort */}
       <ProductSearchBar
         searchTerm={searchTerm}

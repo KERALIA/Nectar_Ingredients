@@ -17,6 +17,8 @@
 .DS_Store
 Thumbs.db
 *.pem
+live-view.png
+snap-*.png
 
 # debug
 npm-debug.log*

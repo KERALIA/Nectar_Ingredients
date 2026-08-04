@@ -1,35 +1,112 @@
 import { Suspense } from 'react'
 import ProductsClient from './ProductsClient'
-import { createClient } from '@/lib/supabase/server'
+import { products } from '../../lib/data'
+import type { Metadata } from 'next'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
-export const metadata = {
-  title: 'Our Dehydrated Powders',
-  description: 'Browse the full range of 24 pure single-ingredient dehydrated food powders manufactured by Nectaringredients. Built for commercial food brands and kitchens.',
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000';
+
+export const metadata: Metadata = {
+  title: 'Bulk Food Ingredients Supplier | Nectar Ingredients',
+  description: 'Wholesale B2B distributor of premium industrial food ingredients. Sourcing bulk Tomato Powder, onion powder, and over 40 raw ingredients with worldwide shipping.',
   alternates: {
-    canonical: '/products',
+    canonical: `${baseUrl}/products`,
+  },
+  openGraph: {
+    title: 'Bulk Food Ingredients Catalog | Nectar Ingredients',
+    description: 'Direct wholesale industrial supply for 40+ raw ingredients. View our full commercial product specifications, certifications, and volume pricing requests.',
+    url: `${baseUrl}/products`,
+    siteName: 'Nectar Ingredients',
+    images: [
+      {
+        url: `${baseUrl}/og-products-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: 'Nectar Ingredients Wholesale Product B2B Directory Catalog',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Bulk Industrial Food Ingredients Supplier | Nectar Ingredients',
+    description: 'Wholesale distributor sourcing bulk Tomato Powder and 40 raw ingredients for commercial manufacturing.',
+    images: [`${baseUrl}/og-products-image.jpg`],
   },
 }
 
-export default async function ProductsPage() {
-  let prices: Record<string, number> = {}
-  try {
-    const supabase = await createClient()
-    const { data } = await supabase.from('product_prices').select('sku, base_price')
-    if (data) {
-      prices = data.reduce((acc, curr) => {
-        acc[curr.sku] = Number(curr.base_price)
-        return acc
-      }, {} as Record<string, number>)
-    }
-  } catch (error) {
-    console.error('Error fetching prices from Supabase:', error)
+function ProductsSkeleton() {
+  return (
+    <div className="pt-32 min-h-screen bg-ni-bg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div className="h-4 w-24 bg-ni-border/40 rounded-full mb-6 animate-pulse" />
+        <div className="h-12 w-80 bg-ni-border/40 rounded-lg mb-4 animate-pulse" />
+        <div className="h-4 w-64 bg-ni-border/30 rounded mb-10 animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-12">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-64 rounded-[var(--radius-lg)] bg-ni-border/20 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function ProductsPage() {
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': 'Nectar Ingredients Pure Dehydrated Food Powders Catalog',
+    'description': 'Complete commercial directory of 40 single-ingredient dehydrated vegetable, fruit, and spice powders.',
+    'numberOfItems': products.length,
+    'itemListElement': products.map((p, index) => ({
+      '@type': 'ListItem',
+      'position': index + 1,
+      'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
+      'url': `${baseUrl}/products#${p.slug}`,
+      'item': {
+        '@type': 'Product',
+        'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
+        'sku': p.sku,
+        'image': `${baseUrl}${p.imageSrc}`,
+        'description': `Nectar Ingredients is a premier industrial food ingredients ${p.name.toLowerCase()} distributor, offering wholesale commercial pricing for manufacturing scales.`,
+        'brand': {
+          '@type': 'Brand',
+          'name': 'Nectar Ingredients',
+        },
+        'manufacturer': {
+          '@type': 'Organization',
+          'name': 'Nectar Ingredients Pvt. Ltd.',
+        },
+        'offers': {
+          '@type': 'AggregateOffer',
+          'priceCurrency': 'INR',
+          'availability': 'https://schema.org/InStock',
+          'seller': {
+            '@type': 'Organization',
+            'name': 'Nectar Ingredients',
+          },
+        },
+      },
+    })),
   }
 
   return (
-    <Suspense fallback={<div className="pt-32 text-center text-ni-muted">Loading powders...</div>}>
-      <ProductsClient initialPrices={prices} />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
+      <Suspense fallback={<ProductsSkeleton />}>
+        <ProductsClient initialPrices={{}} />
+      </Suspense>
+    </>
   )
 }
+
+
