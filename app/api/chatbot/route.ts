@@ -12,7 +12,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 8000): Promise<Response> {
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 25000): Promise<Response> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -331,32 +331,53 @@ YOUR CORE RESPONSIBILITIES:
    - Confirm all order items and address with the customer before submitting.
    - Explain that our sales team will follow up shortly via email with a custom quote and payment link.
 
-EMOJI & COMMUNICATION STYLE:
+EMOJI & COMMUNICATION STYLE & CHAT BUBBLE FORMATTING:
 - ALWAYS include vibrant, warm, interactive emojis in EVERY message (e.g. 🌿, 📦, 🍅, 🧄, 🌶️, ✨, 🛒, 🚚, 📋, 👋, 😊, 💡, 📞, 🧾, 📧, 🥭).
-- Use clear bullet points, clean formatting, and bold text for key terms.
+- NEVER use markdown header hashtags (#, ##, ###), horizontal dividers (---), or raw markdown pipe tables (|...|).
+- Use bold text with emojis for titles (e.g. 🍅 **Tomato Powder (SKU: NI-TOM-001)**).
+- KEEP RESPONSES CONCISE & IMPACTFUL (under 150 words): Provide a quick 2-line product intro, key specs (Mesh & Packaging), 3 top applications, and a warm closing prompt. Do NOT output giant multi-page spec sheets.
+- Use clear bullet points (-) for listing specs and applications.
 
 ${PRODUCT_KNOWLEDGE}`
 
 async function callOpenCodeZen(messages: any[], apiKey: string) {
-  const response = await fetchWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'deepseek-v4-flash-free',
-      messages,
-      tools,
-      temperature: 0.4
-    })
-  }, 12000)
+  const candidateModels = [
+    'mimo-v2.5-free',
+    'nemotron-3-ultra-free',
+    'north-mini-code-free',
+    'laguna-s-2.1-free'
+  ]
 
-  if (!response.ok) {
-    const errText = await response.text()
-    throw new Error(`OpenCode Zen HTTP ${response.status}: ${errText}`)
+  let lastError: Error | null = null
+
+  for (const model of candidateModels) {
+    try {
+      const response = await fetchWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          tools,
+          temperature: 0.3,
+          max_tokens: 320
+        })
+      }, 15000)
+
+      if (response.ok) {
+        return await response.json()
+      }
+      const errText = await response.text()
+      lastError = new Error(`OpenCode Zen HTTP ${response.status} (${model}): ${errText}`)
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+    }
   }
-  return await response.json()
+
+  throw lastError || new Error('All model attempts failed.')
 }
 
 export async function OPTIONS() {

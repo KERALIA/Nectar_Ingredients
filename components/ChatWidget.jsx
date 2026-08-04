@@ -5,11 +5,35 @@ import React, { useState, useRef, useEffect } from "react";
 function formatChatMessage(text) {
   if (!text) return null;
 
-  const lines = text.split("\n");
+  // Clean up any raw markdown header hashes or horizontal dividers
+  const cleanText = text
+    .replace(/^---+$/gm, "")
+    .replace(/^#+\s*/gm, "");
+
+  const lines = cleanText.split("\n");
 
   return lines.map((line, lineIndex) => {
+    let processedLine = line;
+
+    // Format markdown table rows (| key | value |) into clean bullet key-value pairs
+    if (processedLine.trim().startsWith("|") && processedLine.trim().endsWith("|")) {
+      const cells = processedLine
+        .split("|")
+        .map((c) => c.trim())
+        .filter(Boolean);
+
+      // Skip table header divider row (e.g., |---|---|)
+      if (cells.every((c) => /^[-:]+$/.test(c))) {
+        return null;
+      }
+
+      if (cells.length >= 2) {
+        processedLine = `• **${cells[0]}:** ${cells.slice(1).join(" — ")}`;
+      }
+    }
+
     // Parse **bold text** into <strong> elements
-    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    const parts = processedLine.split(/(\*\*[^*]+\*\*)/g);
 
     const formattedLine = parts.map((part, partIndex) => {
       if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
@@ -44,6 +68,24 @@ export default function ChatWidget() {
   const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef(null);
   const widgetRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Auto focus input whenever chat opens
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Re-focus input whenever sending finishes or messages update while open
+  useEffect(() => {
+    if (isOpen && !isSending) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen, isSending, messages]);
 
   // Scroll to bottom of chat when new messages arrive
   useEffect(() => {
@@ -54,6 +96,7 @@ export default function ChatWidget() {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (widgetRef.current && !widgetRef.current.contains(e.target)) {
+        inputRef.current?.blur();
         setIsOpen(false);
       }
     };
@@ -183,6 +226,7 @@ export default function ChatWidget() {
           {/* Chatbot Input form */}
           <form onSubmit={sendMessage} className="flex border-t border-neutral-200 dark:border-neutral-800 p-2.5 gap-2 bg-white dark:bg-[#1A1A1D]">
             <input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message..."
