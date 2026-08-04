@@ -36,19 +36,27 @@ export default function ProductGrid({
   const [drawerProduct, setDrawerProduct] = useState<Product | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  // Deep-link: open drawer on mount if URL hash matches #product-{slug}
+  // Deep-link: open drawer if URL hash matches #slug or #product-slug
   useEffect(() => {
-    const hash = window.location.hash  // e.g. '#product-tomato-powder'
-    if (hash.startsWith('#product-')) {
-      const slug = hash.replace('#product-', '')
-      const matched = products.find(p => p.slug === slug)
-      if (matched) {
-        setTimeout(() => {
-          setDrawerProduct(matched)
-          setIsDrawerOpen(true)
-        }, 300)
+    const handleHashOpen = () => {
+      const hash = window.location.hash
+      if (!hash) return
+
+      const rawSlug = decodeURIComponent(hash.replace(/^#(product-)?/, ''))
+      if (rawSlug) {
+        const matched = products.find((p) => p.slug === rawSlug)
+        if (matched) {
+          setTimeout(() => {
+            setDrawerProduct(matched)
+            setIsDrawerOpen(true)
+          }, 200)
+        }
       }
     }
+
+    handleHashOpen()
+    window.addEventListener('hashchange', handleHashOpen)
+    return () => window.removeEventListener('hashchange', handleHashOpen)
   }, [])
 
   // Reset category filter if highlighted product is in a different category

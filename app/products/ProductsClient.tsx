@@ -102,7 +102,11 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
 
     handleHash()
     window.addEventListener('hashchange', handleHash)
-    return () => window.removeEventListener('hashchange', handleHash)
+    window.addEventListener('popstate', handleHash)
+    return () => {
+      window.removeEventListener('hashchange', handleHash)
+      window.removeEventListener('popstate', handleHash)
+    }
   }, [setSearchTerm])
 
   // Scroll to element whenever highlightedSlug updates
@@ -115,11 +119,11 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
-    }, 60)
+    }, 150)
 
     const clearTimer = setTimeout(() => {
       setHighlightedSlug(null)
-    }, 2500)
+    }, 3000)
 
     return () => {
       clearTimeout(scrollTimer)
@@ -226,14 +230,19 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
                 onClick={(e) => {
                   e.preventDefault()
                   setSearchTerm('')
+                  setHighlightedSlug(p.slug)
+
                   if (window.location.hash !== `#${p.slug}`) {
                     window.history.pushState(null, '', `#${p.slug}`)
+                    window.dispatchEvent(new Event('hashchange'))
+                  } else {
+                    setTimeout(() => {
+                      const el = document.getElementById(p.slug) || document.getElementById(`product-${p.slug}`)
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }
+                    }, 100)
                   }
-                  const el = document.getElementById(p.slug) || document.getElementById(`product-${p.slug}`)
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                  }
-                  setHighlightedSlug(p.slug)
                 }}
                 className="font-body text-xs font-semibold px-3 py-1.5 rounded-full bg-ni-surface2/60 dark:bg-white/[0.04] text-ni-primary border border-ni-border/20 hover:border-ni-rust hover:text-ni-rust hover:bg-ni-rust/10 transition-all flex items-center gap-1.5"
               >
