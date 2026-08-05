@@ -205,9 +205,19 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
 
       {/* ── Product Grid ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        
-        {/* Top-of-Page Quick Navigation Menu / Table of Contents */}
-        <nav aria-label="Quick Product Index" className="mb-10 p-6 rounded-[24px] bg-ni-surface/90 dark:bg-[#1A1A1D]/90 border border-ni-border/30 dark:border-white/10 shadow-card">
+
+        <SampleBoxBanner />
+
+        <ProductGrid
+          showFilter={true}
+          showDescription={true}
+          highlightedSlug={highlightedSlug}
+          prices={initialPrices}
+          user={user}
+        />
+
+        {/* Quick Navigation Index — shown AFTER all 40 cards so users can jump back up */}
+        <nav aria-label="Quick Product Index" className="mt-16 p-6 rounded-[24px] bg-ni-surface/90 dark:bg-[#1A1A1D]/90 border border-ni-border/30 dark:border-white/10 shadow-card">
           <div className="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-ni-border/20">
             <div>
               <h2 className="font-heading text-base font-extrabold text-ni-primary">
@@ -252,16 +262,6 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
             ))}
           </div>
         </nav>
-
-        <SampleBoxBanner />
-
-        <ProductGrid
-          showFilter={true}
-          showDescription={true}
-          highlightedSlug={highlightedSlug}
-          prices={initialPrices}
-          user={user}
-        />
 
         {/* ── Extended Dehydrated Range Section ── */}
         <section className="mt-28 pt-16 border-t border-ni-border/20">
