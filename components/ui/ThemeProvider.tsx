@@ -55,10 +55,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.classList.add('theme-transitioning')
     setTheme(newTheme)
     setUserOverride(true)
     localStorage.setItem('ni-theme', newTheme)
     document.documentElement.setAttribute('data-theme', newTheme)
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning')
+    }, 350)
   }
 
   // During SSR/SSG (before mount), provide default context but still render children

@@ -7,10 +7,16 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
   const lenisRef = useRef<Lenis | null>(null)
 
   useEffect(() => {
-    // Respect reduced-motion preference
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    // Disable on touch screens/mobile devices to prevent touch input hijacking on forms & inputs
+    const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || isTouch) return
 
-    const lenis = new Lenis({ lerp: 0.08, smoothWheel: true })
+    const lenis = new Lenis({
+      lerp: 0.08,
+      smoothWheel: true,
+      syncTouch: false,
+      prevent: (node) => node.classList.contains('lenis-prevent') || node.hasAttribute('data-lenis-prevent') || node.closest('[data-lenis-prevent]') !== null,
+    })
     lenisRef.current = lenis
 
     let rafId: number

@@ -73,10 +73,27 @@ async function toolLookupOrder(args: { phone?: string, email?: string }) {
   return await res.json()
 }
 
+import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
+
 async function toolSubmitNewOrder(args: {
   name: string, email: string, phone?: string, company?: string, address: string,
   items: { name: string, sku?: string, quantity: number, unit?: string }[], message?: string
 }) {
+  // Validate fields before submitting
+  const nameRes = validateName(args.name || '')
+  if (!nameRes.isValid) return { error: `Invalid name: ${nameRes.error}` }
+
+  const emailRes = validateEmail(args.email || '')
+  if (!emailRes.isValid) return { error: `Invalid email: ${emailRes.error}` }
+
+  if (args.phone) {
+    const phoneRes = validatePhone(args.phone)
+    if (!phoneRes.isValid) return { error: `Invalid phone number: ${phoneRes.error}` }
+  }
+
+  const addressRes = validateAddress(args.address || '')
+  if (!addressRes.isValid) return { error: `Incomplete address: ${addressRes.error}` }
+
   const res = await fetchWithTimeout(appsScriptUrl()!, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -325,10 +342,12 @@ YOUR CORE RESPONSIBILITIES:
    - Use the detailed Product Knowledge Base below to answer any questions about product specifications, mesh size, packaging, origin, natural health benefits, active compounds (curcumin, lycopene, allicin, etc.), and industrial culinary applications.
    - For "On Request" items, explicitly tell the customer that they are made-to-order (custom manufacturing) and require an inquiry for quote & MOQ.
 
-3. NEW ORDER PLACEMENT:
-   - Collect customer Name, Email, Delivery Address (full street address, city, state, PIN code), and desired Items + Quantities (in kg).
-   - Require a delivery address BEFORE calling \`submit_new_order\` tool.
-   - Confirm all order items and address with the customer before submitting.
+3. NEW ORDER PLACEMENT & STRICT FIELD VERIFICATION:
+   - Collect customer Name, Email, Phone Number, Delivery Address (full street/shop address, city, state, and 6-digit PIN code), and desired Items + Quantities (in kg).
+   - STRICT EMAIL VERIFICATION: Check email for domain typos (e.g. if customer gives @gmail.co, point out the typo and ask: "Did you mean @gmail.com? Please confirm your correct email address."). Do NOT accept invalid email formats or domains ending with .co when meant for .com.
+   - STRICT ADDRESS VERIFICATION: Require a COMPLETE delivery address including house/building/shop no, street, city/town, state, and 6-digit PIN code. If the customer provides an incomplete address like "Chandra Nagar", DO NOT call \`submit_new_order\`! Gently ask: "To ensure fast commercial delivery, please provide your complete shipping address including building/street, city, state, and 6-digit PIN code (e.g., Shop 18, Chandra Nagar, ST Road, Surendranagar, Gujarat - 363001)."
+   - STRICT PHONE VERIFICATION: Require a valid 10-digit mobile number.
+   - Confirm all order items, total quantities in kg, and complete address with the customer BEFORE invoking \`submit_new_order\`.
    - Explain that our sales team will follow up shortly via email with a custom quote and payment link.
 
 EMOJI & COMMUNICATION STYLE & CHAT BUBBLE FORMATTING:

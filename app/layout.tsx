@@ -12,6 +12,7 @@ import SampleBasketBadge from '../components/ui/SampleBasketBadge'
 import ChatWidget from '../components/ChatWidget'
 import Preloader from '../components/ui/Preloader'
 import SmoothScrollProvider from '../components/providers/SmoothScrollProvider'
+import SwipeNavigation from '../components/ui/SwipeNavigation'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -131,6 +132,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${plusJakartaSans.variable} ${inter.variable} font-body bg-ni-bg text-ni-primary antialiased`}
       >
         <Preloader />
+        <SwipeNavigation />
         <SmoothScrollProvider>
           <ThemeProvider>
             <SearchProvider>

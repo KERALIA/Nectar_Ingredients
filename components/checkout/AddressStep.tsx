@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { User } from '@supabase/supabase-js'
 
+import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
+
 interface AddressData {
   name: string
   email: string
@@ -52,18 +54,18 @@ export default function AddressStep({ user, initialData, onNext }: AddressStepPr
 
   const validate = () => {
     const nextErrors: Record<string, string> = {}
-    if (!formData.name.trim()) nextErrors.name = 'Your name is required.'
-    if (!formData.email.trim()) {
-      nextErrors.email = 'Email address is required.'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      nextErrors.email = 'Please enter a valid email address.'
-    }
-    if (!formData.phone.trim()) {
-      nextErrors.phone = 'Phone number is required.'
-    } else if (!/^\+?[0-9\s-]{8,15}$/.test(formData.phone.trim())) {
-      nextErrors.phone = 'Please enter a valid phone number.'
-    }
-    if (!formData.address.trim()) nextErrors.address = 'Delivery address is required.'
+    const nameRes = validateName(formData.name)
+    if (!nameRes.isValid && nameRes.error) nextErrors.name = nameRes.error
+
+    const emailRes = validateEmail(formData.email)
+    if (!emailRes.isValid && emailRes.error) nextErrors.email = emailRes.error
+
+    const phoneRes = validatePhone(formData.phone)
+    if (!phoneRes.isValid && phoneRes.error) nextErrors.phone = phoneRes.error
+
+    const addressRes = validateAddress(formData.address)
+    if (!addressRes.isValid && addressRes.error) nextErrors.address = addressRes.error
+
     return nextErrors
   }
 

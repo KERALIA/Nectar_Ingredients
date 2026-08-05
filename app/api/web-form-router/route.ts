@@ -93,30 +93,54 @@ export async function OPTIONS() {
   return new Response('ok', { headers: corsHeaders })
 }
 
+import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
+
 export async function POST(req: Request) {
   try {
     const { name, email, phone, company, items, message, address } = await req.json()
 
-    // ---- Basic input validation ----
-    if (!name || !email || !Array.isArray(items) || items.length === 0) {
+    // ---- Strict input validation ----
+    const nameCheck = validateName(name || '')
+    if (!nameCheck.isValid) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: name, email, and at least one item are required.' }),
+        JSON.stringify({ error: nameCheck.error }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
+
+    const emailCheck = validateEmail(email || '')
+    if (!emailCheck.isValid) {
       return new Response(
-        JSON.stringify({ error: 'Invalid email format.' }),
+        JSON.stringify({ error: emailCheck.error }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
-    if (!address || typeof address !== 'string' || !address.trim()) {
+
+    if (phone) {
+      const phoneCheck = validatePhone(phone)
+      if (!phoneCheck.isValid) {
+        return new Response(
+          JSON.stringify({ error: phoneCheck.error }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        )
+      }
+    }
+
+    const addressCheck = validateAddress(address || '')
+    if (!addressCheck.isValid) {
       return new Response(
-        JSON.stringify({ error: 'Address is required.' }),
+        JSON.stringify({ error: addressCheck.error }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Please select at least one product sample.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
     for (const item of items) {
       if (!item.name || typeof item.quantity !== 'number' || item.quantity <= 0) {
         return new Response(

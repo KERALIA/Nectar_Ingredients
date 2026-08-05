@@ -6,12 +6,12 @@ import { useSampleBasket } from '../../context/SampleBasketContext'
 import OrderBanner from '@/components/ui/OrderBanner'
 import CountryPhoneInput from '@/components/ui/CountryPhoneInput'
 
+import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
+
 // ─── Styling helpers ────────────────────────────────────────────────────────
 const inputBase = 'bg-ni-surface dark:bg-[#1A1A1D] border px-4 py-3.5 text-base sm:text-sm font-body text-ni-primary w-full transition-all duration-300 rounded-2xl outline-none focus:ring-2 focus:ring-ni-rust/50 shadow-sm'
 const inputValid   = `${inputBase} border-ni-border/30 dark:border-white/10 focus:border-ni-rust`
 const inputInvalid = `${inputBase} border-red-500 focus:border-red-400 focus:ring-red-400`
-
-const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
 
 interface FormErrors {
   name?: string
@@ -29,16 +29,19 @@ function validate(
   basketCount: number,
 ): FormErrors {
   const errors: FormErrors = {}
-  if (!name.trim())              errors.name    = 'Your name is required.'
-  if (!email.trim())             errors.email   = 'Email address is required.'
-  else if (!isValidEmail(email)) errors.email   = 'Please enter a valid email address.'
-  if (!phone.trim()) {
-    errors.phone = 'Phone number is required.'
-  } else if (!/^[0-9\s-]{7,20}$/.test(phone.trim())) {
-    errors.phone = 'Please enter a valid phone number.'
-  }
-  if (!address.trim())           errors.address = 'Delivery address is required.'
-  if (basketCount === 0)         errors.product = 'Please select at least one product sample.'
+  const nameRes = validateName(name)
+  if (!nameRes.isValid) errors.name = nameRes.error
+
+  const emailRes = validateEmail(email)
+  if (!emailRes.isValid) errors.email = emailRes.error
+
+  const phoneRes = validatePhone(phone)
+  if (!phoneRes.isValid) errors.phone = phoneRes.error
+
+  const addressRes = validateAddress(address)
+  if (!addressRes.isValid) errors.address = addressRes.error
+
+  if (basketCount === 0) errors.product = 'Please select at least one product sample.'
   return errors
 }
 
@@ -304,7 +307,11 @@ export default function ContactClient() {
                   showError('product') ? 'border-red-500' : 'border-ni-border/30 dark:border-white/10'
                 }`}
               >
-                <div className="max-h-56 overflow-y-auto bg-ni-surface/80 dark:bg-[#161618]/80 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ni-border/10">
+                <div
+                  data-lenis-prevent="true"
+                  className="max-h-56 overflow-y-auto bg-ni-surface/80 dark:bg-[#161618]/80 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ni-border/10 lenis-prevent"
+                  style={{ touchAction: 'pan-y', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}
+                >
                   {filteredProducts.map((p) => {
                     const isSelected = mounted && basket.some(i => i.id === p.id)
                     const basketItem = mounted ? basket.find(i => i.id === p.id) : undefined
@@ -321,10 +328,10 @@ export default function ContactClient() {
                             toggleBasket({ id: p.id, slug: p.slug, name: p.name, sku: p.sku, category: p.category })
                             handleBlur('product')
                           }}
-                          className="flex items-center gap-2.5 text-left flex-1 min-w-0"
+                          className="flex items-center gap-2.5 text-left flex-1 min-w-0 py-1"
                         >
                           <span
-                            className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${
+                            className={`w-4 h-4 rounded flex items-center justify-center border transition-all flex-shrink-0 ${
                               isSelected ? 'bg-ni-rust border-ni-rust text-white' : 'border-ni-border bg-transparent'
                             }`}
                           >
@@ -340,7 +347,7 @@ export default function ContactClient() {
                             <button
                               type="button"
                               onClick={() => setItemQuantity(p.id, (basketItem.quantity ?? 1) - 1)}
-                              className="w-5 h-5 flex items-center justify-center rounded bg-ni-surface2 text-ni-primary text-xs font-bold"
+                              className="w-6 h-6 flex items-center justify-center rounded bg-ni-surface2 text-ni-primary text-xs font-bold active:scale-95"
                             >
                               −
                             </button>
@@ -350,7 +357,7 @@ export default function ContactClient() {
                             <button
                               type="button"
                               onClick={() => setItemQuantity(p.id, (basketItem.quantity ?? 1) + 1)}
-                              className="w-5 h-5 flex items-center justify-center rounded bg-ni-surface2 text-ni-primary text-xs font-bold"
+                              className="w-6 h-6 flex items-center justify-center rounded bg-ni-surface2 text-ni-primary text-xs font-bold active:scale-95"
                             >
                               +
                             </button>
@@ -408,7 +415,7 @@ export default function ContactClient() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full font-body font-extrabold text-xs uppercase tracking-widest py-4 rounded-full bg-ni-rust text-white shadow-card hover:bg-ni-rust-lt hover:shadow-hover transition-all duration-300 disabled:opacity-50"
+              className="w-full font-body font-extrabold text-xs uppercase tracking-widest py-4 rounded-full bg-ni-rust text-white shadow-card hover:bg-ni-rust-lt hover:shadow-hover transition-all duration-300 disabled:opacity-50 min-h-[52px] cursor-pointer active:scale-[0.99] touch-manipulation relative z-10"
             >
               {isSubmitting ? 'Submitting Inquiry...' : 'Submit Inquiry & Request Samples →'}
             </button>

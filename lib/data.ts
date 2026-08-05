@@ -351,7 +351,7 @@ export const products: Product[] = [
     weights: ['1kg', '5kg', '25kg'], sku: 'NI-MNT-026', mesh: '100 mesh',
     description: 'Fresh mint leaves dehydrated and milled. Adds cooling aroma to seasonings, beverages, and chutneys.',
     featured: false,
-    imageSrc: '/Images/Mint_Powder.webp', rawImageSrc: '/Images/Mint_Powder.webp', swatchImageSrc: '/Images/Mint_Powder.webp',
+    imageSrc: '/Images/Mint_Powder_v2.webp', rawImageSrc: '/Images/Mint_Powder_v2.webp', swatchImageSrc: '/Images/Mint_Powder_v2.webp',
     packagingSize: '25 KG Corrugated Box',
     usageApplications: ['Seasonings', 'Beverages', 'Chutneys'],
   },

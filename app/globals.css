@@ -267,9 +267,19 @@ html, body { overflow-x: hidden; width: 100%; }
   border: 1px solid var(--cat-spice-border);
 }
 
-/* ─── Theme transition — only for color/bg, NOT layout props ─────────────── */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, box-shadow;
+/* ─── Smooth Theme Transition (Performance Optimized) ─────────────────── */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: background-color 300ms ease,
+              border-color 300ms ease,
+              color 300ms ease,
+              box-shadow 300ms ease !important;
+}
+
+body, main, header, footer, nav, section, article {
+  transition-property: background-color, border-color, color;
   transition-duration: 250ms;
   transition-timing-function: ease;
 }
