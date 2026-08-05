@@ -20,17 +20,22 @@ export default function SampleBasketBadge() {
   const [isOpen, setIsOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  // Close panel when clicking outside
+  // Close panel on click/touch outside (handles both mouse and touch)
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e instanceof TouchEvent ? e.touches[0]?.target : e.target
+      if (panelRef.current && !panelRef.current.contains(target as Node)) {
         setIsOpen(false)
       }
     }
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleOutside)
+      document.addEventListener('touchstart', handleOutside, { passive: true })
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
   }, [isOpen])
 
   // Close on Escape
@@ -43,7 +48,14 @@ export default function SampleBasketBadge() {
   if (totalItems === 0) return null
 
   return (
-    <div ref={panelRef} className="fixed bottom-[90px] right-6 z-[60] flex flex-col items-end gap-2">
+    // KEY FIX: The outer wrapper only has pointer-events when the trigger button itself
+    // is visible. When the panel is closed the wrapper is `pointer-events-none` which
+    // means it CANNOT intercept touches on the page content beneath it.
+    // The trigger button re-enables pointer-events on itself via `pointer-events-auto`.
+    <div
+      ref={panelRef}
+      className={`fixed bottom-[90px] right-6 z-[60] flex flex-col items-end gap-2 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+    >
 
       {/* ── Expanded panel ───────────────────────────────────────────── */}
       <div
@@ -76,7 +88,7 @@ export default function SampleBasketBadge() {
         </div>
 
         {/* Items list */}
-        <ul className="px-4 py-3 space-y-3 max-h-56 overflow-y-auto">
+        <ul className="px-4 py-3 space-y-3 max-h-56 overflow-y-auto" style={{ touchAction: 'pan-y' }}>
           {basket.map((item) => (
             <li key={item.id} className="flex items-center justify-between gap-2 group">
               {/* Dot + name */}
@@ -152,9 +164,11 @@ export default function SampleBasketBadge() {
       </div>
 
       {/* ── Trigger button ────────────────────────────────────────────── */}
+      {/* Always pointer-events-auto so the trigger is always tappable */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className={`
+          pointer-events-auto
           flex items-center gap-2 px-4 py-2.5
           bg-white dark:bg-[#1A1A1D] rounded-full shadow-2xl border border-neutral-200 dark:border-neutral-800
           transition-all duration-200
