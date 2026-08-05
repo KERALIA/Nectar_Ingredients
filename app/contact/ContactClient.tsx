@@ -171,7 +171,7 @@ export default function ContactClient() {
   const inputClass = (field: keyof FormErrors) => showError(field) ? inputInvalid : inputValid
 
   return (
-    <div className="pt-24 bg-ni-bg min-h-screen">
+    <div className="pt-24 bg-ni-bg min-h-screen" data-no-swipe>
 
       {/* Page Header */}
       <div className="border-b border-ni-border/20 relative overflow-hidden bg-gradient-to-b from-ni-surface2/30 to-transparent">
