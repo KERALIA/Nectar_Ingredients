@@ -11,13 +11,22 @@ function PayRedirectInner() {
   const [amount, setAmount] = useState('');
   const [orderRef, setOrderRef] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const bankAccNumber = "42110001905";
+  const bankIfscCode = "SBIN0006498";
+  const bankName = "State Bank of India";
+  const bankAccName = "Nectar Ingredients";
 
   useEffect(() => {
-    const payeePa = params.get('pa') || '';
-    const payeePn = params.get('pn') || '';
+    const payeePa = params.get('pa') || 'aumkeralia406-1@oksbi';
+    const payeePn = params.get('pn') || 'Nectar Ingredients';
     const am = params.get('am') || '';
     const tn = params.get('tn') || '';
+
+    const paramCopyAcc = params.get('copyAcc');
+    const paramCopyIfsc = params.get('copyIfsc');
+    const paramCopyUpi = params.get('copyUpi');
 
     setPa(payeePa);
     setPn(payeePn);
@@ -33,13 +42,25 @@ function PayRedirectInner() {
 
     setUpiLink(link);
 
+    // Check for auto-copy requests from email links
+    if (paramCopyAcc && typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(paramCopyAcc);
+      setCopiedField('Account Number');
+    } else if (paramCopyIfsc && typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(paramCopyIfsc);
+      setCopiedField('IFSC Code');
+    } else if (paramCopyUpi && typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(payeePa);
+      setCopiedField('UPI ID');
+    }
+
     // Detect if user agent is a mobile device
     const userAgent = typeof window !== 'undefined' ? navigator.userAgent : '';
     const mobileCheck = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
     setIsMobile(mobileCheck);
 
-    // If mobile, auto-launch the UPI app after a brief delay
-    if (mobileCheck) {
+    // If mobile and not just copying, auto-launch the UPI app after a brief delay
+    if (mobileCheck && !paramCopyAcc && !paramCopyIfsc && !paramCopyUpi) {
       const t = setTimeout(() => {
         window.location.href = link;
       }, 200);
@@ -47,11 +68,11 @@ function PayRedirectInner() {
     }
   }, [params]);
 
-  const copyUpiId = () => {
-    if (!pa) return;
-    navigator.clipboard.writeText(pa);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyToClipboard = (text: string, label: string) => {
+    if (!text || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(label);
+    setTimeout(() => setCopiedField(null), 2500);
   };
 
   const qrImageUrl = upiLink
@@ -75,7 +96,7 @@ function PayRedirectInner() {
     >
       <div
         style={{
-          maxWidth: '440px',
+          maxWidth: '480px',
           width: '100%',
           background: '#1f2937',
           border: '1px solid #374151',
@@ -88,8 +109,25 @@ function PayRedirectInner() {
           {pn || 'Nectar Ingredients'}
         </h2>
         <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 20px' }}>
-          Payment Checkout
+          Payment Checkout & Copy Details
         </p>
+
+        {copiedField && (
+          <div
+            style={{
+              background: '#065f46',
+              color: '#a7f3d0',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              marginBottom: '16px',
+              border: '1px solid #059669',
+            }}
+          >
+            📋 {copiedField} Copied to Clipboard!
+          </div>
+        )}
 
         {amount && (
           <div
@@ -173,12 +211,12 @@ function PayRedirectInner() {
           </div>
         )}
 
-        {/* UPI ID COPY BOX (Available for both mobile & desktop) */}
+        {/* UPI ID COPY BOX */}
         {pa && (
           <div
             style={{
-              marginTop: '24px',
-              paddingTop: '20px',
+              marginTop: '20px',
+              paddingTop: '16px',
               borderTop: '1px solid #374151',
               textAlign: 'center',
             }}
@@ -208,9 +246,9 @@ function PayRedirectInner() {
                 {pa}
               </code>
               <button
-                onClick={copyUpiId}
+                onClick={() => copyToClipboard(pa, 'UPI ID')}
                 style={{
-                  background: copied ? '#10b981' : '#374151',
+                  background: copiedField === 'UPI ID' ? '#10b981' : '#ea580c',
                   color: '#ffffff',
                   border: 'none',
                   padding: '8px 14px',
@@ -221,11 +259,88 @@ function PayRedirectInner() {
                   transition: 'background 0.2s',
                 }}
               >
-                {copied ? 'Copied!' : 'Copy'}
+                {copiedField === 'UPI ID' ? '✓ Copied!' : '📋 Copy UPI ID'}
               </button>
             </div>
           </div>
         )}
+
+        {/* DIRECT BANK TRANSFER DETAILS BOX WITH READY TO COPY BUTTONS */}
+        <div
+          style={{
+            marginTop: '24px',
+            padding: '16px',
+            background: '#111827',
+            border: '1px solid #374151',
+            borderRadius: '12px',
+            textAlign: 'left',
+          }}
+        >
+          <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#f97316', margin: '0 0 10px' }}>
+            🏦 Bank Transfer Details (NEFT / RTGS / IMPS)
+          </p>
+
+          <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div>
+              <span style={{ color: '#9ca3af', display: 'block', fontSize: '11px' }}>Account Name:</span>
+              <strong style={{ color: '#f3f4f6' }}>{bankAccName}</strong>
+            </div>
+
+            <div>
+              <span style={{ color: '#9ca3af', display: 'block', fontSize: '11px' }}>Account Number:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                <code style={{ background: '#1f2937', color: '#10b981', padding: '4px 10px', borderRadius: '4px', border: '1px solid #374151', fontWeight: 'bold', fontSize: '14px' }}>
+                  {bankAccNumber}
+                </code>
+                <button
+                  onClick={() => copyToClipboard(bankAccNumber, 'Account Number')}
+                  style={{
+                    background: copiedField === 'Account Number' ? '#10b981' : '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {copiedField === 'Account Number' ? '✓ Copied!' : '📋 Copy Acc No'}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span style={{ color: '#9ca3af', display: 'block', fontSize: '11px' }}>IFSC Code:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                <code style={{ background: '#1f2937', color: '#10b981', padding: '4px 10px', borderRadius: '4px', border: '1px solid #374151', fontWeight: 'bold', fontSize: '14px' }}>
+                  {bankIfscCode}
+                </code>
+                <button
+                  onClick={() => copyToClipboard(bankIfscCode, 'IFSC Code')}
+                  style={{
+                    background: copiedField === 'IFSC Code' ? '#10b981' : '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {copiedField === 'IFSC Code' ? '✓ Copied!' : '📋 Copy IFSC'}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span style={{ color: '#9ca3af', display: 'block', fontSize: '11px' }}>Bank Name:</span>
+              <span style={{ color: '#e5e7eb' }}>{bankName}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
