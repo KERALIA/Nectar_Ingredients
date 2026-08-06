@@ -153,63 +153,63 @@ function PayRedirectInner() {
           </div>
         )}
 
-        {isMobile ? (
-          /* MOBILE VIEW: Auto-hand off + button */
-          <div>
-            <p style={{ fontSize: '15px', color: '#e5e7eb', marginBottom: '20px' }}>
-              Opening your UPI app (Google Pay, PhonePe, Paytm)...
-            </p>
-            <a
-              href={upiLink || '#'}
+        {/* ALWAYS SHOW UPI APP BUTTON (FOR MOBILE / ANDROID / IOS) */}
+        <div style={{ marginBottom: '24px' }}>
+          <a
+            href={upiLink || '#'}
+            style={{
+              color: '#ffffff',
+              background: '#ea580c',
+              padding: '16px 28px',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              fontSize: '17px',
+              fontWeight: 'bold',
+              display: 'block',
+              boxShadow: '0 4px 14px rgba(234, 88, 12, 0.45)',
+              textAlign: 'center',
+            }}
+          >
+            ⚡ Pay via UPI App (GPay / PhonePe / Paytm)
+          </a>
+          <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '8px' }}>
+            Tap above on Android/iOS to launch your installed UPI app.
+          </p>
+        </div>
+
+        {/* DESKTOP / ALTERNATIVE: DYNAMIC QR CODE */}
+        <div
+          style={{
+            background: '#111827',
+            padding: '16px 12px',
+            borderRadius: '12px',
+            border: '1px solid #374151',
+            marginBottom: '20px',
+          }}
+        >
+          <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#e5e7eb', margin: '0 0 12px' }}>
+            Scan QR Code with GPay, PhonePe, Paytm, or BHIM
+          </p>
+
+          {qrImageUrl && (
+            <div
               style={{
-                color: '#ffffff',
-                background: '#ea580c',
-                padding: '14px 28px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                fontSize: '16px',
-                fontWeight: 'bold',
+                background: '#ffffff',
+                padding: '10px',
+                borderRadius: '12px',
                 display: 'inline-block',
-                boxShadow: '0 4px 12px rgba(234, 88, 12, 0.4)',
+                border: '2px solid #ea580c',
+                marginBottom: '10px',
               }}
             >
-              Pay via UPI App
-            </a>
-            <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '16px' }}>
-              Tap above if your UPI app did not open automatically.
-            </p>
-          </div>
-        ) : (
-          /* DESKTOP VIEW: Display Dynamic QR Code */
-          <div>
-            <p style={{ fontSize: '15px', fontWeight: 'bold', color: '#e5e7eb', marginBottom: '14px' }}>
-              Scan QR Code to Pay
-            </p>
-
-            {qrImageUrl && (
-              <div
-                style={{
-                  background: '#ffffff',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  display: 'inline-block',
-                  border: '2px solid #ea580c',
-                  marginBottom: '16px',
-                }}
-              >
-                <img
-                  src={qrImageUrl}
-                  alt="UPI Payment QR Code"
-                  style={{ width: '220px', height: '220px', display: 'block' }}
-                />
-              </div>
-            )}
-
-            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 16px', lineHeight: '1.4' }}>
-              Open <strong>Google Pay, PhonePe, Paytm, or BHIM</strong> on your phone and scan this QR code to complete payment.
-            </p>
-          </div>
-        )}
+              <img
+                src={qrImageUrl}
+                alt="UPI Payment QR Code"
+                style={{ width: '200px', height: '200px', display: 'block' }}
+              />
+            </div>
+          )}
+        </div>
 
         {/* UPI ID COPY BOX */}
         {pa && (
