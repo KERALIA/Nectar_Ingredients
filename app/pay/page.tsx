@@ -54,17 +54,17 @@ function PayRedirectInner() {
       setCopiedField('UPI ID');
     }
 
-    // Detect if user agent is a mobile device
+    // Robust mobile detection (User-Agent + Touch Points + Screen Width)
     const userAgent = typeof window !== 'undefined' ? navigator.userAgent : '';
-    const mobileCheck = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const mobileCheck =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
+      (typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768));
+
     setIsMobile(mobileCheck);
 
-    // If mobile and not just copying, auto-launch the UPI app after a brief delay
+    // Seamless instant auto-redirect to installed UPI app (GPay / PhonePe / Paytm) on mobile page load
     if (mobileCheck && !paramCopyAcc && !paramCopyIfsc && !paramCopyUpi) {
-      const t = setTimeout(() => {
-        window.location.href = link;
-      }, 200);
-      return () => clearTimeout(t);
+      window.location.href = link;
     }
   }, [params]);
 
