@@ -33,6 +33,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://nectaringredients.vercel.app'),
+  applicationName: 'Nectar Ingredients',
   title: {
     default: 'Nectar Ingredients | Premium Food Ingredients Supplier',
     template: '%s',
@@ -95,11 +96,26 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
-    'name': 'Nectaringredients',
-    'url': 'https://nectaringredients.vercel.app',
-    'logo': 'https://nectaringredients.vercel.app/logo.png',
-    'sameAs': [],
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://nectaringredients.vercel.app/#website',
+        'url': 'https://nectaringredients.vercel.app/',
+        'name': 'Nectar Ingredients',
+        'alternateName': ['Nectaringredients', 'Nectar Ingredients Pvt. Ltd.', 'Nectar Ingredients Pvt Ltd'],
+        'publisher': {
+          '@id': 'https://nectaringredients.vercel.app/#organization'
+        }
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://nectaringredients.vercel.app/#organization',
+        'name': 'Nectar Ingredients Pvt. Ltd.',
+        'url': 'https://nectaringredients.vercel.app',
+        'logo': 'https://nectaringredients.vercel.app/logo.png',
+        'sameAs': []
+      }
+    ]
   }
 
   return (
