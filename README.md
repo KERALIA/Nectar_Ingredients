@@ -1,82 +1,118 @@
-# Nectar Ingredients
+# Nectar Ingredients – Digital B2B E-Commerce & Inquiry Platform
 
-**Official website for Nectar Ingredients Pvt. Ltd.** — manufacturer of single-ingredient dehydrated vegetable, fruit, and spice powders based in Surendranagar, Gujarat, India. Est. 2011.
+**Official website and digital B2B platform for Nectar Ingredients Pvt. Ltd.** — manufacturer of single-ingredient dehydrated vegetable, fruit, and spice powders based in Surendranagar, Gujarat, India. Est. 2011.
 
 🌐 **Live site:** [nectaringredients.vercel.app](https://nectaringredients.vercel.app)
 
 ---
 
-## About
+## 🚀 Overview
 
 Nectar Ingredients supplies clean-label dehydrated powders to food businesses, nutraceutical companies, cloud kitchens, and home kitchens across India. No fillers, no additives — just concentrated, single-ingredient powder.
 
-This repository contains the full source code for the public-facing product catalog and inquiry website.
+This repository contains the full source code for the B2B product catalog, automated inquiry pipeline, AI-powered customer assistant, and serverless backend integrations.
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer         | Technology |
-|---------------|-----------|
-| Framework     | [Next.js 15](https://nextjs.org/) (App Router) |
-| Language      | TypeScript |
-| Styling       | [Tailwind CSS v3](https://tailwindcss.com/) + CSS Custom Properties |
-| Fonts         | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) + [Inter](https://fonts.google.com/specimen/Inter) via `next/font` |
-| Images        | `next/image` (AVIF + WebP output) |
-| Deployment    | Vercel (recommended) |
-
----
-
-## Features
-
-- 🌙 **Dark / Light mode** — system-aware with FOUC-free localStorage persistence
-- 📦 **Sample basket** — add up to N products and send a unified inquiry
-- 🔍 **Live search** — filter products by name, description, category, and SKU across all pages
-- 🏷️ **Category filter + sort** — by vegetable / fruit / spice, alphabetically or by featured
-- 📋 **Product drawer** — detailed spec sheet (SKU, mesh, packaging, applications) as a slide-up on mobile, slide-in on desktop
-- 📱 **Mobile-first** — bottom-sheet product drawer, horizontal scroll swatch strip, iOS safe-area support
-- ⚡ **Optimised** — AVIF/WebP images, gzip compression, font preloading, SVH mobile viewport
+| Layer | Technology |
+|---|---|
+| **Framework** | [Next.js 15](https://nextjs.org/) (App Router, `after()` Server API) |
+| **Frontend** | React 19, TypeScript, [Tailwind CSS v3](https://tailwindcss.com/), GSAP, Lenis Smooth Scroll |
+| **Database & Automation** | Google Sheets (via [Google Apps Script](https://developers.google.com/apps-script) Webhooks) |
+| **AI Chatbot** | OpenCode Zen LLM with Function Tool Calling (`lookup_order`, `submit_new_order`) |
+| **OCR & Processing** | NVIDIA OCR v2 API (10-minute automated cron receipt parsing) |
+| **Email Infrastructure** | Brevo API (Custom Domain DNS authentication, 300 free daily emails) |
+| **Notifications** | Telegram Bot API Webhooks |
+| **Auth & Payments** | Supabase Auth (Google OAuth - tested for future rollout), Razorpay & UPI Payment API |
+| **SEO & Performance** | Dynamic OpenGraph, JSON-LD Structured Data, `sitemap.ts`, `robots.ts`, AVIF/WebP `next/image` |
+| **Deployment** | Vercel (Edge Network) |
 
 ---
 
-## Project Structure
+## ✨ Key Features & Architecture Highlights
+
+### 🛒 B2B Product Catalog & Sample Basket
+- **Interactive UI**: Slide-up/slide-in product drawer, horizontal swatch strip, and iOS safe-area optimizations.
+- **Multi-Attribute Search & Filter**: Real-time filtering by category (Vegetables, Fruits, Spices), weight, mesh size, and SKU across all catalog items.
+- **Sample Basket**: Add up to $N$ products and submit unified inquiry requests.
+- **Theme Persistence**: System-aware Dark / Light mode with FOUC-free `localStorage` state.
+
+### 🤖 AI Conversational Assistant (OpenCode Zen LLM)
+- Integrated AI chatbot with real-time **Function Tool Calling**:
+  - `lookup_order`: Fetches past customer orders and status using registered phone numbers or emails.
+  - `submit_new_order`: Validates customer credentials, items, and address before triggering inquiry workflows.
+- Built-in technical product knowledge base covering mesh fineness, harvest origins, active bio-compounds (curcumin, lycopene, capsaicin), and industrial applications.
+
+### 📊 Google Sheets Cloud Storage & Apps Script Automation
+- Replaced traditional SQL databases with a cost-effective Google Sheets architecture via Google Apps Script webhooks for unlimited storage scalability.
+- Auto-generates client quotes tailored to customer inputs, custom UPI payment deep-links, QR codes, and bank transfer routing.
+- Automatically generates and emails official **stamped PDF invoices** upon payment verification.
+
+### ✉️ Brevo API Transactional Email Infrastructure
+- Integrated Brevo API using custom domain DNS authentication.
+- Reliably delivers up to 300 automated transactional emails per day (quotes, payment instructions, and PDF bills) without third-party payment gateway transaction fees.
+
+### 🔍 NVIDIA OCR v2 Automated Receipt Processing
+- Automated 10-minute cron pipeline scanning customer payment receipt screenshots uploaded via chat or email.
+- Parses transaction reference numbers and payment details using the **NVIDIA OCR v2 API** to auto-update Google Sheets records without manual data entry.
+
+### ⚡ Zero-Latency Server Background Tasks
+- Utilizes Next.js 15 `after()` background execution to decouple user HTTP responses from slow third-party API calls.
+- Triggers instant, zero-latency Telegram admin notifications whenever a new order or inquiry is submitted.
+
+### 🎯 Top-Notch Per-Product SEO
+- Individual per-product dynamic metadata generation.
+- Full Open Graph social tags, JSON-LD schema markup, automated `sitemap.ts`, and `robots.ts` optimization.
+
+### 🔐 Pre-Configured Future Integrations
+- **Google OAuth**: Tested and configured Google Sign-In via Supabase Auth for future user account deployment.
+- **Payment Gateway**: Integrated Razorpay and UPI checkout flows, pre-configured for future automated online payment processing.
+
+---
+
+## 📁 Project Structure
 
 ```
 nectar-ingredients/
 ├── app/
-│   ├── layout.tsx          # Root layout with Navbar, Footer, providers
-│   ├── globals.css         # Design tokens, Tailwind overrides, mobile fixes
-│   ├── page.tsx            # Home page
-│   ├── about/page.tsx      # About page
-│   ├── contact/page.tsx    # Contact / inquiry form (Supabase integration)
-│   ├── products/           # Products catalog
-│   ├── robots.ts           # robots.txt generation
-│   └── sitemap.ts          # Sitemap generation
+│   ├── layout.tsx              # Root layout with Navbar, Footer, Providers
+│   ├── globals.css             # Custom CSS tokens & Tailwind overrides
+│   ├── page.tsx                # Home page
+│   ├── about/page.tsx          # About page
+│   ├── contact/page.tsx        # Contact & Inquiry form
+│   ├── products/               # Products catalog & dynamic product pages
+│   ├── checkout/               # Checkout flow
+│   ├── api/
+│   │   ├── chatbot/            # OpenCode Zen AI Chatbot with Tool Calling
+│   │   ├── web-form-router/    # Next.js 15 after() async inquiry pipeline
+│   │   └── payment/            # Payment gateway handlers
+│   ├── robots.ts               # Automated robots.txt generation
+│   └── sitemap.ts              # Automated sitemap generation
 │
 ├── components/
-│   ├── home/               # Hero, StatsBar, SwatchStrip, ProcessSection, etc.
-│   ├── layout/             # Navbar, Footer
-│   ├── products/           # ProductCard, ProductGrid, ProductDrawer, etc.
-│   └── ui/                 # Button, Tag, AnimatedCounter, ThemeToggle, etc.
+│   ├── home/                   # Hero, StatsBar, SwatchStrip, ProcessSection
+│   ├── layout/                 # Navbar, Footer
+│   ├── products/               # ProductCard, ProductGrid, ProductDrawer
+│   ├── checkout/               # CheckoutFlow, AddressStep, OrderSummary
+│   └── ui/                     # Button, Tag, ThemeToggle, ChatWidget
 │
 ├── context/
 │   ├── SampleBasketContext.tsx
 │   └── SearchContext.tsx
 │
 ├── lib/
-│   ├── data.ts             # Product data (25 SKUs + extended range)
-│   └── hooks.ts            # useScrollReveal hook
+│   ├── data.ts                 # Product master dataset (SKUs, mesh, applications)
+│   └── validation.ts           # Input verification (Email, Phone, Address)
 │
-├── public/
-│   ├── Images/             # Product images (PNG)
-│   └── NECTAR_BROCHURE.pdf
-│
-└── types/                  # TypeScript type definitions
+├── appsscript.js               # Google Apps Script (Sheets logging & PDF bill generator)
+└── types/                      # TypeScript type definitions
 ```
 
 ---
 
-## Getting Started
+## 💻 Getting Started
 
 ### Prerequisites
 
@@ -87,8 +123,8 @@ nectar-ingredients/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/nectar-ingredients.git
-cd nectar-ingredients
+git clone https://github.com/KERALIA/Nectar_Ingredients.git
+cd Nectar_Ingredients
 
 # Install dependencies
 npm install
@@ -108,61 +144,20 @@ npm run start
 
 ---
 
-## Deployment
+## 📬 Contact & Support
 
-This project is optimised for **Vercel** deployment:
+**Nectar Ingredients Pvt. Ltd.**  
+Shop No. 18 & 19, Second Floor, Brahmanand Chamber  
+Opp. M.P. Shah Arts & Science College, S.T. Road  
+Surendranagar, Gujarat 363001, India  
 
-1. Push to GitHub
-2. Import into [Vercel](https://vercel.com)
-3. Set root directory to `/` (default)
-4. Deploy — no environment variables required
-
-The project uses Next.js App Router and is fully compatible with Vercel's edge network.
-
----
-
-## Adding or Editing Products
-
-All product data lives in [`lib/data.ts`](./lib/data.ts).
-
-Each product object follows the `Product` type defined in [`types/index.ts`](./types/index.ts):
-
-```typescript
-{
-  id: string              // Unique ID
-  slug: string            // URL-safe identifier
-  name: string            // Display name
-  tagline: string         // Short descriptor
-  category: 'vegetable' | 'fruit' | 'spice'
-  swatchHex: string       // Color for UI glow effects
-  weights: string[]       // e.g. ['1kg', '5kg', '25kg']
-  sku: string             // e.g. 'NI-TOM-001'
-  mesh: string            // e.g. '80 mesh'
-  description: string
-  featured: boolean
-  imageSrc: string        // Path in /public/Images/
-  swatchImageSrc: string  // Same as imageSrc in most cases
-  packagingSize?: string
-  usageApplications?: string[]
-}
-```
+📞 +91 98798 38281  
+📧 hello@nectaringredients.com  
+💬 [WhatsApp](https://wa.me/919879838281)  
 
 ---
 
-## Contact
+## 📄 License
 
-**Nectar Ingredients Pvt. Ltd.**
-Shop No. 18 & 19, Second Floor, Brahmanand Chamber
-Opp. M.P. Shah Arts & Science College, S.T. Road
-Surendranagar, Gujarat 363001, India
-
-📞 +91 98798 38281
-📧 hello@nectaringredients.com
-💬 [WhatsApp](https://wa.me/919879838281)
-
----
-
-## License
-
-All rights reserved © Nectar Ingredients Pvt. Ltd.
-This source code is provided for reference only. Unauthorised copying, modification, or redistribution is not permitted.
+All rights reserved © Nectar Ingredients Pvt. Ltd.  
+This source code is provided for reference and portfolio presentation.
