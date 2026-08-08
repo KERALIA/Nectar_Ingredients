@@ -25,7 +25,7 @@ This repository contains the full source code for the B2B product catalog, autom
 | **OCR & Processing** | NVIDIA OCR v2 API (10-minute automated cron receipt parsing) |
 | **Email Infrastructure** | Brevo API (Custom Domain DNS authentication, 300 free daily emails) |
 | **Notifications** | Telegram Bot API Webhooks |
-| **Auth & Payments** | Supabase Auth (Google OAuth - tested for future rollout), Razorpay & UPI Payment API |
+| **Auth & Payments** | Supabase Auth (Google OAuth), Paytm / Razorpay & UPI Payment APIs (Pre-configured) |
 | **SEO & Performance** | Dynamic OpenGraph, JSON-LD Structured Data, `sitemap.ts`, `robots.ts`, AVIF/WebP `next/image` |
 | **Deployment** | Vercel (Edge Network) |
 
@@ -66,9 +66,9 @@ This repository contains the full source code for the B2B product catalog, autom
 - Individual per-product dynamic metadata generation.
 - Full Open Graph social tags, JSON-LD schema markup, automated `sitemap.ts`, and `robots.ts` optimization.
 
-### 🔐 Pre-Configured Future Integrations
-- **Google OAuth**: Tested and configured Google Sign-In via Supabase Auth for future user account deployment.
-- **Payment Gateway**: Integrated Razorpay and UPI checkout flows, pre-configured for future automated online payment processing.
+### 🔐 Pre-Configured Future Modules (Preserved in Codebase)
+- **Google OAuth (Supabase Auth)**: Implemented and tested Google Sign-In authentication; currently paused but preserved in the codebase for future user account deployment.
+- **Paytm Payment & Online Billing Pipeline**: Built full online payment verification pipeline and automated online billing via Paytm API; retained in the codebase for future transaction processing.
 
 ---
 
