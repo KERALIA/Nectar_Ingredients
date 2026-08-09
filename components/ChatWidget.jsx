@@ -218,8 +218,10 @@ export default function ChatWidget() {
               </div>
             ))}
             {isSending && (
-              <div className="self-start text-neutral-500 text-xs sm:text-sm px-3 py-1.5 flex items-center gap-1.5">
-                <span className="animate-pulse">💬 Typing response...</span>
+              <div className="self-start bg-white dark:bg-[#202024] rounded-2xl rounded-bl-none border border-neutral-200/80 dark:border-neutral-700/60 shadow-sm px-4 py-3 flex items-center gap-1.5">
+                <span className="wa-typing-dot"></span>
+                <span className="wa-typing-dot"></span>
+                <span className="wa-typing-dot"></span>
               </div>
             )}
           </div>

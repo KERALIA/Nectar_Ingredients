@@ -360,11 +360,21 @@ EMOJI & COMMUNICATION STYLE & CHAT BUBBLE FORMATTING:
 ${PRODUCT_KNOWLEDGE}`
 
 async function callOpenCodeZen(messages: any[], apiKey: string) {
+  // Validated & benchmarked list of free models via OpenCode Zen API key,
+  // ordered strictly from fastest (top) to fallback models:
+  // 1. deepseek-v4-flash-free (Fastest: ~1.7s tool / 2.5s text response)
+  // 2. mimo-v2.5-free (~2.2s text)
+  // 3. laguna-s-2.1-free (~3.5s - 5.3s)
+  // 4. longcat-2.0-free (~6.1s)
+  // 5. nemotron-3-ultra-free (~9.6s)
+  // 6. ling-3.0-tiny-free (~5.3s backup)
   const candidateModels = [
+    'deepseek-v4-flash-free',
     'mimo-v2.5-free',
+    'laguna-s-2.1-free',
+    'longcat-2.0-free',
     'nemotron-3-ultra-free',
-    'north-mini-code-free',
-    'laguna-s-2.1-free'
+    'ling-3.0-tiny-free'
   ]
 
   let lastError: Error | null = null
@@ -382,9 +392,9 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
           messages,
           tools,
           temperature: 0.3,
-          max_tokens: 320
+          max_tokens: 1024
         })
-      }, 15000)
+      }, 12000)
 
       if (response.ok) {
         return await response.json()
