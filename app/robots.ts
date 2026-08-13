@@ -6,9 +6,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/private/', '/pay'],
+        disallow: ['/private/', '/pay', '/account', '/admin', '/checkout', '/api/'],
       },
     ],
     sitemap: 'https://nectaringredients.vercel.app/sitemap.xml',
   }
 }
+

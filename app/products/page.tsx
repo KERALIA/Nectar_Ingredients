@@ -3,28 +3,24 @@ import ProductsClient from './ProductsClient'
 import { products } from '../../lib/data'
 import type { Metadata } from 'next'
 
-export const revalidate = 3600
+import { SITE_URL } from '@/lib/constants'
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? process.env.NEXT_PUBLIC_SITE_URL
-  : process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : 'http://localhost:3000';
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Bulk Food Ingredients Supplier | Nectar Ingredients',
   description: 'Wholesale B2B distributor of premium industrial food ingredients. Sourcing bulk Tomato Powder, onion powder, and over 40 raw ingredients with worldwide shipping.',
   alternates: {
-    canonical: `${baseUrl}/products`,
+    canonical: `${SITE_URL}/products`,
   },
   openGraph: {
     title: 'Bulk Food Ingredients Catalog | Nectar Ingredients',
     description: 'Direct wholesale industrial supply for 40+ raw ingredients. View our full commercial product specifications, certifications, and volume pricing requests.',
-    url: `${baseUrl}/products`,
+    url: `${SITE_URL}/products`,
     siteName: 'Nectar Ingredients',
     images: [
       {
-        url: `${baseUrl}/og-products-image.jpg`,
+        url: `${SITE_URL}/og-products-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Nectar Ingredients Wholesale Product B2B Directory Catalog',
@@ -36,7 +32,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Bulk Industrial Food Ingredients Supplier | Nectar Ingredients',
     description: 'Wholesale distributor sourcing bulk Tomato Powder and 40 raw ingredients for commercial manufacturing.',
-    images: [`${baseUrl}/og-products-image.jpg`],
+    images: [`${SITE_URL}/og-products-image.jpg`],
   },
 }
 
@@ -68,12 +64,12 @@ export default function ProductsPage() {
       '@type': 'ListItem',
       'position': index + 1,
       'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
-      'url': `${baseUrl}/products#${p.slug}`,
+      'url': `${SITE_URL}/products#${p.slug}`,
       'item': {
         '@type': 'Product',
         'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
         'sku': p.sku,
-        'image': `${baseUrl}${p.imageSrc}`,
+        'image': `${SITE_URL}${p.imageSrc}`,
         'description': `Nectar Ingredients is a premier industrial food ingredients ${p.name.toLowerCase()} distributor, offering wholesale commercial pricing for manufacturing scales.`,
         'brand': {
           '@type': 'Brand',
