@@ -2,6 +2,48 @@
 
 import React, { useState, useRef, useEffect } from "react";
 
+function parseInlineMarkdown(text) {
+  if (!text) return text;
+
+  // Tokenize string by **bold** and [link](url)
+  const tokenRegex = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+  const parts = text.split(tokenRegex);
+
+  return parts.map((part, index) => {
+    if (!part) return null;
+
+    // Handle **bold**
+    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+      const boldContent = part.slice(2, -2);
+      return (
+        <strong key={index} className="font-bold text-neutral-900 dark:text-white">
+          {parseInlineMarkdown(boldContent)}
+        </strong>
+      );
+    }
+
+    // Handle [label](url)
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) {
+      const [, label, url] = linkMatch;
+      const isExternal = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("https://wa.me");
+      return (
+        <a
+          key={index}
+          href={url}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+          className="font-bold underline text-[#BC4B20] dark:text-amber-400 hover:opacity-80 transition-opacity"
+        >
+          {label}
+        </a>
+      );
+    }
+
+    return part;
+  });
+}
+
 function formatChatMessage(text) {
   if (!text) return null;
 
@@ -32,24 +74,10 @@ function formatChatMessage(text) {
       }
     }
 
-    // Parse **bold text** into <strong> elements
-    const parts = processedLine.split(/(\*\*[^*]+\*\*)/g);
-
-    const formattedLine = parts.map((part, partIndex) => {
-      if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
-        return (
-          <strong key={partIndex} className="font-bold text-neutral-900 dark:text-white">
-            {part.slice(2, -2)}
-          </strong>
-        );
-      }
-      return part;
-    });
-
     return (
       <React.Fragment key={lineIndex}>
         {lineIndex > 0 && <br />}
-        {formattedLine}
+        {parseInlineMarkdown(processedLine)}
       </React.Fragment>
     );
   });
