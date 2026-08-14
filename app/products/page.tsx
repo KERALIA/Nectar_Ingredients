@@ -2,8 +2,8 @@ import { Suspense } from 'react'
 import ProductsClient from './ProductsClient'
 import { products } from '../../lib/data'
 import type { Metadata } from 'next'
-
 import { SITE_URL } from '@/lib/constants'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export const revalidate = 3600
 
@@ -53,43 +53,71 @@ function ProductsSkeleton() {
   )
 }
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  let initialPrices: Record<string, number> = {}
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const supabase = createSupabaseClient(supabaseUrl, supabaseKey)
+      const { data } = await supabase.from('product_prices').select('sku, base_price')
+      if (data) {
+        data.forEach((row: { sku: string; base_price: number }) => {
+          if (row.sku && typeof row.base_price === 'number') {
+            initialPrices[row.sku] = row.base_price
+          }
+        })
+      }
+    } catch (err) {
+      console.error('Failed to fetch initial prices for SSR:', err)
+    }
+  }
+
   const itemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     'name': 'Nectar Ingredients Pure Dehydrated Food Powders Catalog',
     'description': 'Complete commercial directory of 40 single-ingredient dehydrated vegetable, fruit, and spice powders.',
     'numberOfItems': products.length,
-    'itemListElement': products.map((p, index) => ({
-      '@type': 'ListItem',
-      'position': index + 1,
-      'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
-      'url': `${SITE_URL}/products#${p.slug}`,
-      'item': {
-        '@type': 'Product',
+    'itemListElement': products.map((p, index) => {
+      const livePrice = initialPrices[p.sku]
+      const priceVal = livePrice && livePrice > 0 ? String(livePrice) : '100.00'
+
+      return {
+        '@type': 'ListItem',
+        'position': index + 1,
         'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
-        'sku': p.sku,
-        'image': `${SITE_URL}${p.imageSrc}`,
-        'description': `Nectar Ingredients is a premier industrial food ingredients ${p.name.toLowerCase()} distributor, offering wholesale commercial pricing for manufacturing scales.`,
-        'brand': {
-          '@type': 'Brand',
-          'name': 'Nectar Ingredients',
-        },
-        'manufacturer': {
-          '@type': 'Organization',
-          'name': 'Nectar Ingredients Pvt. Ltd.',
-        },
-        'offers': {
-          '@type': 'AggregateOffer',
-          'priceCurrency': 'INR',
-          'availability': 'https://schema.org/InStock',
-          'seller': {
-            '@type': 'Organization',
+        'url': `${SITE_URL}/products#${p.slug}`,
+        'item': {
+          '@type': 'Product',
+          'name': `Bulk ${p.name} Supplier & Wholesale Distributor`,
+          'sku': p.sku,
+          'image': `${SITE_URL}${p.imageSrc}`,
+          'description': `Nectar Ingredients is a premier industrial food ingredients ${p.name.toLowerCase()} distributor, offering wholesale commercial pricing for manufacturing scales.`,
+          'brand': {
+            '@type': 'Brand',
             'name': 'Nectar Ingredients',
           },
+          'manufacturer': {
+            '@type': 'Organization',
+            'name': 'Nectar Ingredients Pvt. Ltd.',
+          },
+          'offers': {
+            '@type': 'Offer',
+            'price': priceVal,
+            'priceCurrency': 'INR',
+            'priceValidUntil': '2027-12-31',
+            'availability': 'https://schema.org/InStock',
+            'url': `${SITE_URL}/products#${p.slug}`,
+            'seller': {
+              '@type': 'Organization',
+              'name': 'Nectar Ingredients',
+            },
+          },
         },
-      },
-    })),
+      }
+    }),
   }
 
   return (
@@ -99,10 +127,11 @@ export default function ProductsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
       />
       <Suspense fallback={<ProductsSkeleton />}>
-        <ProductsClient initialPrices={{}} />
+        <ProductsClient initialPrices={initialPrices} />
       </Suspense>
     </>
   )
 }
+
 
 
