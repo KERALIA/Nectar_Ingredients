@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { products } from '../../lib/data'
 import { useSampleBasket } from '../../context/SampleBasketContext'
 import OrderBanner from '@/components/ui/OrderBanner'
@@ -75,6 +75,9 @@ export default function ContactClient() {
   const [isSubmitting,    setIsSubmitting]    = useState(false)
   const [errorMessage,    setErrorMessage]    = useState<string | null>(null)
   const [successMessage,  setSuccessMessage]  = useState<string | null>(null)
+  const [orderRef,        setOrderRef]        = useState<string | null>(null)
+  const [copiedRef,       setCopiedRef]       = useState(false)
+  const successRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -91,11 +94,27 @@ export default function ContactClient() {
     p.category.toLowerCase().includes(productFilter.toLowerCase())
   )
 
+  const handleCopyRef = () => {
+    if (!orderRef) return
+    navigator.clipboard.writeText(orderRef)
+    setCopiedRef(true)
+    setTimeout(() => setCopiedRef(false), 2500)
+  }
+
+  const handleOpenChatWithRef = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-nectar-chat', {
+        detail: { message: orderRef ? `Track status for inquiry ${orderRef}` : 'Track inquiry status' }
+      }))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
     setErrorMessage(null)
     setSuccessMessage(null)
+    setOrderRef(null)
 
     setSubmitted(true)
     const errs = validate(name, email, phone, address, mounted ? basket.length : 0)
@@ -146,6 +165,9 @@ export default function ContactClient() {
         setSuccessMessage(
           data.message ?? 'Thank you! Your inquiry has been received. Our team will reach out within 1 business day.',
         )
+        if (data.orderRef) {
+          setOrderRef(data.orderRef)
+        }
         setName('')
         setCompany('')
         setEmail('')
@@ -156,6 +178,11 @@ export default function ContactClient() {
         setTouched({})
         setSubmitted(false)
         clearBasket()
+
+        // Auto-scroll smoothly down to the success box below the submit button
+        setTimeout(() => {
+          successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 120)
       } else {
         throw new Error(data.error || 'Submission failed. Please try again.')
       }
@@ -194,17 +221,6 @@ export default function ContactClient() {
         {/* Left Form */}
         <div className="lg:col-span-3">
           <OrderBanner />
-
-          {/* Success Toast */}
-          {successMessage && (
-            <div
-              role="status"
-              className="flex items-start gap-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 mb-6 text-emerald-600 dark:text-emerald-400 backdrop-blur-md"
-            >
-              <span className="text-xl" aria-hidden="true">✓</span>
-              <p className="font-body text-sm font-semibold leading-relaxed">{successMessage}</p>
-            </div>
-          )}
 
           <form noValidate onSubmit={handleSubmit} className="space-y-6">
 
@@ -419,6 +435,87 @@ export default function ContactClient() {
             >
               {isSubmitting ? 'Submitting Inquiry...' : 'Submit Inquiry & Request Samples →'}
             </button>
+
+            {/* Success Card with Reference Number and Chatbot Tracking Instructions Below Submit Button */}
+            {successMessage && (
+              <div
+                ref={successRef}
+                role="status"
+                className="mt-6 rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-emerald-500/15 via-emerald-500/10 to-emerald-500/5 p-6 sm:p-7 text-emerald-950 dark:text-emerald-50 shadow-2xl backdrop-blur-md space-y-5 transition-all duration-500 animate-fade-in"
+              >
+                {/* Header Icon + Title */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                    <span className="text-xl font-black">✓</span>
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-lg sm:text-xl font-extrabold text-emerald-800 dark:text-emerald-300">
+                      Inquiry Successfully Received!
+                    </h3>
+                    <p className="font-body text-xs sm:text-sm text-emerald-700 dark:text-emerald-200 mt-1 leading-relaxed">
+                      {successMessage}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Reference ID Pill & Copy Box */}
+                {orderRef && (
+                  <div className="p-4 rounded-2xl bg-white/80 dark:bg-black/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+                    <div>
+                      <span className="font-body text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 block mb-1">
+                        YOUR INQUIRY REFERENCE NUMBER
+                      </span>
+                      <span className="font-mono text-base sm:text-lg font-black text-[#BC4B20] dark:text-amber-400 tracking-wide select-all">
+                        {orderRef}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyRef}
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold font-body transition-all active:scale-95 shadow-sm self-start sm:self-auto cursor-pointer"
+                    >
+                      {copiedRef ? (
+                        <>
+                          <span>✓</span>
+                          <span>Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          <span>Copy Ref ID</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Instructions Box */}
+                <div className="rounded-2xl p-4 bg-emerald-500/10 dark:bg-emerald-500/10 border border-emerald-500/20 text-xs leading-relaxed space-y-2">
+                  <p className="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-200">
+                    <span>📌</span>
+                    <span>Save Your Reference Number:</span>
+                  </p>
+                  <p className="text-emerald-700 dark:text-emerald-300">
+                    Please copy this reference number (<strong className="font-mono text-emerald-900 dark:text-white">{orderRef || 'NEC-...'}</strong>) or take a screenshot to save it for future updates of your order. You can give this reference number to our <strong>AI Chatbot</strong> (💬 bottom-right) at any time to instantly track your order and dispatch status.
+                  </p>
+                </div>
+
+                {/* Quick Action Button */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={handleOpenChatWithRef}
+                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-[#BC4B20] hover:bg-[#D45E30] text-white font-body text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                  >
+                    <span>Track in AI Chatbot</span>
+                    <span>🤖</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
 

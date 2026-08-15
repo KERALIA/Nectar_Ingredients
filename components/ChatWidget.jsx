@@ -161,9 +161,8 @@ export default function ChatWidget() {
     return () => scrollEl.removeEventListener("wheel", handleWheel);
   }, [isOpen]);
 
-  async function sendMessage(e) {
-    e.preventDefault();
-    const trimmed = input.trim();
+  async function submitMessage(textToSend) {
+    const trimmed = (textToSend || "").trim();
     if (!trimmed || isSending) return;
 
     const nextMessages = [...messages, { role: "user", content: trimmed }];
@@ -202,6 +201,27 @@ export default function ChatWidget() {
     } finally {
       setIsSending(false);
     }
+  }
+
+  // Listen for open-nectar-chat events (e.g. from Contact Page success box)
+  useEffect(() => {
+    const handleOpenEvent = (e) => {
+      setIsOpen(true);
+      const initialMessage = e?.detail?.message;
+      if (initialMessage) {
+        setInput(initialMessage);
+        setTimeout(() => {
+          submitMessage(initialMessage);
+        }, 150);
+      }
+    };
+    window.addEventListener("open-nectar-chat", handleOpenEvent);
+    return () => window.removeEventListener("open-nectar-chat", handleOpenEvent);
+  }, [messages, isSending]);
+
+  async function sendMessage(e) {
+    e.preventDefault();
+    await submitMessage(input);
   }
 
   return (

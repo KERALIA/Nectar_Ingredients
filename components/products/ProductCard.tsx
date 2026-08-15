@@ -107,7 +107,7 @@ export default function ProductCard({
         ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
         ${
           highlighted
-            ? 'bg-[#FAF0EB] dark:bg-[#2A1A10] border-ni-rust ring-2 ring-ni-rust ring-inset shadow-hover'
+            ? 'bg-[#FAF0EB] dark:bg-[#2A1A10] border-[#BC4B20] ring-4 ring-[#BC4B20]/40 ring-inset shadow-2xl scale-[1.02] duration-500 transition-transform'
             : 'bg-white dark:bg-[#18181B] border-neutral-200/80 dark:border-white/10 hover:border-[#BC4B20]/50 shadow-md hover:shadow-2xl hover:-translate-y-1.5'
         }
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust

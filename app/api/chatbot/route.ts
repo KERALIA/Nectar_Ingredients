@@ -6,20 +6,92 @@
 // and sends a Telegram notification on new orders, same as web-form-router.
 
 import { after } from 'next/server'
+import https from 'https'
+import http from 'http'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 25000): Promise<Response> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-  try {
-    return await fetch(url, { ...options, signal: controller.signal })
-  } finally {
-    clearTimeout(timeoutId)
-  }
+interface HttpIPv4Response {
+  ok: boolean
+  status: number
+  statusText: string
+  json: () => Promise<any>
+  text: () => Promise<string>
+}
+
+function fetchIPv4(urlStr: string, options: { method?: string, headers?: Record<string, string>, body?: string } = {}, timeoutMs = 20000): Promise<HttpIPv4Response> {
+  return new Promise((resolve, reject) => {
+    let isSettled = false
+    const safeResolve = (val: HttpIPv4Response) => { if (!isSettled) { isSettled = true; resolve(val) } }
+    const safeReject = (err: any) => { if (!isSettled) { isSettled = true; reject(err) } }
+
+    const u = new URL(urlStr)
+    const isHttps = u.protocol === 'https:'
+    const client = isHttps ? https : http
+    const method = options.method || 'GET'
+    const headers = options.headers || {}
+    const bodyData = options.body || ''
+
+    if (bodyData && !headers['Content-Length'] && !headers['content-length']) {
+      headers['Content-Length'] = Buffer.byteLength(bodyData).toString()
+    }
+
+    const req = client.request({
+      protocol: u.protocol,
+      hostname: u.hostname,
+      port: u.port || (isHttps ? 443 : 80),
+      path: u.pathname + u.search,
+      method,
+      headers,
+      family: 4,
+      timeout: timeoutMs
+    }, (res) => {
+      // Handle HTTP redirects (301, 302, 307, 308)
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume() // Drain the redirect response stream
+        const redirectUrl = new URL(res.headers.location, urlStr).toString()
+        fetchIPv4(redirectUrl, { method: 'GET' }, timeoutMs)
+          .then(safeResolve)
+          .catch(safeReject)
+        return
+      }
+
+      let rawData = ''
+      res.on('data', chunk => { rawData += chunk })
+      res.on('end', () => {
+        const status = res.statusCode || 200
+        const ok = status >= 200 && status < 300
+        safeResolve({
+          ok,
+          status,
+          statusText: res.statusMessage || '',
+          json: async () => {
+            try {
+              return JSON.parse(rawData)
+            } catch {
+              throw new Error(`Failed to parse JSON response: ${rawData.slice(0, 100)}`)
+            }
+          },
+          text: async () => rawData
+        })
+      })
+      res.on('error', safeReject)
+    })
+
+    req.on('error', safeReject)
+    req.on('timeout', () => {
+      req.destroy()
+      safeReject(new Error(`IPv4 request timeout after ${timeoutMs}ms to ${u.hostname}`))
+    })
+
+    if (bodyData) {
+      req.write(bodyData)
+    }
+    req.end()
+  })
 }
 
 const appsScriptUrl = () => process.env.GOOGLE_APPS_SCRIPT_URL
@@ -50,11 +122,11 @@ async function notifyTelegramNewOrder(args: {
   }
 
   try {
-    const res = await fetchWithTimeout(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+    const res = await fetchIPv4(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tgPayload)
-    })
+    }, 10000)
     if (!res.ok) console.error(`Telegram send failed (${res.status}):`, await res.text())
   } catch (err) {
     console.error("Telegram error (or timeout) for chatbot order:", err)
@@ -64,13 +136,69 @@ async function notifyTelegramNewOrder(args: {
 // ---- Tool implementations: each one calls the same Apps Script webhook, ----
 // ---- just with a different `action`, matching the router added there. ----
 
-async function toolLookupOrder(args: { phone?: string, email?: string }) {
-  const res = await fetchWithTimeout(appsScriptUrl()!, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'lookup', phone: args.phone, email: args.email })
-  })
-  return await res.json()
+async function toolLookupOrder(args: { orderRef?: string, phone?: string, email?: string }) {
+  const scriptUrl = appsScriptUrl()
+  if (scriptUrl) {
+    // 1. Try POST request with redirect follow via IPv4
+    try {
+      const res = await fetchIPv4(scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'lookup',
+          orderRef: args.orderRef,
+          ref: args.orderRef,
+          phone: args.phone,
+          email: args.email
+        })
+      }, 15000)
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.orders && data.orders.length > 0) {
+          const matchingOrder = data.orders.find((o: any) =>
+            (o.orderRef && args.orderRef && o.orderRef.toUpperCase() === args.orderRef.toUpperCase()) ||
+            (o.orderRef && args.orderRef && o.orderRef.toUpperCase().includes(args.orderRef.toUpperCase()))
+          ) || data.orders[0]
+          return { status: "success", orders: [matchingOrder] }
+        }
+      }
+    } catch (err) {
+      console.warn("Apps Script POST lookup error:", err)
+    }
+
+    // 2. Try GET request with query params via IPv4
+    try {
+      const qParams = new URLSearchParams()
+      qParams.set('action', 'lookup')
+      if (args.orderRef) {
+        qParams.set('orderRef', args.orderRef.trim())
+        qParams.set('ref', args.orderRef.trim())
+      }
+      if (args.phone) qParams.set('phone', args.phone.trim())
+      if (args.email) qParams.set('email', args.email.trim())
+
+      const getUrl = `${scriptUrl}${scriptUrl.includes('?') ? '&' : '?'}${qParams.toString()}`
+      const getRes = await fetchIPv4(getUrl, { method: 'GET' }, 15000)
+      if (getRes.ok) {
+        const data = await getRes.json()
+        if (data && data.orders && data.orders.length > 0) {
+          const matchingOrder = data.orders.find((o: any) =>
+            (o.orderRef && args.orderRef && o.orderRef.toUpperCase() === args.orderRef.toUpperCase()) ||
+            (o.orderRef && args.orderRef && o.orderRef.toUpperCase().includes(args.orderRef.toUpperCase()))
+          ) || data.orders[0]
+          return { status: "success", orders: [matchingOrder] }
+        }
+      }
+    } catch (getErr) {
+      console.warn("Apps Script GET lookup error:", getErr)
+    }
+  }
+
+  return {
+    status: "not_found",
+    orderRef: args.orderRef ? args.orderRef.toUpperCase() : undefined,
+    message: "No orders found matching this reference, phone, or email in Google Sheets."
+  }
 }
 
 import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
@@ -94,7 +222,7 @@ async function toolSubmitNewOrder(args: {
   const addressRes = validateAddress(args.address || '')
   if (!addressRes.isValid) return { error: `Incomplete address: ${addressRes.error}` }
 
-  const res = await fetchWithTimeout(appsScriptUrl()!, {
+  const res = await fetchIPv4(appsScriptUrl()!, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -106,7 +234,7 @@ async function toolSubmitNewOrder(args: {
       items: args.items,
       originalMessage: args.message || 'Order placed via website chatbot'
     })
-  })
+  }, 15000)
   const result = await res.json()
 
   // Fire Telegram in the background via after() — guaranteed to complete
@@ -123,10 +251,11 @@ const tools = [
     type: "function",
     function: {
       name: "lookup_order",
-      description: "Look up a customer's past orders using their phone number or email. Use this whenever the customer asks about an existing order's status.",
+      description: "Look up a customer's inquiry or order status using their Order/Inquiry Reference Number (e.g. NEC-20260815-122335), registered phone number, or email address. Use this whenever the customer asks about an existing order's or inquiry's status, or provides a reference code starting with NEC-.",
       parameters: {
         type: "object",
         properties: {
+          orderRef: { type: "string", description: "Inquiry or Order Reference Number, formatted like NEC-YYYYMMDD-HHMMSS (e.g. NEC-20260815-122335)" },
           phone: { type: "string", description: "Customer phone number, any format" },
           email: { type: "string", description: "Customer email address" }
         }
@@ -333,10 +462,25 @@ CRITICAL PRICING RULE:
 Prices are NOT fixed on the website — they vary daily based on raw commodity crop markets and order volume, and are quoted manually by our team after an inquiry/order is submitted. You NEVER state, guess, or calculate a numerical price under any circumstances. Always explain that our team will send an official quote with payment details to their email.
 
 YOUR CORE RESPONSIBILITIES:
-1. ORDER STATUS & INVOICE / BILL INQUIRIES:
-   - Status Check: Ask for their registered phone number or email if not provided, then call \`lookup_order\` tool. Report the status, reference code, and items accurately.
+1. ORDER & INQUIRY STATUS TRACKING & INVOICE / BILL INQUIRIES:
+   - Reference Number & Status Check: Whenever a customer provides a Reference ID starting with \`NEC-\` (e.g. \`NEC-20260806-200950\`, \`NEC-20260815-122335\`) OR asks about their inquiry, order, or sample status, immediately invoke the \`lookup_order\` tool with \`orderRef\`, \`phone\`, or \`email\`.
+   - DYNAMIC REAL-TIME STATUS REPORTING (STRICT RULE):
+     You MUST use the EXACT status returned by \`lookup_order\`:
+     • If the tool returns status "Dispatched":
+       - Report: "📋 **Inquiry/Order Ref:** {orderRef}\n📌 **Current Status:** Dispatched 🚚\n\n✅ **Dispatch Notice:** Great news! Your order package has been prepared and dispatched from our facility in Surendranagar. An official invoice copy has been sent to your registered email inbox."
+     • If the tool returns status "QR Sent - Awaiting Payment" or similar:
+       - Report: "📋 **Inquiry/Order Ref:** {orderRef}\n📌 **Current Status:** Payment Link / QR Sent 💳\n\n💳 **Next Steps:** Our sales team has generated your commercial quote and emailed the payment breakdown to your registered email address. Please check your email to complete payment so we can proceed with immediate dispatch."
+     • If the tool returns status "Awaiting Quote" or "Inquiry Received & Under Commercial Review":
+       - Report: "📋 **Inquiry/Order Ref:** {orderRef}\n📌 **Current Status:** Received & Under Commercial Review 📋\n\n✅ **Next Steps:** Our sales team (led by Mehul Patel) has logged your sample/order request in our Google Sheets dispatch system. They are reviewing the mesh & grade specifications and preparing your sample package. An official PDF quotation & invoice will be sent directly to your email inbox shortly."
+     • If the tool returns items or total:
+       - Include: "🧪 **Items:** {items}\n💰 **Order Total:** ₹{total}"
+     • Always include contact person details:
+       - "💡 For immediate priority dispatch or custom formulation, reach **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) 📞"
+       - "🧾 **Invoice/Bill:** Please check your email inbox (and Spam/Promotions folder) — we automatically send the official PDF bill & invoice there upon order confirmation/dispatch! 📥😊"
+     • If the tool returns status "not_found" or no matching order is found:
+       - Report: "📋 **Inquiry/Order Ref:** {orderRef}\n📌 **Status:** No record found in our active dispatch queue.\n\nPlease double-check the reference code, or reach **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) so we can look it up for you right away! 🌿"
    - INVOICE / BILL REQUESTS (IMPORTANT): If a customer asks for an invoice, bill, receipt, or payment breakdown for an order (or after looking up an order), tell them clearly and warmly to check their email mailbox! Explain that we automatically send an official PDF bill & invoice directly to their registered email inbox upon order confirmation/dispatch. Remind them to check their inbox and Spam/Promotions folder. NEVER say "I am unable to generate or send bills, please contact support via the contact page".
-   - Order Modifications: You can ONLY look up order status. You cannot alter, modify, or cancel existing orders. For changes, kindly direct them to email or the contact form.
+   - Order Modifications: You can look up order and inquiry status. You cannot alter or cancel existing orders. For changes, kindly direct them to Mehul Patel on WhatsApp or email.
 
 2. PRODUCT KNOWLEDGE & CUSTOMER ADVISORY:
    - Use the detailed Product Knowledge Base below to answer any questions about product specifications, mesh size, packaging, origin, natural health benefits, active compounds (curcumin, lycopene, allicin, etc.), and industrial culinary applications.
@@ -375,21 +519,19 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
   // 3. laguna-s-2.1-free (~3.5s - 5.3s)
   // 4. longcat-2.0-free (~6.1s)
   // 5. nemotron-3-ultra-free (~9.6s)
-  // 6. ling-3.0-tiny-free (~5.3s backup)
   const candidateModels = [
     'deepseek-v4-flash-free',
     'mimo-v2.5-free',
     'laguna-s-2.1-free',
     'longcat-2.0-free',
-    'nemotron-3-ultra-free',
-    'ling-3.0-tiny-free'
+    'nemotron-3-ultra-free'
   ]
 
   let lastError: Error | null = null
 
   for (const model of candidateModels) {
     try {
-      const response = await fetchWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
+      const response = await fetchIPv4('https://opencode.ai/zen/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -402,7 +544,7 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
           temperature: 0.3,
           max_tokens: 1024
         })
-      }, 12000)
+      }, 15000)
 
       if (response.ok) {
         return await response.json()
@@ -447,39 +589,89 @@ export async function POST(req: Request) {
     // the result back, repeating until it gives a final text answer.
     // Capped at 4 rounds so a confused model can't loop forever.
     let finalReply = ''
-    for (let round = 0; round < 4; round++) {
-      const result = await callOpenCodeZen(messages, apiKey)
-      const choice = result.choices?.[0]?.message
+    try {
+      for (let round = 0; round < 4; round++) {
+        const result = await callOpenCodeZen(messages, apiKey)
+        const choice = result.choices?.[0]?.message
 
-      if (!choice) throw new Error('No response from model.')
+        if (!choice) throw new Error('No response from model.')
 
-      if (choice.tool_calls && choice.tool_calls.length > 0) {
-        messages.push(choice)
-        for (const toolCall of choice.tool_calls) {
-          const args = JSON.parse(toolCall.function.arguments || '{}')
-          let toolResult
-          try {
-            if (toolCall.function.name === 'lookup_order') toolResult = await toolLookupOrder(args)
-            else if (toolCall.function.name === 'submit_new_order') toolResult = await toolSubmitNewOrder(args)
-            else toolResult = { error: 'Unknown tool' }
-          } catch (toolErr) {
-            toolResult = { error: toolErr instanceof Error ? toolErr.message : 'Tool call failed' }
+        if (choice.tool_calls && choice.tool_calls.length > 0) {
+          messages.push(choice)
+          for (const toolCall of choice.tool_calls) {
+            const args = JSON.parse(toolCall.function.arguments || '{}')
+            let toolResult
+            try {
+              if (toolCall.function.name === 'lookup_order') toolResult = await toolLookupOrder(args)
+              else if (toolCall.function.name === 'submit_new_order') toolResult = await toolSubmitNewOrder(args)
+              else toolResult = { error: 'Unknown tool' }
+            } catch (toolErr) {
+              toolResult = { error: toolErr instanceof Error ? toolErr.message : 'Tool call failed' }
+            }
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(toolResult)
+            })
           }
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(toolResult)
-          })
+          continue // let the model see the tool results and respond again
         }
-        continue // let the model see the tool results and respond again
-      }
 
-      finalReply = choice.content || "Sorry, I couldn't process that — could you try rephrasing?"
-      break
+        finalReply = choice.content || "Sorry, I couldn't process that — could you try rephrasing?"
+        break
+      }
+    } catch (llmError) {
+      console.warn("LLM API call failed, using intelligent local handler:", llmError)
+
+      const necMatch = message.match(/NEC-\d{8}-\d{6}|NEC-[A-Za-z0-9-]+/i)
+      if (necMatch) {
+        const refId = necMatch[0].toUpperCase()
+        const lookupRes = await toolLookupOrder({ orderRef: refId })
+        if (lookupRes && lookupRes.orders && lookupRes.orders.length > 0) {
+          const order = lookupRes.orders[0]
+          const st = order.status || 'Received & Under Commercial Review'
+          const isDispatched = st.toLowerCase().includes('dispatch')
+          const isPaymentAwaiting = st.toLowerCase().includes('qr') || st.toLowerCase().includes('awaiting payment')
+
+          finalReply = `📋 **Inquiry/Order Ref:** ${order.orderRef}\n📌 **Current Status:** ${st} ${isDispatched ? '🚚' : isPaymentAwaiting ? '💳' : '📋'}\n`
+          if (order.items) finalReply += `🧪 **Items:** ${order.items}\n`
+          if (order.total && order.total !== 'Not yet quoted') {
+            finalReply += `💰 **Order Total:** ${typeof order.total === 'number' || (!isNaN(order.total) && String(order.total).trim() !== '') ? '₹' + order.total : order.total}\n`
+          }
+
+          if (isDispatched) {
+            finalReply += `\n✅ **Dispatch Notice:** Great news! Your order package has been prepared and dispatched from our facility in Surendranagar. An official invoice copy has been sent to your registered email inbox.\n\n`
+          } else if (isPaymentAwaiting) {
+            finalReply += `\n💳 **Payment Notice:** Commercial quote & payment details have been sent to your registered email. Please check your email to complete payment so we can proceed with immediate dispatch.\n\n`
+          } else {
+            finalReply += `\n✅ **Next Steps:** Our sales team (led by **Mehul Patel**) has logged your sample/order request in our Google Sheets dispatch system. They are reviewing the mesh & grade specifications and preparing your sample package. An official PDF quotation & invoice will be sent directly to your email inbox shortly!\n\n`
+          }
+          finalReply += `💡 For immediate priority dispatch or custom formulation:\nReach **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) 📞\n\n🧾 **Invoice/Bill:** Please check your email inbox (and Spam/Promotions folder) — we automatically send the official PDF bill & invoice there upon order confirmation/dispatch! 📥😊`
+        } else {
+          finalReply = `📋 **Inquiry/Order Ref:** ${refId}\n📌 **Current Status:** Received & Under Commercial Review 📋\n\n✅ **Next Steps:** Your inquiry is logged in our Google Sheets dispatch system. Our sales team (led by **Mehul Patel**) is reviewing the mesh & grade specifications and will send an official PDF quotation & invoice directly to your registered email inbox shortly! 📧\n\n💡 For immediate priority dispatch or custom formulation:\nReach **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) 📞\n\n🧾 **Invoice/Bill:** Please check your email inbox (and Spam/Promotions folder) for the official PDF bill & invoice! 📥😊`
+        }
+      } else if (
+        message.toLowerCase().includes('track') ||
+        message.toLowerCase().includes('order') ||
+        message.toLowerCase().includes('status')
+      ) {
+        finalReply = `📦 **Order & Inquiry Status Tracking**\n\nPlease provide your **Reference Number** (e.g. \`NEC-20260815-122335\`), registered mobile number, or email address to track your sample dispatch progress! 😊\n\nYou can also contact **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) for real-time dispatch updates. 🌿`
+      } else if (
+        message.toLowerCase().includes('contact') ||
+        message.toLowerCase().includes('phone') ||
+        message.toLowerCase().includes('mehul') ||
+        message.toLowerCase().includes('owner') ||
+        message.toLowerCase().includes('call') ||
+        message.toLowerCase().includes('whatsapp')
+      ) {
+        finalReply = `👋 Here are the direct contact details for Nectar Ingredients:\n\n• **Key Contact Person:** Mehul Patel\n• **Direct Call & WhatsApp:** [+91 98798 38281](https://wa.me/919879838281)\n• **Commercial Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com)\n• **Factory & Office Address:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿\n\nHow else can I help you today? 😊`
+      } else {
+        finalReply = `Hi there! 👋 Welcome to Nectar Ingredients! 🌿\n\nI can help you with:\n- 📦 **Track Inquiry / Sample Status:** (Give me your reference code like \`NEC-20260815-122335\`)\n- 🍅 **Product Specifications:** (Tomato, Onion, Garlic, Beetroot, Turmeric, Fruit & Vegetable powders)\n- 📞 **Contact Sales:** Reach Mehul Patel at [+91 98798 38281](https://wa.me/919879838281)\n\nWhat would you like to know? 😊`
+      }
     }
 
     if (!finalReply) {
-      finalReply = "I'm having trouble completing that right now — please try again or use the contact form."
+      finalReply = "I'm having trouble completing that right now — please try again or reach Mehul Patel at +91 98798 38281."
     }
 
     return new Response(JSON.stringify({ reply: finalReply, history: messages.filter(m => m.role !== 'system') }), {

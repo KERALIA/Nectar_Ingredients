@@ -26,14 +26,25 @@ function formatItemsPlain(items: CartItem[]): string {
   return items.map(i => `• ${i.name}${i.sku ? ` (SKU: ${i.sku})` : ''} — ${i.quantity} ${i.unit || 'kg'}`).join('\n')
 }
 
+function formatOrderRef(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  return `NEC-${year}${month}${day}-${hours}${minutes}${seconds}`
+}
+
 // All slow, non-critical work (Telegram + Sheets/Email) runs here, in the
 // background, AFTER the response has already gone back to the browser —
 // this is what keeps form submission fast.
 async function processInquiry(payload: {
   name: string, email: string, phone?: string, company?: string,
-  items: CartItem[], message?: string, address: string
+  items: CartItem[], message?: string, address: string, orderRef: string
 }) {
-  const { name, email, phone, company, items, message, address } = payload
+  const { name, email, phone, company, items, message, address, orderRef } = payload
 
   const tgToken = process.env.TELEGRAM_BOT_TOKEN
   const adminChatId = process.env.TELEGRAM_CHAT_ID
@@ -46,7 +57,7 @@ async function processInquiry(payload: {
   if (tgToken && adminChatId) {
     const tgPayload = {
       chat_id: adminChatId,
-      text: `🌿 *New Inquiry for Nectar Ingredients!*\n\n👤 *Name:* ${name}\n📧 *Email:* ${email}\n📞 *Phone:* ${phone || 'Not provided'}\n🏠 *Address:* ${address}\n🏢 *Company/Brand:* ${company || 'N/A'}\n📦 *Items:*\n${itemsListPlain}\n\n📝 *Message:* \n"${message || 'None'}"`,
+      text: `🌿 *New Inquiry for Nectar Ingredients!*\n\n🔖 *Ref:* \`${orderRef}\`\n👤 *Name:* ${name}\n📧 *Email:* ${email}\n📞 *Phone:* ${phone || 'Not provided'}\n🏠 *Address:* ${address}\n🏢 *Company/Brand:* ${company || 'N/A'}\n📦 *Items:*\n${itemsListPlain}\n\n📝 *Message:* \n"${message || 'None'}"`,
       parse_mode: 'Markdown'
     }
     backgroundTasks.push(
@@ -70,6 +81,7 @@ async function processInquiry(payload: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          orderRef: orderRef,
           customerName: name,
           customerEmail: email,
           customerPhone: (phone || '').replace(/^\+/, '').trim().replace(/\s+/, '-'),
@@ -150,15 +162,21 @@ export async function POST(req: Request) {
       }
     }
 
+    const orderRef = formatOrderRef()
+
     // Vercel/Next.js equivalent of Supabase's EdgeRuntime.waitUntil —
     // keeps this function alive to finish background work after the
     // response below has already been sent to the browser.
     after(async () => {
-      await processInquiry({ name, email, phone, company, items, message, address })
+      await processInquiry({ name, email, phone, company, items, message, address, orderRef })
         .catch(err => console.error("Background processing error:", err))
     })
 
-    return new Response(JSON.stringify({ success: true, message: 'Inquiry received! We will be in touch shortly.' }), {
+    return new Response(JSON.stringify({
+      success: true,
+      orderRef,
+      message: 'Thank you! You will receive an email on your entered address with the official commercial quotation shortly. Please wait for our quote.'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
