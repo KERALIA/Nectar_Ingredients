@@ -10,6 +10,7 @@ import FAQSection from '../components/home/FAQSection'
 import ContactCTA from '../components/home/ContactCTA'
 
 export const metadata: Metadata = {
+  applicationName: 'Nectar Ingredients',
   title: 'Nectar Ingredients | Premium Food Ingredients Supplier',
   description: 'Leading B2B manufacturer and bulk supplier of pure dehydrated vegetable, fruit, and spice powders in Surendranagar, Gujarat. Clean label food ingredients.',
   alternates: {
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
     title: 'Nectar Ingredients | Premium Food Ingredients Supplier',
     description: 'Leading B2B manufacturer and bulk supplier of pure dehydrated vegetable, fruit, and spice powders in Surendranagar, Gujarat.',
     url: 'https://nectaringredients.vercel.app/',
+    siteName: 'Nectar Ingredients',
     type: 'website',
   },
 }

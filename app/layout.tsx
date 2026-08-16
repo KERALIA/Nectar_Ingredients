@@ -102,7 +102,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         '@id': 'https://nectaringredients.vercel.app/#website',
         'url': 'https://nectaringredients.vercel.app/',
         'name': 'Nectar Ingredients',
-        'alternateName': ['Nectaringredients', 'Nectar Ingredients Pvt. Ltd.', 'Nectar Ingredients Pvt Ltd'],
+        'alternateName': [
+          'Nectar',
+          'Nectaringredients',
+          'Nectar Ingredients Pvt. Ltd.',
+          'Nectar Ingredients Pvt Ltd',
+          'Nectar Ingredients India'
+        ],
+        'description': 'Leading B2B manufacturer and bulk supplier of pure dehydrated vegetable, fruit, and spice powders.',
+        'inLanguage': 'en-IN',
         'publisher': {
           '@id': 'https://nectaringredients.vercel.app/#organization'
         }
@@ -111,8 +119,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         '@type': 'Organization',
         '@id': 'https://nectaringredients.vercel.app/#organization',
         'name': 'Nectar Ingredients Pvt. Ltd.',
-        'url': 'https://nectaringredients.vercel.app',
-        'logo': 'https://nectaringredients.vercel.app/logo.png',
+        'url': 'https://nectaringredients.vercel.app/',
+        'logo': {
+          '@type': 'ImageObject',
+          'url': 'https://nectaringredients.vercel.app/logo.png',
+          'caption': 'Nectar Ingredients Logo'
+        },
         'sameAs': []
       }
     ]
