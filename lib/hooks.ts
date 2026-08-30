@@ -7,9 +7,9 @@ import { useEffect, useRef, useState } from 'react'
  * @param threshold - Intersection ratio to trigger visibility (default 0.15)
  * @returns { ref, visible } — attach ref to any element; visible flips true once it enters viewport
  */
-export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.15) {
+export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0) {
   const ref = useRef<T>(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -19,7 +19,7 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(threshol
           observer.disconnect()
         }
       },
-      { threshold }
+      { threshold, rootMargin: '200px 0px' }
     )
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()

@@ -16,7 +16,7 @@ export default function FeaturedProducts() {
       <div
         ref={ref}
         className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
-                    transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                    transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
       >
         {/* ── Section header: two-column editorial split ── */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
@@ -38,7 +38,7 @@ export default function FeaturedProducts() {
             {featuredProducts.slice(0, 4).map((p, i) => (
               <div
                 key={p.id}
-                className={`reveal ${visible ? 'is-visible' : ''} reveal-delay-${Math.min(i + 1, 4)} h-full`}
+                className="h-full"
               >
                 <ProductCard
                   product={p}

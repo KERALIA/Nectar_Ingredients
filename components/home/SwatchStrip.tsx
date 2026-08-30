@@ -90,13 +90,10 @@ export default function SwatchStrip() {
   const row3 = getProducts(ROW_3_SLUGS)
 
   return (
-    <div className="relative w-full py-12 sm:py-16 bg-transparent overflow-hidden">
-      {/* Background ambient gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ni-surface2/10 to-transparent -z-20" />
-
-      {/* Editorial label */}
-      <div className="text-center mb-8 sm:mb-12 px-4">
-        <span className="font-body text-[10px] font-semibold tracking-[0.25em] text-ni-muted uppercase">
+    <div className="relative w-full py-8 sm:py-14 bg-transparent overflow-hidden">
+      {/* Editorial label with crisp contrast on hero background */}
+      <div className="text-center mb-6 sm:mb-10 px-4">
+        <span className="font-body text-[10px] sm:text-xs font-bold tracking-[0.22em] text-neutral-300 dark:text-neutral-400 uppercase drop-shadow-sm">
           CLICK ANY VARIETY TO VIEW FULL SPECIFICATIONS
         </span>
       </div>
@@ -104,8 +101,8 @@ export default function SwatchStrip() {
       {/* ── Mobile: horizontal scroll strip (hides scrollbar) ── */}
       <div className="md:hidden px-4">
         <div
-          className="flex gap-3 overflow-x-auto scrollbar-hide pb-4"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 pr-6 overscroll-x-contain"
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
         >
           {allProducts.map((product) => (
             <SwatchButton
@@ -115,8 +112,6 @@ export default function SwatchStrip() {
             />
           ))}
         </div>
-        {/* Scroll hint fade — right edge */}
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-ni-bg to-transparent" aria-hidden="true" />
       </div>
 
       {/* ── Desktop: structured 3-row grid ── */}

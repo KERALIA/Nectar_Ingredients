@@ -75,8 +75,6 @@ html {
   /* Prevent font scaling on orientation change — iOS Safari */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Smooth scrolling — respects prefers-reduced-motion below */
-  scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -267,7 +265,7 @@ html, body { overflow-x: hidden; width: 100%; }
   border: 1px solid var(--cat-spice-border);
 }
 
-/* ─── Smooth Theme Transition (Performance Optimized) ─────────────────── */
+/* ─── Smooth Theme Transition (Scoped to Theme Toggle) ─────────────────── */
 .theme-transitioning,
 .theme-transitioning *,
 .theme-transitioning *::before,
@@ -278,10 +276,24 @@ html, body { overflow-x: hidden; width: 100%; }
               box-shadow 300ms ease !important;
 }
 
-body, main, header, footer, nav, section, article {
-  transition-property: background-color, border-color, color;
-  transition-duration: 250ms;
-  transition-timing-function: ease;
+/* ─── Mobile Performance & Scroll Optimizations ──────────────────────────── */
+@media (max-width: 768px) {
+  /* Optimized backdrop blur on mobile to prevent GPU fill-rate throttling */
+  .glass-panel {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .glass-panel-premium {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  /* Hardware composite acceleration for silky 60/120fps mobile scrolling */
+  .transform-gpu {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 }
 
 /* Transforms and opacity have their own animation durations */
@@ -415,3 +427,69 @@ body, main, header, footer, nav, section, article {
 .wa-typing-dot:nth-child(3) {
   animation-delay: 0s;
 }
+
+/* ─── Gemini & ChatGPT Style Chatbot Animations ──────────────────────────── */
+@keyframes gemini-gradient-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gemini-sweep {
+  background: linear-gradient(90deg, #BC4B20, #E06D40, #F59E0B, #E06D40, #BC4B20);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gemini-gradient-sweep 3s ease infinite;
+}
+
+@keyframes chatgpt-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-chatgpt-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  background-color: #BC4B20;
+  vertical-align: -2px;
+  margin-left: 2px;
+  border-radius: 1px;
+  animation: chatgpt-cursor-blink 0.8s infinite;
+}
+
+.dark .animate-chatgpt-cursor {
+  background-color: #F59E0B;
+}
+
+@keyframes gemini-pulse-bar {
+  0%, 100% {
+    transform: scaleY(0.4);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.gemini-bar {
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  border-radius: 9999px;
+  background: linear-gradient(to top, #BC4B20, #F59E0B);
+  animation: gemini-pulse-bar 1s ease-in-out infinite;
+}
+
+.gemini-bar:nth-child(1) { animation-delay: 0s; }
+.gemini-bar:nth-child(2) { animation-delay: 0.15s; }
+.gemini-bar:nth-child(3) { animation-delay: 0.3s; }
+.gemini-bar:nth-child(4) { animation-delay: 0.45s; }

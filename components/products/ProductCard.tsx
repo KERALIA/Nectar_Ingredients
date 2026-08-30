@@ -54,7 +54,7 @@ export default function ProductCard({
   const isReplacedImage = product.imageSrc ? TARGET_REPLACED_IMAGES.has(product.imageSrc) : false
   const router = useRouter()
   const cardRef = useRef<HTMLElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
   const [imgError, setImgError] = useState(false)
 
   /* Intersection Observer for smooth reveal */
@@ -67,7 +67,7 @@ export default function ProductCard({
           observer.disconnect()
         }
       },
-      { threshold: 0.1, rootMargin: '40px 0px' }
+      { threshold: 0, rootMargin: '200px 0px' }
     )
     observer.observe(cardRef.current)
     return () => observer.disconnect()
