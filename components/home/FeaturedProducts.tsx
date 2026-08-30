@@ -38,7 +38,7 @@ export default function FeaturedProducts() {
             {featuredProducts.slice(0, 4).map((p, i) => (
               <div
                 key={p.id}
-                className="h-full"
+                className={`reveal ${visible ? 'is-visible' : ''} reveal-delay-${Math.min(i + 1, 4)} h-full`}
               >
                 <ProductCard
                   product={p}

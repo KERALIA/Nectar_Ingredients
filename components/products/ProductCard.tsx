@@ -54,11 +54,16 @@ export default function ProductCard({
   const isReplacedImage = product.imageSrc ? TARGET_REPLACED_IMAGES.has(product.imageSrc) : false
   const router = useRouter()
   const cardRef = useRef<HTMLElement>(null)
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
   const [imgError, setImgError] = useState(false)
 
   /* Intersection Observer for smooth reveal */
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setIsVisible(true)
+      return
+    }
+
     if (!cardRef.current) return
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -67,7 +72,7 @@ export default function ProductCard({
           observer.disconnect()
         }
       },
-      { threshold: 0, rootMargin: '200px 0px' }
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
     )
     observer.observe(cardRef.current)
     return () => observer.disconnect()

@@ -1,12 +1,21 @@
+'use client'
+
 import { products } from '../../lib/data'
 import AnimatedCounter from '../ui/AnimatedCounter'
+import { useScrollReveal } from '../../lib/hooks'
 
 export default function StatsBar() {
+  const { ref, visible } = useScrollReveal()
   const productCount = products.length
 
   return (
     <section className="relative mt-8 sm:mt-12 z-20" aria-label="Key facts">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <div
+        ref={ref}
+        className={`max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-700 ease-out ${
+          visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+      >
         <div className="glass-panel-premium rounded-[var(--radius-xl)] overflow-hidden shadow-premium">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x-0 md:divide-x divide-y md:divide-y-0 divide-ni-border/20">
 
