@@ -337,6 +337,15 @@ export default function ChatWidget() {
   const recognitionRef = useRef(null);
   const streamingTimerRef = useRef(null);
 
+  // Auto-grow textarea to match content perfectly without overflowing container
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const scrollH = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(Math.max(scrollH, 22), 96)}px`;
+    }
+  }, [input]);
+
   // Check Web Speech API support
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -740,7 +749,7 @@ export default function ChatWidget() {
           <div
             ref={scrollRef}
             data-lenis-prevent="true"
-            className="flex-1 overflow-y-auto px-5 py-5 space-y-4 overscroll-contain [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-neutral-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent bg-[#FAF8F5] dark:bg-[#141210]"
+            className="flex-1 overflow-y-auto px-5 pt-5 pb-8 space-y-4 overscroll-contain [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-neutral-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent bg-[#FAF8F5] dark:bg-[#141210]"
             style={{
               overscrollBehavior: "contain",
               touchAction: "pan-y",
@@ -864,10 +873,10 @@ export default function ChatWidget() {
               </div>
             )}
 
-            {/* Command-style Input Wrapper (46px, True Centering & Generous Margin) */}
+            {/* Command-style Input Wrapper (Self-adjusting dynamic height, 48px to 120px) */}
             <div
               onClick={() => textareaRef.current?.focus()}
-              className="h-[46px] flex items-center gap-2.5 bg-[#FAF8F5] dark:bg-[#1E1916] border border-[#DDD1BE] dark:border-[#3A3028] rounded-2xl px-3.5 focus-within:border-[#BC4B20] focus-within:ring-2 focus-within:ring-[#BC4B20]/15 transition-all cursor-text shadow-2xs"
+              className="min-h-[48px] max-h-[120px] py-2 flex items-end gap-2.5 bg-[#FAF8F5] dark:bg-[#1E1916] border border-[#DDD1BE] dark:border-[#3A3028] rounded-2xl px-3.5 focus-within:border-[#BC4B20] focus-within:ring-2 focus-within:ring-[#BC4B20]/15 transition-all cursor-text shadow-2xs"
             >
               {/* Microphone Button */}
               {speechSupported && (
@@ -878,7 +887,7 @@ export default function ChatWidget() {
                     toggleVoiceInput();
                   }}
                   title={isListening ? "Stop recording" : "Voice input"}
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 mb-0.5 ${
                     isListening
                       ? "bg-[#BC4B20] text-white shadow-xs"
                       : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-[#F0E8DC] dark:hover:bg-[#2D2520]"
@@ -888,7 +897,7 @@ export default function ChatWidget() {
                 </button>
               )}
 
-              {/* Textarea: Dead-Centered, Zero-Margin, Crisp Line Height */}
+              {/* Textarea: Dynamic Auto-Sizing, Clean Alignment */}
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -896,8 +905,8 @@ export default function ChatWidget() {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Ask about specs, COA, bulk pricing..."
-                className="flex-1 bg-transparent border-none resize-none m-0 p-0 text-[14px] sm:text-[14.5px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none leading-[20px] font-body cursor-text overflow-hidden [&::-webkit-scrollbar]:hidden"
-                style={{ height: "20px", minHeight: "20px", maxHeight: "100px" }}
+                className="flex-1 bg-transparent border-none resize-none m-0 p-0 text-[14px] sm:text-[14.5px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none leading-[22px] font-body cursor-text overflow-y-auto"
+                style={{ minHeight: "22px", maxHeight: "96px" }}
               />
 
               {/* Send Button */}
@@ -909,7 +918,7 @@ export default function ChatWidget() {
                 }}
                 disabled={isSending || !input.trim()}
                 aria-label="Send inquiry"
-                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 mb-0.5 ${
                   isSending || !input.trim()
                     ? "opacity-25 cursor-not-allowed text-neutral-400"
                     : "bg-[#BC4B20] text-white hover:bg-[#A83D15] shadow-xs active:scale-95"

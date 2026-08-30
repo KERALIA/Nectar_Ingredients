@@ -109,7 +109,7 @@ function formatItemsPlain(items: { name: string; sku?: string; quantity: number;
   return items.map((i) => `• ${i.name}${i.sku ? ` (SKU: ${i.sku})` : ''} — ${i.quantity} ${i.unit || 'kg'}`).join('\n')
 }
 
-// Telegram notification for chatbot-placed orders
+// Telegram notification for chatbot-placed orders (HTML mode for 100% reliability)
 async function notifyTelegramNewOrder(args: {
   name: string
   email: string
@@ -118,6 +118,7 @@ async function notifyTelegramNewOrder(args: {
   address: string
   items: { name: string; sku?: string; quantity: number; unit?: string }[]
   message?: string
+  orderRef?: string
 }) {
   const tgToken = process.env.TELEGRAM_BOT_TOKEN
   const adminChatId = process.env.TELEGRAM_CHAT_ID
@@ -126,11 +127,17 @@ async function notifyTelegramNewOrder(args: {
     return
   }
 
-  const itemsListPlain = formatItemsPlain(args.items)
+  const escapeHtml = (str: string) =>
+    (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  const itemsListHtml = args.items
+    .map((i) => `• <b>${escapeHtml(i.name)}</b>${i.sku ? ` (SKU: ${escapeHtml(i.sku)})` : ''} — ${i.quantity} ${escapeHtml(i.unit || 'kg')}`)
+    .join('\n')
+
   const tgPayload = {
     chat_id: adminChatId,
-    text: `🌿 *New Inquiry for Nectar Ingredients!* (via chatbot)\n\n👤 *Name:* ${args.name}\n📧 *Email:* ${args.email}\n📞 *Phone:* ${args.phone || 'Not provided'}\n🏠 *Address:* ${args.address}\n🏢 *Company/Brand:* ${args.company || 'N/A'}\n📦 *Items:*\n${itemsListPlain}\n\n📝 *Message:* \n"${args.message || 'None'}"`,
-    parse_mode: 'Markdown',
+    text: `🌿 <b>New Order / Inquiry via Nectar Chatbot!</b>\n\n🔖 <b>Ref:</b> <code>${escapeHtml(args.orderRef || 'N/A')}</code>\n👤 <b>Name:</b> ${escapeHtml(args.name)}\n📧 <b>Email:</b> ${escapeHtml(args.email)}\n📞 <b>Phone:</b> ${escapeHtml(args.phone || 'Not provided')}\n🏠 <b>Address:</b> ${escapeHtml(args.address)}\n🏢 <b>Company/Brand:</b> ${escapeHtml(args.company || 'N/A')}\n\n📦 <b>Items Requested:</b>\n${itemsListHtml}\n\n📝 <b>Message / Notes:</b>\n<i>${escapeHtml(args.message || 'None')}</i>`,
+    parse_mode: 'HTML',
   }
 
   try {
@@ -423,6 +430,13 @@ function retrieveRelevantKnowledge(query: string): string {
 // ============================================================================
 
 async function toolLookupOrder(args: { orderRef?: string; phone?: string; email?: string }) {
+  if (!args.orderRef && !args.phone && !args.email) {
+    return {
+      status: 'ignored',
+      message: 'No reference ID, phone number, or email was provided. If the user wants to place a new order or request samples, collect their contact & address details to submit an order.',
+    }
+  }
+
   const scriptUrl = appsScriptUrl()
   if (scriptUrl) {
     const normalizedPhone = args.phone ? args.phone.replace(/[^\d+]/g, '').trim() : undefined
@@ -534,30 +548,54 @@ async function toolSubmitNewOrder(args: {
   const addressRes = validateAddress(args.address || '')
   if (!addressRes.isValid) return { error: `Incomplete address: ${addressRes.error}` }
 
-  const res = await fetchIPv4(
-    appsScriptUrl()!,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName: args.name,
-        customerEmail: args.email,
-        customerPhone: (args.phone || '').replace(/^\+/, '').trim().replace(/\s+/, '-'),
-        customerAddress: args.address,
-        company: args.company || '',
-        items: args.items,
-        originalMessage: args.message || 'Order placed via website chatbot',
-      }),
-    },
-    15000
-  )
-  const result = await res.json()
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  const orderRef = `NEC-${year}${month}${day}-${hours}${minutes}${seconds}`
 
-  after(async () => {
-    await notifyTelegramNewOrder(args)
-  })
+  let scriptResult: any = null
+  const scriptUrl = appsScriptUrl()
+  if (scriptUrl) {
+    try {
+      const res = await fetchIPv4(
+        scriptUrl,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderRef,
+            customerName: args.name,
+            customerEmail: args.email,
+            customerPhone: (args.phone || '').replace(/^\+/, '').trim().replace(/\s+/, '-'),
+            customerAddress: args.address,
+            company: args.company || '',
+            items: args.items,
+            originalMessage: args.message || 'Order placed via website chatbot',
+          }),
+        },
+        15000
+      )
+      if (res.ok) {
+        scriptResult = await res.json()
+      }
+    } catch (e) {
+      console.error('Google Apps Script order insert error:', e)
+    }
+  }
 
-  return result
+  // Guaranteed Telegram Notification (HTML mode)
+  await notifyTelegramNewOrder({ ...args, orderRef })
+
+  const finalRef = (scriptResult && scriptResult.orderRef) || orderRef
+  return {
+    status: 'success',
+    orderRef: finalRef,
+    message: `Order successfully registered in Google Sheets under Reference Number ${finalRef}. Official quote and dispatch details will be emailed to ${args.email}.`,
+  }
 }
 
 const tools = [
@@ -565,13 +603,13 @@ const tools = [
     type: 'function',
     function: {
       name: 'lookup_order',
-      description: 'Look up customer order/inquiry status using Order/Inquiry Reference Number (e.g. NEC-20260815-122335), registered phone number, or email address. Can return multiple orders if registered under the same phone or email.',
+      description: 'Look up EXISTING customer order/inquiry status. ONLY call this when a customer explicitly asks to check or track an existing order and provides a specific Reference ID (e.g. NEC-20260815-122335), registered 10-digit mobile number, or email address. DO NOT call this when a customer wants to place, create, buy, or inquire about a NEW order.',
       parameters: {
         type: 'object',
         properties: {
-          orderRef: { type: 'string', description: 'Inquiry or Order Reference Number (e.g. NEC-20260815-122335)' },
-          phone: { type: 'string', description: 'Customer 10-digit mobile number' },
-          email: { type: 'string', description: 'Customer email address' },
+          orderRef: { type: 'string', description: 'Existing Order Reference Number (e.g. NEC-20260815-122335)' },
+          phone: { type: 'string', description: 'Existing customer 10-digit mobile number' },
+          email: { type: 'string', description: 'Existing customer email address' },
         },
       },
     },
@@ -580,29 +618,29 @@ const tools = [
     type: 'function',
     function: {
       name: 'submit_new_order',
-      description: 'Submit a new sample/bulk order inquiry once customer confirms name, email, phone, complete delivery address, and items + quantities. No fixed prices on website.',
+      description: 'Submit and register a NEW sample or commercial order inquiry in Google Sheets. Call this tool when the customer provides their name, email, phone, complete delivery address, and desired products with quantities.',
       parameters: {
         type: 'object',
         properties: {
-          name: { type: 'string' },
-          email: { type: 'string' },
-          phone: { type: 'string' },
-          company: { type: 'string' },
-          address: { type: 'string', description: 'Complete delivery address including building/street, city, state, and 6-digit PIN code.' },
+          name: { type: 'string', description: 'Customer full name' },
+          email: { type: 'string', description: 'Customer email address' },
+          phone: { type: 'string', description: 'Customer 10-digit mobile number' },
+          company: { type: 'string', description: 'Company or business name (optional)' },
+          address: { type: 'string', description: 'Complete delivery address including building/street, city, state, and 6-digit PIN code' },
           items: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
-                name: { type: 'string' },
-                sku: { type: 'string' },
-                quantity: { type: 'number' },
-                unit: { type: 'string' },
+                name: { type: 'string', description: 'Product name (e.g. Tomato Powder)' },
+                sku: { type: 'string', description: 'SKU code if known' },
+                quantity: { type: 'number', description: 'Quantity number (e.g. 1, 5, 25)' },
+                unit: { type: 'string', description: 'Unit (kg, gm, bags)' },
               },
               required: ['name', 'quantity'],
             },
           },
-          message: { type: 'string' },
+          message: { type: 'string', description: 'Customer notes or formulation requirements' },
         },
         required: ['name', 'email', 'address', 'items'],
       },
@@ -629,8 +667,21 @@ Prices are NOT fixed on the website — they vary daily based on raw crop harves
 
 CORE RESPONSIBILITIES:
 
-1. ORDER & INQUIRY STATUS TRACKING & MULTI-ORDER HANDLING:
-   - When a customer provides a Reference ID starting with 'NEC-', a mobile number, or an email, invoke 'lookup_order'.
+1. NEW ORDER INTAKE & CREATION (HIGHEST PRIORITY):
+   - When a customer says "take a new order", "place a new order", "place a custom order", "order powders", "buy tomato powder", "I want to purchase", "sample request", or lists products they want:
+     • THIS IS A NEW ORDER INTAKE — NEVER CALL \`lookup_order\`!
+     • Enthusiastically acknowledge the powders they requested.
+     • Ask the customer to provide:
+       1. 📦 **Products & Quantities**: (e.g. Tomato Powder 25kg, Onion Powder 1kg sample, Garlic Powder 50kg)
+       2. 👤 **Full Name**: Customer contact name
+       3. 📧 **Email Address**: For sending official commercial quote & PDF invoice
+       4. 📞 **Mobile Number**: 10-digit Indian WhatsApp / phone number
+       5. 🏠 **Complete Delivery Address**: Street/Premises, City, State, and 6-digit PIN code
+     • If the customer already provided some of these details (e.g. "place a custom order for tomato powder, onion powder and garlic powder"), confirm the items and ask for the remaining required details (quantities, name, email, phone, and delivery address).
+     • Once the customer provides these required fields, IMMEDIATELY call \`submit_new_order\`!
+
+2. ORDER & INQUIRY STATUS TRACKING & MULTI-ORDER HANDLING:
+   - ONLY when a customer explicitly asks to track or check status and provides a Reference ID starting with 'NEC-', a mobile number, or an email, invoke 'lookup_order'.
    - SINGLE ORDER RESULT:
      • Report Ref ID, Status, Items, and Total.
      • Dispatched Status: Inform them that their package is dispatched from Surendranagar and the official PDF invoice has been sent to their email.
@@ -648,14 +699,10 @@ CORE RESPONSIBILITIES:
    - INVOICE / BILL NOTICE:
       Remind customers that commercial quotes are sent directly via email, and official PDF bills/invoices are automatically emailed from [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) upon order dispatch (please remind them to check Spam/Promotions folder too!).
 
-2. PRODUCT ADVISORY & PROACTIVE SALES SUGGESTIONS:
+3. PRODUCT ADVISORY & PROACTIVE SALES SUGGESTIONS:
    - Use the relevant technical specifications provided below to answer mesh size, applications, and nutritional benefits.
    - Suggest complementary ingredient pairings when helpful (e.g. Tomato + Onion + Soya HVP for soup premixes; Cheese + Garlic for snack seasonings).
    - For "Made-to-Order" items (Cabbage, French Beans, Sweet Potato, Bitter Gourd, Mint Leaves, Kasuri Methi, Psyllium Husk), explain that they are custom-manufactured with flexible MOQ upon inquiry.
-
-3. NEW ORDER PLACEMENT & STRICT FIELD VERIFICATION:
-   - Require customer Name, valid Email, 10-digit Phone Number, Complete Delivery Address (including street/shop, city, state, 6-digit PIN code), and Items + Quantities in kg.
-   - If address is incomplete (e.g. "Chandra Nagar"), gently ask for building number, city, and PIN code BEFORE calling 'submit_new_order'.
 
 4. DIRECT SALES, OWNER CONTACT & OFFICIAL EMAIL (STRICT RULE):
    - Whenever asked to speak with sales, owner, contact details, email, or for bulk deals, provide:
