@@ -492,4 +492,26 @@ html, body { overflow-x: hidden; width: 100%; }
 .gemini-bar:nth-child(1) { animation-delay: 0s; }
 .gemini-bar:nth-child(2) { animation-delay: 0.15s; }
 .gemini-bar:nth-child(3) { animation-delay: 0.3s; }
-.gemini-bar:nth-child(4) { animation-delay: 0.45s; }
+.gemini-bar:nth-child(4) { animation-delay: 0.45s; }
+
+/* ─── Chatbot Modern Input Pill: Zero Browser Rectangular Outline ───────── */
+.chat-input-textarea {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-color: transparent !important;
+}
+
+.chat-input-textarea:focus,
+.chat-input-textarea:focus-visible,
+.chat-input-textarea:active {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}

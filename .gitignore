@@ -51,3 +51,6 @@ yarn-error.log*
 appsscript.js
 Sidebar.html
 
+# Local scratch and debug scripts
+scratch/
+

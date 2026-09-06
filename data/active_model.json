@@ -1,0 +1,90 @@
+{
+  "appointedModel": "ling-3.0-flash-fin-free",
+  "fallbackModels": [
+    "mimo-v2.5-free",
+    "nemotron-3.5-lightning-free"
+  ],
+  "appointedAt": "2026-09-06T16:26:54.643Z",
+  "nextAppointmentExpected": "2026-09-07T16:26:54.643Z",
+  "leaderboard24h": [
+    {
+      "model": "ling-3.0-flash-fin-free",
+      "totalTests": 3,
+      "successCount": 1,
+      "successRate": 33,
+      "avgLatencyMs": 1643,
+      "minLatencyMs": 1643,
+      "maxLatencyMs": 1643,
+      "lastTested": "2026-09-06T16:25:58.322Z"
+    },
+    {
+      "model": "nemotron-3.5-lightning-free",
+      "totalTests": 3,
+      "successCount": 1,
+      "successRate": 33,
+      "avgLatencyMs": 21156,
+      "minLatencyMs": 21156,
+      "maxLatencyMs": 21156,
+      "lastTested": "2026-09-06T16:26:24.736Z"
+    },
+    {
+      "model": "deepseek-v4-flash-free",
+      "totalTests": 3,
+      "successCount": 0,
+      "successRate": 0,
+      "avgLatencyMs": 99999,
+      "minLatencyMs": 99999,
+      "maxLatencyMs": 99999,
+      "lastTested": "2026-09-06T16:25:54.899Z"
+    },
+    {
+      "model": "muse-spark-1.3-contributor-free",
+      "totalTests": 3,
+      "successCount": 0,
+      "successRate": 0,
+      "avgLatencyMs": 99999,
+      "minLatencyMs": 99999,
+      "maxLatencyMs": 99999,
+      "lastTested": "2026-09-06T16:25:55.799Z"
+    },
+    {
+      "model": "muse-spark-1.2-contributor-free",
+      "totalTests": 3,
+      "successCount": 0,
+      "successRate": 0,
+      "avgLatencyMs": 99999,
+      "minLatencyMs": 99999,
+      "maxLatencyMs": 99999,
+      "lastTested": "2026-09-06T16:25:56.610Z"
+    },
+    {
+      "model": "mimo-v2.5-free",
+      "totalTests": 3,
+      "successCount": 0,
+      "successRate": 0,
+      "avgLatencyMs": 99999,
+      "minLatencyMs": 99999,
+      "maxLatencyMs": 99999,
+      "lastTested": "2026-09-06T16:25:57.420Z"
+    },
+    {
+      "model": "nemotron-3-ultra-free",
+      "totalTests": 3,
+      "successCount": 0,
+      "successRate": 0,
+      "avgLatencyMs": 99999,
+      "minLatencyMs": 99999,
+      "maxLatencyMs": 99999,
+      "lastTested": "2026-09-06T16:25:59.328Z"
+    }
+  ],
+  "discoveredFreeModels": [
+    "deepseek-v4-flash-free",
+    "muse-spark-1.3-contributor-free",
+    "muse-spark-1.2-contributor-free",
+    "mimo-v2.5-free",
+    "ling-3.0-flash-fin-free",
+    "nemotron-3-ultra-free",
+    "nemotron-3.5-lightning-free"
+  ]
+}

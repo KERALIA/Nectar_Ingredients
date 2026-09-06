@@ -1,0 +1,20 @@
+name: Hourly AI Model Benchmark Cron
+
+on:
+  schedule:
+    # Runs at the start of every hour (24/7 autonomous execution)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  run-benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Hourly Model Benchmark
+        run: |
+          TARGET_URL="${{ secrets.PRODUCTION_URL }}"
+          if [ -z "$TARGET_URL" ]; then
+            TARGET_URL="https://nectaringredients.com"
+          fi
+          echo "Pinging ${TARGET_URL}/api/cron/benchmark?action=hourly..."
+          curl -f -s -m 60 "${TARGET_URL}/api/cron/benchmark?action=hourly" || echo "Hourly ping completed."

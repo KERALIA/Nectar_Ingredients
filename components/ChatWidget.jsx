@@ -318,7 +318,7 @@ export default function ChatWidget() {
     {
       role: "assistant",
       content:
-        "Welcome to **Nectar Intelligence** — your technical & commercial assistant.\n\nI can assist you with batch specifications, Certificate of Analysis (COA) documents, sample dispatch status, and custom formulation inquiries.\n\n• **Technical Specifications:** Mesh size, moisture standards & dehydration methods\n• **Verified Lab Reports:** Direct PDF Certificates of Analysis\n• **Order & Sample Tracking:** Real-time dispatch lookup by Reference ID or phone",
+        "Hello! 👋 Welcome to **Nectar Intelligence** — your technical & commercial assistant for pure dehydrated powders.\n\nHow can I help you today? Feel free to ask about product specifications, custom formulation advice, batch test reports, or track your sample dispatch! 🌿",
       time: "Just now",
       isStreaming: false,
     },
@@ -560,8 +560,8 @@ export default function ChatWidget() {
 
     let currentIndex = 0;
     const totalChars = fullReply.length;
-    const step = totalChars > 400 ? 6 : totalChars > 200 ? 4 : 3;
-    const tickInterval = 14;
+    const step = totalChars > 400 ? 12 : totalChars > 200 ? 8 : 6;
+    const tickInterval = 8;
 
     if (streamingTimerRef.current) clearInterval(streamingTimerRef.current);
 
@@ -849,7 +849,7 @@ export default function ChatWidget() {
           {/* ================================================================ */}
           {/* BESPOKE TACTILE COMMAND DOCK WITH GENEROUS OUTER MARGINS */}
           {/* ================================================================ */}
-          <div className="border-t border-[#E8DFC8] dark:border-[#352C24] px-5 py-3.5 bg-white dark:bg-[#181512] flex flex-col gap-2">
+          <div className="border-t border-[#EAE3D2]/80 dark:border-[#2C241D] px-4 pt-3 pb-2.5 bg-white/95 dark:bg-[#161310]/95 backdrop-blur-md flex flex-col gap-2">
             {/* Voice Error Notification Banner */}
             {voiceError && (
               <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs font-medium animate-in fade-in">
@@ -873,12 +873,12 @@ export default function ChatWidget() {
               </div>
             )}
 
-            {/* Command-style Input Wrapper (Self-adjusting dynamic height, 48px to 120px) */}
+            {/* Modern Trendy Floating Input Pill (Perfect One-Line Vertical Centering) */}
             <div
               onClick={() => textareaRef.current?.focus()}
-              className="min-h-[48px] max-h-[120px] py-2 flex items-end gap-2.5 bg-[#FAF8F5] dark:bg-[#1E1916] border border-[#DDD1BE] dark:border-[#3A3028] rounded-2xl px-3.5 focus-within:border-[#BC4B20] focus-within:ring-2 focus-within:ring-[#BC4B20]/15 transition-all cursor-text shadow-2xs"
+              className="min-h-[46px] max-h-[120px] py-1.5 flex items-center gap-1.5 bg-[#F7F4EE] dark:bg-[#201B17] border border-[#E2D9C8] dark:border-[#332A23] rounded-2xl px-2.5 focus-within:border-[#BC4B20]/70 focus-within:shadow-[0_0_0_3px_rgba(188,75,32,0.12),0_4px_16px_rgba(188,75,32,0.08)] shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 cursor-text"
             >
-              {/* Microphone Button */}
+              {/* Microphone Button — Leveled & Vertically Centered */}
               {speechSupported && (
                 <button
                   type="button"
@@ -887,17 +887,17 @@ export default function ChatWidget() {
                     toggleVoiceInput();
                   }}
                   title={isListening ? "Stop recording" : "Voice input"}
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 mb-0.5 ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer shrink-0 ${
                     isListening
                       ? "bg-[#BC4B20] text-white shadow-xs"
-                      : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-[#F0E8DC] dark:hover:bg-[#2D2520]"
+                      : "text-neutral-400 hover:text-[#BC4B20] dark:hover:text-[#E86A38] hover:bg-[#BC4B20]/10 dark:hover:bg-[#BC4B20]/20"
                   }`}
                 >
                   <IconMic className="w-4 h-4" />
                 </button>
               )}
 
-              {/* Textarea: Dynamic Auto-Sizing, Clean Alignment */}
+              {/* Textarea: Leveled in Same Center Line, Zero Inner Outlines */}
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -905,11 +905,11 @@ export default function ChatWidget() {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Ask about specs, COA, bulk pricing..."
-                className="flex-1 bg-transparent border-none resize-none m-0 p-0 text-[14px] sm:text-[14.5px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none leading-[22px] font-body cursor-text overflow-y-auto"
-                style={{ minHeight: "22px", maxHeight: "96px" }}
+                className="chat-input-textarea flex-1 bg-transparent border-none resize-none m-0 py-1 px-1 text-[14px] sm:text-[14.5px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400/90 dark:placeholder:text-neutral-500 outline-none leading-[20px] font-body cursor-text overflow-y-auto focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0"
+                style={{ minHeight: "20px", maxHeight: "96px", outline: "none", border: "none", boxShadow: "none", lineHeight: "20px" }}
               />
 
-              {/* Send Button */}
+              {/* Modern Action Send Button — Leveled & Vertically Centered */}
               <button
                 type="button"
                 onClick={(e) => {
@@ -918,10 +918,10 @@ export default function ChatWidget() {
                 }}
                 disabled={isSending || !input.trim()}
                 aria-label="Send inquiry"
-                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 mb-0.5 ${
+                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer shrink-0 ${
                   isSending || !input.trim()
-                    ? "opacity-25 cursor-not-allowed text-neutral-400"
-                    : "bg-[#BC4B20] text-white hover:bg-[#A83D15] shadow-xs active:scale-95"
+                    ? "opacity-30 cursor-not-allowed text-neutral-400 bg-neutral-200/50 dark:bg-neutral-800"
+                    : "bg-gradient-to-r from-[#BC4B20] to-[#CF562A] text-white shadow-[0_2px_8px_rgba(188,75,32,0.35)] hover:shadow-[0_4px_12px_rgba(188,75,32,0.45)] hover:scale-105 active:scale-95"
                 }`}
               >
                 <IconSend className="w-4 h-4" />
