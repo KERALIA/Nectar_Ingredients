@@ -606,6 +606,29 @@ async function toolSubmitNewOrder(args: {
 // TOOL CALL PARSER & ROBUST ORDER SUBMISSION HELPERS
 // ============================================================================
 
+function matchCatalogProduct(rawName: string): { name: string; sku?: string } {
+  const clean = rawName.toLowerCase().replace(/powder|flakes|cubes|husk|leaves/g, '').trim()
+  for (const p of products) {
+    const pClean = p.name.toLowerCase().replace(/powder|flakes|cubes|husk|leaves/g, '').trim()
+    if (pClean === clean || pClean.includes(clean) || clean.includes(pClean) || p.slug.includes(clean)) {
+      return { name: p.name, sku: p.sku }
+    }
+    if ((clean.includes('beetr') || clean.includes('beet')) && p.slug.includes('beet')) {
+      return { name: p.name, sku: p.sku }
+    }
+  }
+  for (const ext of extendedRange) {
+    const extClean = ext.name.toLowerCase().replace(/\(.*?\)/g, '').trim()
+    if (extClean.includes(clean) || clean.includes(extClean)) {
+      return { name: ext.name }
+    }
+    if ((clean.includes('isab') || clean.includes('psyll')) && ext.name.toLowerCase().includes('isab')) {
+      return { name: ext.name }
+    }
+  }
+  return { name: rawName.trim() }
+}
+
 function normalizeItems(itemsInput: any): { name: string; sku?: string; quantity: number; unit?: string }[] {
   if (!itemsInput) return []
   const list = Array.isArray(itemsInput) ? itemsInput : [itemsInput]
@@ -613,15 +636,19 @@ function normalizeItems(itemsInput: any): { name: string; sku?: string; quantity
     if (typeof item === 'string') {
       const match = item.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?$/)
       if (match) {
+        const matched = matchCatalogProduct(match[1])
         return {
-          name: match[1].trim(),
+          name: matched.name,
+          sku: matched.sku,
           quantity: parseFloat(match[2]),
           unit: match[3] ? match[3].trim().toLowerCase() : 'kg',
         }
       }
-      return { name: item.trim(), quantity: 1, unit: 'kg' }
+      const matched = matchCatalogProduct(item)
+      return { name: matched.name, sku: matched.sku, quantity: 1, unit: 'kg' }
     }
-    const name = item.name || item.product || 'Dehydrated Powder'
+    const rawName = item.name || item.product || 'Dehydrated Powder'
+    const matched = matchCatalogProduct(rawName)
     let qty = 1
     let unit = item.unit || 'kg'
     if (typeof item.quantity === 'number') {
@@ -633,8 +660,8 @@ function normalizeItems(itemsInput: any): { name: string; sku?: string; quantity
       if (unitMatch) unit = unitMatch.toLowerCase()
     }
     return {
-      name,
-      sku: item.sku,
+      name: matched.name,
+      sku: item.sku || matched.sku,
       quantity: qty,
       unit: unit || 'kg',
     }
@@ -643,7 +670,7 @@ function normalizeItems(itemsInput: any): { name: string; sku?: string; quantity
 
 function formatSubmittedOrderMessage(orderRef: string, args: any): string {
   const items = normalizeItems(args.items || args.products)
-  const itemsText = items.map((i) => `• **${i.name}** — ${i.quantity} ${i.unit || 'kg'}`).join('\n')
+  const itemsText = items.map((i) => `• **${i.name}**${i.sku ? ` (SKU: ${i.sku})` : ''} — ${i.quantity} ${i.unit || 'kg'}`).join('\n')
   const custName = args.name || args.customer_name || 'Valued Customer'
   const email = args.email || ''
   const phone = args.phone || args.mobile || ''
@@ -714,7 +741,7 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
   phone: string
   address: string
   pin: string
-  products: { name: string; quantity: number; unit?: string }[]
+  products: { name: string; sku?: string; quantity: number; unit?: string }[]
   existingRef: string
 } {
   let customerName = ''
@@ -722,7 +749,7 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
   let phone = ''
   let address = ''
   let pin = ''
-  let products: { name: string; quantity: number; unit?: string }[] = []
+  let orderProducts: { name: string; sku?: string; quantity: number; unit?: string }[] = []
   let existingRef = ''
 
   for (const m of history) {
@@ -736,7 +763,7 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
       if (a.email) email = a.email
       if (a.mobile || a.phone) phone = a.mobile || a.phone
       if (a.address) address = a.address
-      if (a.products || a.items) products = normalizeItems(a.products || a.items)
+      if (a.products || a.items) orderProducts = normalizeItems(a.products || a.items)
     }
 
     // Ref check
@@ -777,13 +804,18 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
       // Check assistant message for listed products
       const summaryLines = text.split('\n')
       for (const line of summaryLines) {
-        const lineMatch = line.match(/(?:•|[🍅🫘💜📦✅\s])*\s*([A-Za-z\s]+?)\s*[—–-]\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?/i)
+        const lineMatch = line.match(/(?:•|[🍅🫘💜📦✅\s])*\s*([A-Za-z\s]+?)\s*[—–-]\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i)
         if (lineMatch && !line.includes('Box') && !line.includes('Trial')) {
-          const pName = lineMatch[1].trim()
+          const rawName = lineMatch[1].trim()
           const pQty = parseFloat(lineMatch[2])
-          const pUnit = lineMatch[3] ? lineMatch[3].trim().toLowerCase() : 'kg'
-          if (pName.length > 2 && !products.some((p) => p.name.toLowerCase() === pName.toLowerCase())) {
-            products.push({ name: pName, quantity: pQty, unit: pUnit })
+          const pUnit = lineMatch[3].toLowerCase()
+          if (!['mobile', 'phone', 'number', 'address', 'email', 'name', 'quantities', 'products', 'pin', 'code', 'inquiry', 'quote', 'reference'].some((k) => rawName.toLowerCase().includes(k))) {
+            const matched = matchCatalogProduct(rawName)
+            if (matched.sku || extendedRange.some((e) => e.name.toLowerCase() === matched.name.toLowerCase())) {
+              if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
+                orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
+              }
+            }
           }
         }
       }
@@ -791,31 +823,65 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
 
     // User message heuristics
     if (m.role === 'user') {
-      const itemRegex = /([a-zA-Z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilo|bags?|box|boxes)?(?=[,\s]+[a-zA-Z]+|\s*$)/gi
+      // 1. Strict regex for products with required unit (prevents house/block numbers or pin codes from matching)
+      const itemRegex = /([a-zA-Z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/gi
       let iMatch: RegExpExecArray | null
       while ((iMatch = itemRegex.exec(text)) !== null) {
         const rawName = iMatch[1].trim().replace(/^[,|&]|[,|&]$/g, '').trim()
         const pQty = parseFloat(iMatch[2])
-        const pUnit = iMatch[3] ? iMatch[3].trim().toLowerCase() : 'kg'
+        const pUnit = iMatch[3].toLowerCase()
         const pName = rawName.replace(/^(and|or|plus|with|,)\s+/i, '').trim()
-        if (pName.length > 2 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar'].some((bad) => pName.toLowerCase().includes(bad))) {
-          if (!products.some((p) => p.name.toLowerCase() === pName.toLowerCase())) {
-            products.push({ name: pName, quantity: pQty, unit: pUnit })
+        if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
+          const matched = matchCatalogProduct(pName)
+          if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
+            orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
           }
         }
       }
 
+      // 2. Parse comma/newline separated parts for products, address, customer name
       const parts = text.split(/[,|\n]+/).map((p) => p.trim()).filter(Boolean)
       for (const p of parts) {
         const pClean = p.trim()
-        if (!pClean.includes('@') && !pClean.match(/^[6-9]\d{9}$/) && !pClean.match(/^[1-9]\d{5}$/)) {
-          const hasKgOrQty = /\b\d+\s*(?:kg|gm|g|bags?|boxes?)\b/i.test(pClean)
-          if (!hasKgOrQty) {
-            if (pClean.length > 12 && /(nagar|soc|society|street|road|floor|flat|house|block|near|opp|behind|gujarat|mumbai|delhi|india)/i.test(pClean)) {
-              if (!address) address = pClean
-            } else if (!customerName && pClean.split(/\s+/).length >= 2 && pClean.length >= 4 && !/\b(take|order|powder|need|want|submit|hello|hi|please)\b/i.test(pClean)) {
-              customerName = pClean
+
+        // Check if individual part is a product + quantity
+        const prodPartMatch = pClean.match(/^([A-Za-z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i)
+        if (prodPartMatch) {
+          const pName = prodPartMatch[1].trim()
+          const pQty = parseFloat(prodPartMatch[2])
+          const pUnit = prodPartMatch[3].toLowerCase()
+          if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
+            const matched = matchCatalogProduct(pName)
+            if (!orderProducts.some((prod) => prod.name.toLowerCase() === matched.name.toLowerCase())) {
+              orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
             }
+          }
+          continue
+        }
+
+        // Skip emails, phones, pin codes
+        if (pClean.includes('@') || /^(\+?91)?[6-9]\d{9}$/.test(pClean) || /^[1-9]\d{5}$/.test(pClean)) {
+          continue
+        }
+
+        const hasKgOrQty = /\b\d+\s*(?:kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i.test(pClean)
+        if (!hasKgOrQty) {
+          if (
+            pClean.length > 15 ||
+            /\b(nagar|soc|society|street|road|floor|flat|house|block|near|opp|behind|gujarat|mumbai|delhi|india|surendranagar|ahmedabad)\b/i.test(pClean)
+          ) {
+            if (!address) {
+              address = pClean
+            } else if (!address.includes(pClean)) {
+              address += ', ' + pClean
+            }
+          } else if (
+            !customerName &&
+            pClean.split(/\s+/).length >= 2 &&
+            pClean.length >= 4 &&
+            !/\b(take|order|powder|need|want|submit|hello|hi|please|buy)\b/i.test(pClean)
+          ) {
+            customerName = pClean
           }
         }
       }
@@ -826,7 +892,7 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
     address = `${address} - ${pin}`
   }
 
-  return { customerName, email, phone, address, pin, products, existingRef }
+  return { customerName, email, phone, address, pin, products: orderProducts, existingRef }
 }
 
 const tools = [
@@ -1031,31 +1097,32 @@ async function synthesizeDynamicAIResponse(
   const historyWithMsg = [...history, { role: 'user', content: message }]
   const state = extractOrderStateFromHistory(historyWithMsg)
 
-  // 1. ORDER STATUS / SUBMISSION CONFIRMATION INTENT
-  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+my\s+order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed|check\s+my\s+order)/i.test(clean)
-  if (isOrderFollowUp) {
-    if (state.existingRef) {
-      return `Yes, absolutely! 🎉 Your order has been successfully registered in our system! 🌿\n\n📋 **Reference Number:** \`${state.existingRef}\`\n\nOur commercial sales team in Surendranagar (led by **Mehul Patel**) has logged your inquiry. An official commercial quote and proforma invoice will be sent to your registered email shortly.\n\n💡 For priority dispatch or immediate questions:\nReach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
-    }
-    // If all details were collected but ref not yet created, auto-submit now!
-    if (state.customerName && state.email && state.address && state.products.length > 0) {
-      const submitRes = await toolSubmitNewOrder({
+  // 1. COMPLETE ORDER INTAKE / SUBMISSION (ALL REQUIRED DETAILS PRESENT)
+  if (state.customerName && state.email && state.address && state.products.length > 0 && !state.existingRef) {
+    const submitRes = await toolSubmitNewOrder({
+      name: state.customerName,
+      email: state.email,
+      phone: state.phone,
+      address: state.address,
+      items: state.products,
+      message: 'Order inquiry submitted via chatbot dynamic synthesizer',
+    })
+    if (submitRes.orderRef) {
+      return formatSubmittedOrderMessage(submitRes.orderRef, {
         name: state.customerName,
         email: state.email,
         phone: state.phone,
         address: state.address,
         items: state.products,
-        message: 'Order confirmed and submitted via customer verification',
       })
-      if (submitRes.orderRef) {
-        return formatSubmittedOrderMessage(submitRes.orderRef, {
-          name: state.customerName,
-          email: state.email,
-          phone: state.phone,
-          address: state.address,
-          items: state.products,
-        })
-      }
+    }
+  }
+
+  // 2. ORDER STATUS / SUBMISSION CONFIRMATION INTENT
+  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+my\s+order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed|check\s+my\s+order)/i.test(clean)
+  if (isOrderFollowUp) {
+    if (state.existingRef) {
+      return `Yes, absolutely! 🎉 Your order has been successfully registered in our system! 🌿\n\n📋 **Reference Number:** \`${state.existingRef}\`\n\nOur commercial sales team in Surendranagar (led by **Mehul Patel**) has logged your inquiry. An official commercial quote and proforma invoice will be sent to your registered email shortly.\n\n💡 For priority dispatch or immediate questions:\nReach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
     }
     // Partial details
     if (state.products.length > 0) {
@@ -1068,35 +1135,17 @@ async function synthesizeDynamicAIResponse(
     }
   }
 
-  // 2. PIN CODE OR ADDRESS COMPLETION FOR ORDER
-  const pinOnlyMatch = clean.match(/^\b([1-9]\d{5})\b$/)
-  if (pinOnlyMatch && state.products.length > 0 && (state.customerName || state.email || state.phone)) {
-    if (state.customerName && state.email && state.address) {
-      const submitRes = await toolSubmitNewOrder({
-        name: state.customerName,
-        email: state.email,
-        phone: state.phone,
-        address: state.address,
-        items: state.products,
-        message: 'Order inquiry completed with PIN code',
-      })
-      if (submitRes.orderRef) {
-        return formatSubmittedOrderMessage(submitRes.orderRef, {
-          name: state.customerName,
-          email: state.email,
-          phone: state.phone,
-          address: state.address,
-          items: state.products,
-        })
-      }
-    }
-  }
-
-  // 3. USER PROVIDED PRODUCTS WITH QUANTITIES (e.g. "Tomato 5 kg soya hvp 6 kg , beetroot 7 kg")
+  // 3. USER PROVIDED PRODUCTS WITH QUANTITIES OR PARTIAL DETAILS
   const hasQuantities = /\b\d+\s*(?:kg|gm|g|grams|kilo|bags?|boxes?)\b/i.test(clean)
-  if (hasQuantities && state.products.length > 0) {
-    const pList = state.products.map((p) => `• **${p.name}** — ${p.quantity} ${p.unit || 'kg'}`).join('\n')
-    return `🛒 **Excellent choices! I've noted your requested products:**\n${pList}\n\nTo proceed with your order and generate your official commercial quote & PDF invoice, please share:\n👤 **Full Name:**\n📧 **Email Address:**\n📞 **Mobile Number:** (10-digit)\n🏠 **Complete Delivery Address:** (Street, City, State, and 6-digit PIN Code)\n\nOnce you share these, I'll submit your order immediately! 🌿✨`
+  if ((hasQuantities || state.products.length > 0) && !state.existingRef) {
+    const pList = state.products.map((p) => `• **${p.name}**${p.sku ? ` (SKU: ${p.sku})` : ''} — ${p.quantity} ${p.unit || 'kg'}`).join('\n')
+    const missing: string[] = []
+    if (!state.customerName) missing.push('👤 **Full Name**')
+    if (!state.email) missing.push('📧 **Email Address**')
+    if (!state.phone) missing.push('📞 **Mobile Number** (10-digit)')
+    if (!state.address || !state.pin) missing.push('🏠 **Complete Delivery Address** (Street, City, State, & 6-digit PIN Code)')
+
+    return `🛒 **Excellent choices! I've noted your requested powders:**\n${pList}\n\nTo formally submit your order and email your official commercial quote & PDF invoice, I just need:\n${missing.join('\n')}\n\nFeel free to share ${missing.length === 1 ? 'this' : 'these'}, and I'll submit your order immediately! 🌿✨`
   }
 
   // 4. USER EXPLICITLY ASKS TO PLACE AN ORDER (e.g. "Take a order", "I want to order")
@@ -1305,18 +1354,25 @@ export async function POST(req: Request) {
     // FAST PATH 3: Instant Contact & Sales Desk (<2ms)
     // ========================================================================
     const isContactQuery =
-      (cleanLower.includes('contact') && !cleanLower.includes('track') && !cleanLower.includes('order')) ||
-      cleanLower.includes('phone') ||
-      cleanLower.includes('whatsapp') ||
-      cleanLower.includes('call') ||
-      cleanLower.includes('email') ||
-      cleanLower.includes('mehul') ||
-      cleanLower.includes('owner') ||
-      cleanLower.includes('factory') ||
-      cleanLower.includes('office address') ||
-      cleanLower.includes('where is your facility')
+      !cleanLower.includes('track') &&
+      !cleanLower.includes('status') &&
+      !cleanLower.includes('order') &&
+      !cleanLower.includes('powder') &&
+      !cleanLower.includes('recipe') &&
+      !cleanLower.includes('kg') &&
+      !cleanLower.includes('gm') &&
+      (cleanLower.includes('contact') ||
+        cleanLower.includes('phone number') ||
+        cleanLower.includes('call you') ||
+        cleanLower.includes('whatsapp') ||
+        cleanLower.includes('reach you') ||
+        cleanLower.includes('mehul') ||
+        cleanLower.includes('owner') ||
+        cleanLower.includes('factory') ||
+        cleanLower.includes('office address') ||
+        cleanLower.includes('where is your facility'))
 
-    if (isContactQuery && !cleanLower.includes('powder') && !cleanLower.includes('recipe')) {
+    if (isContactQuery) {
       const contactReply = `👋 **Nectar Ingredients — Direct B2B Commercial Desk**\n\n• 📞 **Key Contact Person:** Mehul Patel\n• 💬 **Direct Call & WhatsApp:** [+91 98798 38281](https://wa.me/919879838281) (Fastest for custom rates, sample dispatches & dispatch updates)\n• 📧 **Official Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) (For custom commercial quotes and official PDF bills upon dispatch)\n• 🏢 **Manufacturing Facility & Office:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿\n\nFeel free to WhatsApp Mehul directly with your target product, quantity, and destination pin code! 😊`
       return new Response(
         JSON.stringify({ reply: contactReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: contactReply }] }),
@@ -1331,10 +1387,25 @@ export async function POST(req: Request) {
     const phoneMatch = message.match(/(\+?91)?[6-9]\d{9}/)
     const emailMatch = message.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)
 
-    if (
-      (necMatch || (phoneMatch && (cleanLower.includes('track') || cleanLower.includes('status') || cleanLower.includes('sample')))) &&
-      !cleanLower.includes('place') && !cleanLower.includes('buy') && !cleanLower.includes('is it submitted')
-    ) {
+    const isTrackingIntent =
+      Boolean(necMatch) ||
+      (Boolean(phoneMatch || emailMatch) &&
+        (cleanLower.includes('track') ||
+          cleanLower.includes('status') ||
+          cleanLower.includes('where is my') ||
+          cleanLower.includes('check my order') ||
+          cleanLower.includes('check order') ||
+          cleanLower.includes('existing order') ||
+          cleanLower.includes('past order') ||
+          cleanLower.includes('previous order')) &&
+        !cleanLower.includes('place') &&
+        !cleanLower.includes('buy') &&
+        !cleanLower.includes('take') &&
+        !cleanLower.includes('order') &&
+        !cleanLower.includes('kg') &&
+        !cleanLower.includes('gm'))
+
+    if (isTrackingIntent) {
       const lookupArgs: { orderRef?: string; phone?: string; email?: string } = {}
       if (necMatch) lookupArgs.orderRef = necMatch[0].toUpperCase()
       if (phoneMatch) lookupArgs.phone = phoneMatch[0]
@@ -1347,6 +1418,52 @@ export async function POST(req: Request) {
           JSON.stringify({ reply: orderReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: orderReply }] }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         )
+      }
+    }
+
+    // ========================================================================
+    // FAST PATH 4.5: Instant Complete Order Intake & Placement (<80ms)
+    // ========================================================================
+    if (!isTrackingIntent) {
+      const incomingOrderState = extractOrderStateFromHistory([
+        ...sanitizedHistory,
+        { role: 'user', content: message },
+      ])
+      if (
+        incomingOrderState.customerName &&
+        incomingOrderState.email &&
+        incomingOrderState.address &&
+        incomingOrderState.products.length > 0 &&
+        !incomingOrderState.existingRef
+      ) {
+        const submitRes = await toolSubmitNewOrder({
+          name: incomingOrderState.customerName,
+          email: incomingOrderState.email,
+          phone: incomingOrderState.phone,
+          address: incomingOrderState.address,
+          items: incomingOrderState.products,
+          message: 'Order inquiry placed via instant order intake',
+        })
+        if (submitRes.orderRef) {
+          const confirmReply = formatSubmittedOrderMessage(submitRes.orderRef, {
+            name: incomingOrderState.customerName,
+            email: incomingOrderState.email,
+            phone: incomingOrderState.phone,
+            address: incomingOrderState.address,
+            items: incomingOrderState.products,
+          })
+          return new Response(
+            JSON.stringify({
+              reply: confirmReply,
+              history: [
+                ...sanitizedHistory,
+                { role: 'user', content: message },
+                { role: 'assistant', content: confirmReply },
+              ],
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+          )
+        }
       }
     }
 
@@ -1446,7 +1563,7 @@ export async function POST(req: Request) {
     // DYNAMIC CONVERSATIONAL AI SYNTHESIZER (ZERO-TEMPLATE GUARANTEE)
     // ========================================================================
     if (!finalReply) {
-      if (necMatch || phoneMatch || emailMatch) {
+      if (isTrackingIntent) {
         const lookupArgs: { orderRef?: string; phone?: string; email?: string } = {}
         if (necMatch) lookupArgs.orderRef = necMatch[0].toUpperCase()
         if (phoneMatch) lookupArgs.phone = phoneMatch[0]
