@@ -237,6 +237,7 @@ export async function benchmarkModel(model: string, apiKey: string): Promise<Mod
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
+          'x-session-id': `nectar-bench-${Date.now()}`,
         },
         body: JSON.stringify({
           model,

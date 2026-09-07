@@ -771,6 +771,11 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
   for (const m of history) {
     const text = m.content || ''
 
+    // Never parse products or active refs from past Order Lookup result displays
+    if (m.role === 'assistant' && ((text.includes('Found') && text.includes('orders')) || text.includes('Order Lookup') || text.includes('Current Status:'))) {
+      continue
+    }
+
     // Check if message is a pseudo tool call
     const parsedTool = parseToolCall(text)
     if (parsedTool && parsedTool.toolName === 'submit_new_order') {
@@ -1079,12 +1084,13 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
+            'x-session-id': `nectar-chat-${Date.now()}`,
           },
           body: JSON.stringify({
             model,
             messages,
             temperature: 0.4,
-            max_tokens: 900,
+            max_tokens: 1500,
           }),
         },
         8000
@@ -1093,8 +1099,17 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
       if (response.ok) {
         const resJson = await response.json()
         const choice = resJson.choices?.[0]?.message
-        if (choice && typeof choice.content === 'string' && choice.content.trim()) {
-          return resJson
+        if (choice) {
+          const mainContent = (choice.content || '').trim()
+          if (mainContent) {
+            return resJson
+          }
+          if (choice.reasoning_content && parseToolCall(choice.reasoning_content)) {
+            return {
+              ...resJson,
+              choices: [{ ...resJson.choices[0], message: { ...choice, content: choice.reasoning_content } }],
+            }
+          }
         }
       }
       const errText = await response.text()
@@ -1425,10 +1440,6 @@ export async function POST(req: Request) {
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanLower) ||
       /^nec-[a-z0-9-]+$/i.test(cleanLower)
 
-    const historyAskedForTracking = sanitizedHistory.some((m) =>
-      /(track|order status|check your order|reference id|mobile number|email address used)/i.test(m.content)
-    )
-
     const hasTrackingKeywords =
       cleanLower.includes('track') ||
       cleanLower.includes('status') ||
@@ -1448,12 +1459,26 @@ export async function POST(req: Request) {
       cleanLower.includes('take order') ||
       /\b\d+\s*(?:kg|gm|g|grams|kilos?|bags?|boxes?)\b/i.test(cleanLower)
 
+    const hasLookupIdentifier = Boolean(necMatch) || Boolean(phoneMatch) || Boolean(emailMatch) || isStandaloneLookupInput
+
+    // A tracking lookup MUST have an identifier in the current message
     const isTrackingIntent =
-      Boolean(necMatch) ||
-      isStandaloneLookupInput ||
-      ((Boolean(phoneMatch || emailMatch) || historyAskedForTracking) &&
-        (hasTrackingKeywords || historyAskedForTracking) &&
-        !hasOrderSubmissionWords)
+      !hasOrderSubmissionWords &&
+      (Boolean(necMatch) ||
+       (isStandaloneLookupInput && !cleanLower.includes('explain') && !cleanLower.includes('what') && !cleanLower.includes('how')) ||
+       (hasLookupIdentifier && hasTrackingKeywords))
+
+    // If the user asks about order tracking without providing an ID/phone
+    const isTrackingInquiryWithoutId =
+      !hasOrderSubmissionWords && !hasLookupIdentifier && hasTrackingKeywords
+
+    if (isTrackingInquiryWithoutId) {
+      const promptReply = `🌿 Sure, I can help you check your order status!\n\nTo look up your order, I'll need one of the following details from you:\n📋 **Reference ID** (e.g., \`NEC-20260815-122335\`)\n📞 **Mobile Number** (10-digit registered number)\n📧 **Email Address** used during ordering\n\nCould you please share any one of these so I can pull up your order details right away? 😊`
+      return new Response(
+        JSON.stringify({ reply: promptReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: promptReply }] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
 
     if (isTrackingIntent) {
       const lookupArgs: { orderRef?: string; phone?: string; email?: string } = {}
