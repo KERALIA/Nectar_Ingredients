@@ -602,6 +602,233 @@ async function toolSubmitNewOrder(args: {
   }
 }
 
+// ============================================================================
+// TOOL CALL PARSER & ROBUST ORDER SUBMISSION HELPERS
+// ============================================================================
+
+function normalizeItems(itemsInput: any): { name: string; sku?: string; quantity: number; unit?: string }[] {
+  if (!itemsInput) return []
+  const list = Array.isArray(itemsInput) ? itemsInput : [itemsInput]
+  return list.map((item: any) => {
+    if (typeof item === 'string') {
+      const match = item.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?$/)
+      if (match) {
+        return {
+          name: match[1].trim(),
+          quantity: parseFloat(match[2]),
+          unit: match[3] ? match[3].trim().toLowerCase() : 'kg',
+        }
+      }
+      return { name: item.trim(), quantity: 1, unit: 'kg' }
+    }
+    const name = item.name || item.product || 'Dehydrated Powder'
+    let qty = 1
+    let unit = item.unit || 'kg'
+    if (typeof item.quantity === 'number') {
+      qty = item.quantity
+    } else if (typeof item.quantity === 'string') {
+      const numMatch = item.quantity.match(/(\d+(?:\.\d+)?)/)
+      if (numMatch) qty = parseFloat(numMatch[1])
+      const unitMatch = item.quantity.replace(/[\d.\s]/g, '')
+      if (unitMatch) unit = unitMatch.toLowerCase()
+    }
+    return {
+      name,
+      sku: item.sku,
+      quantity: qty,
+      unit: unit || 'kg',
+    }
+  })
+}
+
+function formatSubmittedOrderMessage(orderRef: string, args: any): string {
+  const items = normalizeItems(args.items || args.products)
+  const itemsText = items.map((i) => `• **${i.name}** — ${i.quantity} ${i.unit || 'kg'}`).join('\n')
+  const custName = args.name || args.customer_name || 'Valued Customer'
+  const email = args.email || ''
+  const phone = args.phone || args.mobile || ''
+  const address = args.address || ''
+
+  return `🎉 **Order Inquiry Successfully Registered!** 🌿\n\n` +
+    `📋 **Reference Number:** \`${orderRef}\`\n` +
+    `👤 **Customer Name:** ${custName}\n` +
+    (phone ? `📞 **Mobile Number:** ${phone}\n` : '') +
+    (email ? `📧 **Email Address:** ${email}\n` : '') +
+    (address ? `🏠 **Delivery Address:** ${address}\n\n` : '\n') +
+    `📦 **Items Requested:**\n${itemsText}\n\n` +
+    `✅ **What Happens Next:**\n` +
+    `1. Our commercial dispatch team in Surendranagar (led by **Mehul Patel**) has logged your order inquiry in our system.\n` +
+    `2. A custom commercial quote & proforma invoice with direct factory pricing will be sent to **${email}** shortly.\n` +
+    `3. Dispatches are prepared in moisture-sealed barrier packaging with official batch Certificates of Analysis (COA).\n\n` +
+    `💡 For priority dispatch or immediate questions:\n` +
+    `Reach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
+}
+
+function parseToolCall(content: string): { toolName: string; args: any } | null {
+  if (!content || typeof content !== 'string') return null
+
+  // 1. XML style: <tool_call>submit_new_order ... </tool_call>
+  const toolCallMatch = content.match(/<tool_call>\s*([a-zA-Z0-9_-]+)([\s\S]*?)<\/tool_call>/i)
+  if (toolCallMatch) {
+    const toolName = toolCallMatch[1].trim()
+    const body = toolCallMatch[2]
+    const args: Record<string, any> = {}
+    const keyValRegex = /<arg_key>\s*([^<]+?)\s*<\/arg_key>\s*<arg_value>\s*([\s\S]*?)\s*<\/arg_value>/gi
+    let match: RegExpExecArray | null
+    while ((match = keyValRegex.exec(body)) !== null) {
+      const key = match[1].trim()
+      let val: any = match[2].trim()
+      if ((val.startsWith('[') && val.endsWith(']')) || (val.startsWith('{') && val.endsWith('}'))) {
+        try {
+          val = JSON.parse(val)
+        } catch {}
+      }
+      args[key] = val
+    }
+    if (Object.keys(args).length === 0) {
+      try {
+        const jsonBody = JSON.parse(body.trim())
+        return { toolName, args: jsonBody }
+      } catch {}
+    }
+    return { toolName, args }
+  }
+
+  // 2. Markdown code block or JSON object
+  const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || content.match(/\{[\s\S]*"name"\s*:\s*"submit_new_order"[\s\S]*\}/)
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[1] || jsonMatch[0])
+      if (parsed.name || parsed.tool) {
+        return { toolName: parsed.name || parsed.tool, args: parsed.arguments || parsed.args || parsed }
+      }
+    } catch {}
+  }
+
+  return null
+}
+
+function extractOrderStateFromHistory(history: Array<{ role: string; content: string }>): {
+  customerName: string
+  email: string
+  phone: string
+  address: string
+  pin: string
+  products: { name: string; quantity: number; unit?: string }[]
+  existingRef: string
+} {
+  let customerName = ''
+  let email = ''
+  let phone = ''
+  let address = ''
+  let pin = ''
+  let products: { name: string; quantity: number; unit?: string }[] = []
+  let existingRef = ''
+
+  for (const m of history) {
+    const text = m.content || ''
+
+    // Check if message is a pseudo tool call
+    const parsedTool = parseToolCall(text)
+    if (parsedTool && parsedTool.toolName === 'submit_new_order') {
+      const a = parsedTool.args
+      if (a.customer_name || a.name) customerName = a.customer_name || a.name
+      if (a.email) email = a.email
+      if (a.mobile || a.phone) phone = a.mobile || a.phone
+      if (a.address) address = a.address
+      if (a.products || a.items) products = normalizeItems(a.products || a.items)
+    }
+
+    // Ref check
+    const refMatch = text.match(/NEC-\d{8}-\d{6}/i)
+    if (refMatch && !existingRef) {
+      existingRef = refMatch[0].toUpperCase()
+    }
+
+    // Email check
+    const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)
+    if (emailMatch && !email) {
+      email = emailMatch[0]
+    }
+
+    // 10-digit Phone check
+    const phoneMatch = text.match(/(?:\+?91[\s-]?)?([6-9]\d{9})/)
+    if (phoneMatch && !phone) {
+      phone = phoneMatch[1]
+    }
+
+    // 6-digit PIN check
+    const pinMatch = text.match(/\b([1-9]\d{5})\b/)
+    if (pinMatch && !pin) {
+      pin = pinMatch[1]
+    }
+
+    // Check assistant messages for named customer and address
+    if (m.role === 'assistant') {
+      const nameMatch = text.match(/(?:Great progress|welcome|hello|thank you|hi),\s*([^!,.?]+?)\s*!/i)
+      if (nameMatch && !customerName && nameMatch[1].trim().length > 2 && !nameMatch[1].toLowerCase().includes('welcome')) {
+        customerName = nameMatch[1].trim()
+      }
+      const addrMatch = text.match(/Your address:\s*\*?([^*\n]+?)\*?(?:\n|$)/i)
+      if (addrMatch && !address) {
+        address = addrMatch[1].trim()
+      }
+
+      // Check assistant message for listed products
+      const summaryLines = text.split('\n')
+      for (const line of summaryLines) {
+        const lineMatch = line.match(/(?:•|[🍅🫘💜📦✅\s])*\s*([A-Za-z\s]+?)\s*[—–-]\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?/i)
+        if (lineMatch && !line.includes('Box') && !line.includes('Trial')) {
+          const pName = lineMatch[1].trim()
+          const pQty = parseFloat(lineMatch[2])
+          const pUnit = lineMatch[3] ? lineMatch[3].trim().toLowerCase() : 'kg'
+          if (pName.length > 2 && !products.some((p) => p.name.toLowerCase() === pName.toLowerCase())) {
+            products.push({ name: pName, quantity: pQty, unit: pUnit })
+          }
+        }
+      }
+    }
+
+    // User message heuristics
+    if (m.role === 'user') {
+      const itemRegex = /([a-zA-Z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilo|bags?|box|boxes)?(?=[,\s]+[a-zA-Z]+|\s*$)/gi
+      let iMatch: RegExpExecArray | null
+      while ((iMatch = itemRegex.exec(text)) !== null) {
+        const rawName = iMatch[1].trim().replace(/^[,|&]|[,|&]$/g, '').trim()
+        const pQty = parseFloat(iMatch[2])
+        const pUnit = iMatch[3] ? iMatch[3].trim().toLowerCase() : 'kg'
+        const pName = rawName.replace(/^(and|or|plus|with|,)\s+/i, '').trim()
+        if (pName.length > 2 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar'].some((bad) => pName.toLowerCase().includes(bad))) {
+          if (!products.some((p) => p.name.toLowerCase() === pName.toLowerCase())) {
+            products.push({ name: pName, quantity: pQty, unit: pUnit })
+          }
+        }
+      }
+
+      const parts = text.split(/[,|\n]+/).map((p) => p.trim()).filter(Boolean)
+      for (const p of parts) {
+        const pClean = p.trim()
+        if (!pClean.includes('@') && !pClean.match(/^[6-9]\d{9}$/) && !pClean.match(/^[1-9]\d{5}$/)) {
+          const hasKgOrQty = /\b\d+\s*(?:kg|gm|g|bags?|boxes?)\b/i.test(pClean)
+          if (!hasKgOrQty) {
+            if (pClean.length > 12 && /(nagar|soc|society|street|road|floor|flat|house|block|near|opp|behind|gujarat|mumbai|delhi|india)/i.test(pClean)) {
+              if (!address) address = pClean
+            } else if (!customerName && pClean.split(/\s+/).length >= 2 && pClean.length >= 4 && !/\b(take|order|powder|need|want|submit|hello|hi|please)\b/i.test(pClean)) {
+              customerName = pClean
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (address && pin && !address.includes(pin)) {
+    address = `${address} - ${pin}`
+  }
+
+  return { customerName, email, phone, address, pin, products, existingRef }
+}
+
 const tools = [
   {
     type: 'function',
@@ -673,7 +900,7 @@ CORE RESPONSIBILITIES:
 
 1. NEW ORDER INTAKE & CREATION (HIGHEST PRIORITY):
    - When a customer says "take a new order", "place a new order", "place a custom order", "order powders", "buy tomato powder", "I want to purchase", "sample request", or lists products they want:
-     • THIS IS A NEW ORDER INTAKE — NEVER CALL \`lookup_order\`!
+     • THIS IS A NEW ORDER INTAKE — NEVER CALL 'lookup_order'!
      • Enthusiastically acknowledge the powders they requested.
      • Ask the customer to provide:
        1. 📦 **Products & Quantities**: (e.g. Tomato Powder 25kg, Onion Powder 1kg sample, Garlic Powder 50kg)
@@ -682,7 +909,24 @@ CORE RESPONSIBILITIES:
        4. 📞 **Mobile Number**: 10-digit Indian WhatsApp / phone number
        5. 🏠 **Complete Delivery Address**: Street/Premises, City, State, and 6-digit PIN code
      • If the customer already provided some of these details (e.g. "place a custom order for tomato powder, onion powder and garlic powder"), confirm the items and ask for the remaining required details (quantities, name, email, phone, and delivery address).
-     • Once the customer provides these required fields, IMMEDIATELY call \`submit_new_order\`!
+     • Once the customer provides all required fields (name, email, 10-digit phone, complete address with 6-digit PIN, and products with quantities), IMMEDIATELY call 'submit_new_order' using this exact tag format:
+<tool_call>submit_new_order
+<arg_key>products</arg_key>
+<arg_value>[{"name": "...", "quantity": "..."}]</arg_value>
+<arg_key>customer_name</arg_key>
+<arg_value>...</arg_value>
+<arg_key>email</arg_key>
+<arg_value>...</arg_value>
+<arg_key>mobile</arg_key>
+<arg_value>...</arg_value>
+<arg_key>address</arg_key>
+<arg_value>...</arg_value>
+</tool_call>
+
+   - ORDER STATUS FOLLOW-UP RULES:
+     • If the customer asks "is it submitted", "is my order placed", "status of this order", or similar follow-ups:
+       - Check previous chat history: if an order was already submitted with a Reference ID (starting with NEC-), warmly confirm the submission, recite the Reference ID and items, and assure them that their commercial quote & proforma invoice is on the way to their email.
+       - If details are incomplete, kindly specify which required field (e.g. 6-digit PIN code) is still needed.
 
 2. ORDER & INQUIRY STATUS TRACKING & MULTI-ORDER HANDLING:
    - ONLY when a customer explicitly asks to track or check status and provides a Reference ID starting with 'NEC-', a mobile number, or an email, invoke 'lookup_order'.
@@ -778,20 +1022,99 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
 // DYNAMIC CONVERSATIONAL AI SYNTHESIZER (ZERO-TEMPLATE GUARANTEE)
 // ============================================================================
 
-function synthesizeDynamicAIResponse(message: string, retrievedContext: string): string {
+async function synthesizeDynamicAIResponse(
+  message: string,
+  retrievedContext: string,
+  history: Array<{ role: string; content: string }> = []
+): Promise<string> {
   const clean = message.toLowerCase().trim()
+  const historyWithMsg = [...history, { role: 'user', content: message }]
+  const state = extractOrderStateFromHistory(historyWithMsg)
 
-  // 1. GREETING INTENT
+  // 1. ORDER STATUS / SUBMISSION CONFIRMATION INTENT
+  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+my\s+order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed|check\s+my\s+order)/i.test(clean)
+  if (isOrderFollowUp) {
+    if (state.existingRef) {
+      return `Yes, absolutely! 🎉 Your order has been successfully registered in our system! 🌿\n\n📋 **Reference Number:** \`${state.existingRef}\`\n\nOur commercial sales team in Surendranagar (led by **Mehul Patel**) has logged your inquiry. An official commercial quote and proforma invoice will be sent to your registered email shortly.\n\n💡 For priority dispatch or immediate questions:\nReach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
+    }
+    // If all details were collected but ref not yet created, auto-submit now!
+    if (state.customerName && state.email && state.address && state.products.length > 0) {
+      const submitRes = await toolSubmitNewOrder({
+        name: state.customerName,
+        email: state.email,
+        phone: state.phone,
+        address: state.address,
+        items: state.products,
+        message: 'Order confirmed and submitted via customer verification',
+      })
+      if (submitRes.orderRef) {
+        return formatSubmittedOrderMessage(submitRes.orderRef, {
+          name: state.customerName,
+          email: state.email,
+          phone: state.phone,
+          address: state.address,
+          items: state.products,
+        })
+      }
+    }
+    // Partial details
+    if (state.products.length > 0) {
+      const missing: string[] = []
+      if (!state.customerName) missing.push('Full Name')
+      if (!state.email) missing.push('Email Address')
+      if (!state.phone) missing.push('Mobile Number')
+      if (!state.address || !state.pin) missing.push('Complete Delivery Address with 6-digit PIN')
+      return `We have noted your order details for **${state.products.map((p) => p.name).join(', ')}**, but to formally submit it and generate your Reference ID, we still need: ${missing.join(', ')}. Please share these details, and I will submit it right away! 🌿`
+    }
+  }
+
+  // 2. PIN CODE OR ADDRESS COMPLETION FOR ORDER
+  const pinOnlyMatch = clean.match(/^\b([1-9]\d{5})\b$/)
+  if (pinOnlyMatch && state.products.length > 0 && (state.customerName || state.email || state.phone)) {
+    if (state.customerName && state.email && state.address) {
+      const submitRes = await toolSubmitNewOrder({
+        name: state.customerName,
+        email: state.email,
+        phone: state.phone,
+        address: state.address,
+        items: state.products,
+        message: 'Order inquiry completed with PIN code',
+      })
+      if (submitRes.orderRef) {
+        return formatSubmittedOrderMessage(submitRes.orderRef, {
+          name: state.customerName,
+          email: state.email,
+          phone: state.phone,
+          address: state.address,
+          items: state.products,
+        })
+      }
+    }
+  }
+
+  // 3. USER PROVIDED PRODUCTS WITH QUANTITIES (e.g. "Tomato 5 kg soya hvp 6 kg , beetroot 7 kg")
+  const hasQuantities = /\b\d+\s*(?:kg|gm|g|grams|kilo|bags?|boxes?)\b/i.test(clean)
+  if (hasQuantities && state.products.length > 0) {
+    const pList = state.products.map((p) => `• **${p.name}** — ${p.quantity} ${p.unit || 'kg'}`).join('\n')
+    return `🛒 **Excellent choices! I've noted your requested products:**\n${pList}\n\nTo proceed with your order and generate your official commercial quote & PDF invoice, please share:\n👤 **Full Name:**\n📧 **Email Address:**\n📞 **Mobile Number:** (10-digit)\n🏠 **Complete Delivery Address:** (Street, City, State, and 6-digit PIN Code)\n\nOnce you share these, I'll submit your order immediately! 🌿✨`
+  }
+
+  // 4. USER EXPLICITLY ASKS TO PLACE AN ORDER (e.g. "Take a order", "I want to order")
+  if (/(take\s+(?:an?\s+)?order|place\s+(?:an?\s+)?order|order\s+powders|buy\s+powder|purchase\s+powders)/i.test(clean)) {
+    return `🌿 **Welcome to Nectar Ingredients!** 🌿\n\nWe'd love to help you place an order! To get started, please share:\n📦 **Products & Quantities** — Which powders and quantities are you looking for? (e.g., Tomato Powder 25kg, Onion Powder 1kg sample, Soya HVP 5kg)\n👤 **Full Name**\n📧 **Email Address**\n📞 **Mobile Number** (10-digit)\n🏠 **Complete Delivery Address** (Street, City, State, and 6-digit PIN Code)\n\nOnce we have these, our sales team will register your order and email your custom commercial quote right away! 😊`
+  }
+
+  // 5. GREETING INTENT
   if (/^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean)) {
     return `Hello! 👋 Welcome to **Nectar Intelligence**! 🌿\n\nI'm your AI technical and commercial assistant for Nectar Ingredients (Surendranagar, Gujarat). How can I assist you today? I'd be happy to explain our dehydrated powders, help with formulation ideas, or answer any technical questions! 😊`
   }
 
-  // 2. HEALTH / WELLNESS / SYMPTOM INTENT (fever, cold, immunity, digestion)
+  // 6. HEALTH / WELLNESS / SYMPTOM INTENT (fever, cold, immunity, digestion)
   if (/(fever|sick|ill|cold|cough|headache|flu|immunity|throat|infection|weakness|pain)/i.test(clean)) {
     return `I'm sorry to hear you're feeling unwell! 💛 Here are some gentle, supportive natural wellness measures that can help keep you comfortable during a fever:\n\n💧 **Stay Thoroughly Hydrated:**\nDrink plenty of warm water, oral electrolytes, or light clear vegetable broths to replenish fluids lost through temperature regulation.\n\n🫚 **Warm Ginger (Sounth) Infusion:**\nGinger is traditionally celebrated for its warming, comforting properties. Steeping a pinch of pure ginger powder in hot water with a teaspoon of honey can bring soothing relief against chills and body aches.\n\n🥛 **Golden Turmeric (Haldi) Milk:**\nTurmeric contains natural **curcumin**, widely used in Indian wellness traditions to support the body's natural immune and recovery response.\n\n🍋 **Vitamin C & Hydration:**\nAmla (Indian gooseberry) or lemon water provides natural vitamin C to support immune health during recovery.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary and wellness measures. Pure spice powders are dietary ingredients and not a substitute for professional medical treatment. If your fever is high (above 102°F/39°C), lasts more than 48 hours, or comes with severe symptoms, please consult a qualified doctor or healthcare provider promptly!\n\nWishing you a speedy and restful recovery! 🤗💛`
   }
 
-  // 3. PRODUCT EXPLANATION / DETAILS
+  // 7. PRODUCT EXPLANATION / DETAILS
   const matched = KNOWLEDGE_CATALOG.find((p) => {
     const pName = p.name.toLowerCase()
     const base = pName.replace(' powder', '').trim()
@@ -813,17 +1136,17 @@ function synthesizeDynamicAIResponse(message: string, retrievedContext: string):
     return `🍅 **${matched.name}**${isCustom} — Detailed Overview 🌿\n\n${matched.description}\n\n🔬 **Key Technical Specifications:**\n• **Mesh / Fineness:** ${matched.mesh} (fine, uniform particle sizing for fast dispersion)\n• **Purity & Moisture:** 100% pure & additive-free; moisture strictly maintained below 8% for long shelf stability.\n• **Key Applications:** ${apps}\n\n📦 **Packaging & Samples:**\nWe supply standard **25 KG bulk corrugated boxes** (food-grade HDPE lined) alongside **1 KG & 5 KG R&D trial packs** for formulation and sample testing.\n\nWould you like a commercial price quote or the verified batch Certificate of Analysis (COA) for ${matched.name}? 😊`
   }
 
-  // 4. RECIPE / FORMULATION / PREMIX ADVISORY
+  // 8. RECIPE / FORMULATION / PREMIX ADVISORY
   if (/(recipe|formulation|how to make|soup|seasoning|blend|mix)/i.test(clean)) {
     return `🌿 **Formulation Advisory from Nectar Intelligence:**\n\nFor commercial dry seasonings and instant soup premixes, dehydrated powders offer consistent flavor, long shelf life, and zero moisture clumping:\n\n• **Savory Soup Premixes:** Combine **Tomato Powder (80 mesh)** with **White Onion Powder**, a touch of **Garlic Powder**, and **Soya HVP** for deep umami depth.\n• **Snack Seasonings:** Blend **Cheese Powder Grade A** with **Garlic Powder** and mild herbs for popcorn or chip coatings.\n• **Natural Food Colors:** Use **Beetroot Powder** for vibrant ruby-reds and **Turmeric Powder** for golden-yellow tones without synthetic food dyes.\n\nWould you like sample packs of any of these powders for your R&D trials? 😊`
   }
 
-  // 5. DEHYDRATION TECHNOLOGIES (Freeze drying vs Spray drying vs Drum drying)
+  // 9. DEHYDRATION TECHNOLOGIES (Freeze drying vs Spray drying vs Drum drying)
   if (/(freeze dry|spray dry|drum dry|dehydration method|how is it made|drying process)/i.test(clean)) {
     return `🔬 **Dehydration Technologies at Nectar Ingredients** 🌿\n\nWe utilize advanced, low-temperature dehydration processes tailored to each raw ingredient to preserve natural pigments, delicate aromas, and active bioactives:\n\n• **Low-Temperature Spray Drying:** Ideal for fruit concentrates and dairy powders (like Pomegranate and Cheese Powder). Atomized droplets dry rapidly in warm air, yielding ultra-fine, highly dispersible powders with instant solubility.\n• **Freeze Drying (Lyophilization):** Sublimates ice crystals under vacuum at sub-zero temperatures. It provides unmatched nutrient and volatile aroma retention with a light, porous structure that rehydrates instantly — ideal for premium fruit and herbal applications.\n• **Hot Air & Drum Drying:** Perfect for root vegetables, spices, and leafy greens (like Onion, Garlic, and Kasuri Methi). Gentle low heat preserves robust pungency, fiber integrity, and standard 60–100 mesh fineness.\n\nAll our powders maintain moisture strictly below 8% with zero added salt, carriers, or artificial fillers. Would you like technical specs or R&D trial packs for your specific application? 😊`
   }
 
-  // 6. IF RETRIEVED CONTEXT EXISTS, CONVERSATIONAL SUMMARY (NO RAW DUMPS)
+  // 10. IF RETRIEVED CONTEXT EXISTS, CONVERSATIONAL SUMMARY (NO RAW DUMPS)
   if (retrievedContext) {
     const lines = retrievedContext.split('\n').filter((l) => l.includes('• **'))
     const productNames = lines
@@ -840,7 +1163,11 @@ function synthesizeDynamicAIResponse(message: string, retrievedContext: string):
     }
   }
 
-  // 7. GENERAL CONVERSATIONAL INQUIRY
+  // 11. GENERAL CONVERSATIONAL INQUIRY
+  if (history && history.length > 0) {
+    return `I'm here! 👋 How can I assist you further with your powder specifications, formulation guidance, or order status? Feel free to ask about any specific powders, mesh sizes, or lab COA reports! 🌿`
+  }
+
   return `Hello! 👋 At **Nectar Intelligence**, we're here to assist you with all your wholesale spice, vegetable, fruit, and dairy powder inquiries.\n\nWe manufacture 100% pure, low-temperature dehydrated powders in Surendranagar, Gujarat. Could you share a bit more detail on what you're looking for — such as specific powders, target mesh fineness, or sample requirements? I'd be happy to help! 🌿`
 }
 
@@ -911,7 +1238,7 @@ export async function POST(req: Request) {
 
     const cleanLower = message.toLowerCase().trim()
 
-    // Sanitize history so that it starts strictly with a user turn and caps at 6 turns
+    // Sanitize history so that it starts strictly with a user turn and retains up to 16 turns (8 complete exchanges)
     let sanitizedHistory: { role: string; content: string }[] = []
     if (Array.isArray(history)) {
       const validTurns = history.filter(
@@ -919,7 +1246,7 @@ export async function POST(req: Request) {
       )
       const firstUserIdx = validTurns.findIndex((m) => m.role === 'user')
       if (firstUserIdx !== -1) {
-        sanitizedHistory = validTurns.slice(firstUserIdx).slice(-6).map((m) => ({
+        sanitizedHistory = validTurns.slice(firstUserIdx).slice(-16).map((m) => ({
           role: m.role,
           content: m.content,
         }))
@@ -939,7 +1266,7 @@ export async function POST(req: Request) {
     ) {
       const brochureReply = `📄 **Nectar Ingredients Official Product Brochure & Catalog**\n\n[Download Company Brochure PDF](/Company_Brochure/Nectar_Ingredients_Brochure.pdf)\n\n• **Portfolio:** Complete technical specifications for 40+ pure vegetable, fruit, spice, and dairy powders.\n• **Dehydration Technologies:** Low-temperature spray drying, drum drying, and freeze drying with zero added fillers, salt, or artificial colors.\n• **Commercial Packaging:** Standard 25 KG bulk boxes (HDPE lined) + 1 KG & 5 KG R&D trial packs.\n\n💡 For bulk container pricing or custom mesh specifications, reach **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) or email [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) 😊`
       return new Response(
-        JSON.stringify({ reply: brochureReply, history: sanitizedHistory }),
+        JSON.stringify({ reply: brochureReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: brochureReply }] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
@@ -969,7 +1296,7 @@ export async function POST(req: Request) {
 
       const coaReply = `🔬 **Official Batch Laboratory Analysis & Certificates (COA)**\n\n${certCards}\n\n• **Quality Guarantee:** Batch-tested for heavy metals, moisture strictly <8%, 80-100 mesh fineness, and zero synthetic dyes or preservatives.\n• **Batch Certificates:** Signed analytical reports accompany all commercial shipments.\n\n💡 For custom analytical testing or formulation support, reach **Mehul Patel** directly at [+91 98798 38281](https://wa.me/919879838281) 🌿`
       return new Response(
-        JSON.stringify({ reply: coaReply, history: sanitizedHistory }),
+        JSON.stringify({ reply: coaReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: coaReply }] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
@@ -992,7 +1319,7 @@ export async function POST(req: Request) {
     if (isContactQuery && !cleanLower.includes('powder') && !cleanLower.includes('recipe')) {
       const contactReply = `👋 **Nectar Ingredients — Direct B2B Commercial Desk**\n\n• 📞 **Key Contact Person:** Mehul Patel\n• 💬 **Direct Call & WhatsApp:** [+91 98798 38281](https://wa.me/919879838281) (Fastest for custom rates, sample dispatches & dispatch updates)\n• 📧 **Official Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) (For custom commercial quotes and official PDF bills upon dispatch)\n• 🏢 **Manufacturing Facility & Office:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿\n\nFeel free to WhatsApp Mehul directly with your target product, quantity, and destination pin code! 😊`
       return new Response(
-        JSON.stringify({ reply: contactReply, history: sanitizedHistory }),
+        JSON.stringify({ reply: contactReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: contactReply }] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
@@ -1005,8 +1332,8 @@ export async function POST(req: Request) {
     const emailMatch = message.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)
 
     if (
-      (necMatch || (phoneMatch && (cleanLower.includes('track') || cleanLower.includes('order') || cleanLower.includes('status') || cleanLower.includes('sample')))) &&
-      !cleanLower.includes('place') && !cleanLower.includes('buy')
+      (necMatch || (phoneMatch && (cleanLower.includes('track') || cleanLower.includes('status') || cleanLower.includes('sample')))) &&
+      !cleanLower.includes('place') && !cleanLower.includes('buy') && !cleanLower.includes('is it submitted')
     ) {
       const lookupArgs: { orderRef?: string; phone?: string; email?: string } = {}
       if (necMatch) lookupArgs.orderRef = necMatch[0].toUpperCase()
@@ -1017,9 +1344,47 @@ export async function POST(req: Request) {
       if (lookupRes?.orders?.length > 0) {
         const orderReply = formatOrderResponse(lookupRes.orders)
         return new Response(
-          JSON.stringify({ reply: orderReply, history: sanitizedHistory }),
+          JSON.stringify({ reply: orderReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: orderReply }] }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         )
+      }
+    }
+
+    // ========================================================================
+    // FAST PATH 5: Instant Order Follow-Up & Submission Verification (<5ms)
+    // ========================================================================
+    const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+my\s+order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed)/i.test(cleanLower)
+    if (isOrderFollowUp) {
+      const state = extractOrderStateFromHistory(sanitizedHistory)
+      if (state.existingRef) {
+        const confirmReply = `Yes, absolutely! 🎉 Your order has been successfully submitted to our dispatch desk! 🌿\n\n📋 **Order Reference ID:** \`${state.existingRef}\`\n\nOur commercial sales team in Surendranagar (led by **Mehul Patel**) has received your inquiry. An official commercial quote and proforma invoice will be sent to your registered email shortly.\n\n💡 For priority dispatch or immediate questions:\nReach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
+        return new Response(
+          JSON.stringify({ reply: confirmReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: confirmReply }] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        )
+      }
+      if (state.customerName && state.email && state.address && state.products.length > 0) {
+        const submitRes = await toolSubmitNewOrder({
+          name: state.customerName,
+          email: state.email,
+          phone: state.phone,
+          address: state.address,
+          items: state.products,
+          message: 'Order confirmed and submitted via customer verification',
+        })
+        if (submitRes.orderRef) {
+          const confirmReply = formatSubmittedOrderMessage(submitRes.orderRef, {
+            name: state.customerName,
+            email: state.email,
+            phone: state.phone,
+            address: state.address,
+            items: state.products,
+          })
+          return new Response(
+            JSON.stringify({ reply: confirmReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: confirmReply }] }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+          )
+        }
       }
     }
 
@@ -1046,7 +1411,31 @@ export async function POST(req: Request) {
         const result = await callOpenCodeZen(messages, apiKey)
         const choice = result.choices?.[0]?.message
         if (choice && typeof choice.content === 'string' && choice.content.trim()) {
-          finalReply = choice.content
+          const rawContent = choice.content
+          const parsedTool = parseToolCall(rawContent)
+          if (parsedTool) {
+            if (parsedTool.toolName === 'submit_new_order') {
+              const submitRes = await toolSubmitNewOrder({
+                name: parsedTool.args.name || parsedTool.args.customer_name,
+                email: parsedTool.args.email,
+                phone: parsedTool.args.phone || parsedTool.args.mobile,
+                company: parsedTool.args.company,
+                address: parsedTool.args.address,
+                items: normalizeItems(parsedTool.args.items || parsedTool.args.products),
+                message: parsedTool.args.message || 'Order inquiry placed via chatbot',
+              })
+              if (submitRes.orderRef) {
+                finalReply = formatSubmittedOrderMessage(submitRes.orderRef, parsedTool.args)
+              } else if (submitRes.error) {
+                finalReply = `I have your order details, but I just need one small correction: ${submitRes.error}. Could you please update this detail so I can submit it immediately? 🌿`
+              }
+            } else if (parsedTool.toolName === 'lookup_order') {
+              const lookupRes = await toolLookupOrder(parsedTool.args)
+              finalReply = formatOrderResponse(lookupRes?.orders || [])
+            }
+          } else {
+            finalReply = rawContent
+          }
         }
       } catch (llmError) {
         console.warn('LLM API call timed out or failed, using intelligent dynamic fallback:', llmError)
@@ -1066,12 +1455,18 @@ export async function POST(req: Request) {
         const lookupRes = await toolLookupOrder(lookupArgs)
         finalReply = formatOrderResponse(lookupRes?.orders || [])
       } else {
-        finalReply = synthesizeDynamicAIResponse(message, retrievedContext)
+        finalReply = await synthesizeDynamicAIResponse(message, retrievedContext, sanitizedHistory)
       }
     }
 
+    const updatedHistory = [
+      ...sanitizedHistory,
+      { role: 'user', content: message },
+      { role: 'assistant', content: finalReply },
+    ]
+
     return new Response(
-      JSON.stringify({ reply: finalReply, history: messages.filter((m) => m.role !== 'system') }),
+      JSON.stringify({ reply: finalReply, history: updatedHistory }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
   } catch (error) {
