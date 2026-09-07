@@ -433,8 +433,13 @@ function retrieveRelevantKnowledge(query: string): string {
 // TOOL IMPLEMENTATIONS: Webhook Router for Google Sheets
 // ============================================================================
 
-async function toolLookupOrder(args: { orderRef?: string; phone?: string; email?: string }) {
-  if (!args.orderRef && !args.phone && !args.email) {
+async function toolLookupOrder(args: { orderRef?: string; phone?: string; email?: string; [key: string]: any }) {
+  console.error('🔍 [DEBUG toolLookupOrder] called with:', JSON.stringify(args))
+  const rawRef = (args.orderRef || args.ref || args.order_ref || args.orderId || args.id || '').toString().trim()
+  const rawPhone = (args.phone || args.mobile || args.phoneNumber || args.contact || args.phone_number || '').toString().trim()
+  const rawEmail = (args.email || args.mail || args.emailAddress || '').toString().trim()
+
+  if (!rawRef && !rawPhone && !rawEmail) {
     return {
       status: 'ignored',
       message: 'No reference ID, phone number, or email was provided. If the user wants to place a new order or request samples, collect their contact & address details to submit an order.',
@@ -443,9 +448,20 @@ async function toolLookupOrder(args: { orderRef?: string; phone?: string; email?
 
   const scriptUrl = appsScriptUrl()
   if (scriptUrl) {
-    const normalizedPhone = args.phone ? args.phone.replace(/[^\d+]/g, '').trim() : undefined
-    const normalizedEmail = args.email ? args.email.trim().toLowerCase() : undefined
-    const normalizedRef = args.orderRef ? args.orderRef.trim().toUpperCase() : undefined
+    let normalizedPhone: string | undefined = undefined
+    if (rawPhone) {
+      const cleanDigits = rawPhone.replace(/[^\d]/g, '')
+      if (cleanDigits.length === 12 && cleanDigits.startsWith('91')) {
+        normalizedPhone = cleanDigits.slice(2)
+      } else if (cleanDigits.length >= 10) {
+        normalizedPhone = cleanDigits.slice(-10)
+      } else {
+        normalizedPhone = cleanDigits
+      }
+    }
+
+    const normalizedEmail = rawEmail ? rawEmail.toLowerCase() : undefined
+    const normalizedRef = rawRef ? rawRef.toUpperCase() : undefined
 
     // 1. Try POST request with redirect follow via IPv4
     try {
@@ -995,7 +1011,15 @@ CORE RESPONSIBILITIES:
        - If details are incomplete, kindly specify which required field (e.g. 6-digit PIN code) is still needed.
 
 2. ORDER & INQUIRY STATUS TRACKING & MULTI-ORDER HANDLING:
-   - ONLY when a customer explicitly asks to track or check status and provides a Reference ID starting with 'NEC-', a mobile number, or an email, invoke 'lookup_order'.
+   - When a customer asks to track or check order status, or provides an order Reference ID ('NEC-...'), 10-digit mobile number, or email address to check status, invoke 'lookup_order' using this exact format:
+<tool_call>lookup_order
+<arg_key>orderRef</arg_key>
+<arg_value>NEC-...</arg_value>
+<arg_key>phone</arg_key>
+<arg_value>10-digit mobile number</arg_value>
+<arg_key>email</arg_key>
+<arg_value>customer email</arg_value>
+</tool_call>
    - SINGLE ORDER RESULT:
      • Report Ref ID, Status, Items, and Total.
      • Dispatched Status: Inform them that their package is dispatched from Surendranagar and the official PDF invoice has been sent to their email.
@@ -1119,7 +1143,7 @@ async function synthesizeDynamicAIResponse(
   }
 
   // 2. ORDER STATUS / SUBMISSION CONFIRMATION INTENT
-  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+my\s+order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed|check\s+my\s+order)/i.test(clean)
+  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+(?:my\s+)?order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed|check\s+(?:my\s+)?order|check\s+orders?\s+status|track\s+(?:my\s+)?order)/i.test(clean)
   if (isOrderFollowUp) {
     if (state.existingRef) {
       return `Yes, absolutely! 🎉 Your order has been successfully registered in our system! 🌿\n\n📋 **Reference Number:** \`${state.existingRef}\`\n\nOur commercial sales team in Surendranagar (led by **Mehul Patel**) has logged your inquiry. An official commercial quote and proforma invoice will be sent to your registered email shortly.\n\n💡 For priority dispatch or immediate questions:\nReach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
@@ -1133,6 +1157,7 @@ async function synthesizeDynamicAIResponse(
       if (!state.address || !state.pin) missing.push('Complete Delivery Address with 6-digit PIN')
       return `We have noted your order details for **${state.products.map((p) => p.name).join(', ')}**, but to formally submit it and generate your Reference ID, we still need: ${missing.join(', ')}. Please share these details, and I will submit it right away! 🌿`
     }
+    return `🌿 Sure, I can help you check your order status!\n\nTo look up your order, I'll need one of the following details from you:\n📋 **Reference ID** (e.g., \`NEC-20260815-122335\`)\n📞 **Mobile Number** (10-digit registered number)\n📧 **Email Address** used during ordering\n\nCould you please share any one of these so I can pull up your order details right away? 😊`
   }
 
   // 3. USER PROVIDED PRODUCTS WITH QUANTITIES OR PARTIAL DETAILS
@@ -1260,7 +1285,14 @@ function formatOrderResponse(orders: any[]): string {
     const isPay = st.toLowerCase().includes('qr') || st.toLowerCase().includes('awaiting payment')
     const icon = isDisp ? '🚚' : isPay ? '💳' : '📋'
     reply += `${idx + 1}️⃣ **Ref:** \`${o.orderRef}\` | 📌 **Status:** ${st} ${icon}\n`
-    if (o.items) reply += `   • **Items:** ${o.items}\n`
+    if (o.items) {
+      const cleanItems = String(o.items)
+        .split('\n')
+        .map((l: string) => l.replace(/^[•\s-]+/, '').trim())
+        .filter(Boolean)
+        .join(', ')
+      reply += `   • **Items:** ${cleanItems || o.items}\n`
+    }
     if (o.total && o.total !== 'Not yet quoted') reply += `   • **Total:** ₹${o.total}\n`
     reply += '\n'
   })
@@ -1384,31 +1416,53 @@ export async function POST(req: Request) {
     // FAST PATH 4: Instant Order Tracking (<800ms)
     // ========================================================================
     const necMatch = message.match(/NEC-\d{8}-\d{6}|NEC-[A-Za-z0-9-]+/i)
-    const phoneMatch = message.match(/(\+?91)?[6-9]\d{9}/)
+    const phoneMatch = message.match(/(?:\+?91[\s-]?)?([6-9]\d{9})/i)
     const emailMatch = message.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)
+
+    const cleanDigits = message.replace(/[\s\-\+]/g, '')
+    const isStandaloneLookupInput =
+      /^(?:91)?[6-9]\d{9}$/.test(cleanDigits) ||
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanLower) ||
+      /^nec-[a-z0-9-]+$/i.test(cleanLower)
+
+    const historyAskedForTracking = sanitizedHistory.some((m) =>
+      /(track|order status|check your order|reference id|mobile number|email address used)/i.test(m.content)
+    )
+
+    const hasTrackingKeywords =
+      cleanLower.includes('track') ||
+      cleanLower.includes('status') ||
+      cleanLower.includes('where is my') ||
+      cleanLower.includes('check my order') ||
+      cleanLower.includes('check order') ||
+      cleanLower.includes('existing order') ||
+      cleanLower.includes('past order') ||
+      cleanLower.includes('previous order') ||
+      cleanLower.includes('lookup') ||
+      cleanLower.includes('look up')
+
+    const hasOrderSubmissionWords =
+      cleanLower.includes('place') ||
+      cleanLower.includes('buy') ||
+      cleanLower.includes('take a') ||
+      cleanLower.includes('take order') ||
+      /\b\d+\s*(?:kg|gm|g|grams|kilos?|bags?|boxes?)\b/i.test(cleanLower)
 
     const isTrackingIntent =
       Boolean(necMatch) ||
-      (Boolean(phoneMatch || emailMatch) &&
-        (cleanLower.includes('track') ||
-          cleanLower.includes('status') ||
-          cleanLower.includes('where is my') ||
-          cleanLower.includes('check my order') ||
-          cleanLower.includes('check order') ||
-          cleanLower.includes('existing order') ||
-          cleanLower.includes('past order') ||
-          cleanLower.includes('previous order')) &&
-        !cleanLower.includes('place') &&
-        !cleanLower.includes('buy') &&
-        !cleanLower.includes('take') &&
-        !cleanLower.includes('order') &&
-        !cleanLower.includes('kg') &&
-        !cleanLower.includes('gm'))
+      isStandaloneLookupInput ||
+      ((Boolean(phoneMatch || emailMatch) || historyAskedForTracking) &&
+        (hasTrackingKeywords || historyAskedForTracking) &&
+        !hasOrderSubmissionWords)
 
     if (isTrackingIntent) {
       const lookupArgs: { orderRef?: string; phone?: string; email?: string } = {}
       if (necMatch) lookupArgs.orderRef = necMatch[0].toUpperCase()
-      if (phoneMatch) lookupArgs.phone = phoneMatch[0]
+      if (phoneMatch) {
+        lookupArgs.phone = phoneMatch[1] || phoneMatch[0]
+      } else if (/^(?:91)?[6-9]\d{9}$/.test(cleanDigits)) {
+        lookupArgs.phone = cleanDigits.slice(-10)
+      }
       if (emailMatch) lookupArgs.email = emailMatch[0]
 
       const lookupRes = await toolLookupOrder(lookupArgs)
@@ -1416,6 +1470,12 @@ export async function POST(req: Request) {
         const orderReply = formatOrderResponse(lookupRes.orders)
         return new Response(
           JSON.stringify({ reply: orderReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: orderReply }] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        )
+      } else if (isStandaloneLookupInput || hasTrackingKeywords) {
+        const notFoundReply = formatOrderResponse([])
+        return new Response(
+          JSON.stringify({ reply: notFoundReply, history: [...sanitizedHistory, { role: 'user', content: message }, { role: 'assistant', content: notFoundReply }] }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         )
       }
@@ -1547,7 +1607,9 @@ export async function POST(req: Request) {
                 finalReply = `I have your order details, but I just need one small correction: ${submitRes.error}. Could you please update this detail so I can submit it immediately? 🌿`
               }
             } else if (parsedTool.toolName === 'lookup_order') {
+              console.log('DEBUG [LLM Tool] lookup_order args:', parsedTool.args)
               const lookupRes = await toolLookupOrder(parsedTool.args)
+              console.log('DEBUG [LLM Tool] lookupRes:', lookupRes)
               finalReply = formatOrderResponse(lookupRes?.orders || [])
             }
           } else {
@@ -1566,10 +1628,16 @@ export async function POST(req: Request) {
       if (isTrackingIntent) {
         const lookupArgs: { orderRef?: string; phone?: string; email?: string } = {}
         if (necMatch) lookupArgs.orderRef = necMatch[0].toUpperCase()
-        if (phoneMatch) lookupArgs.phone = phoneMatch[0]
+        if (phoneMatch) {
+          lookupArgs.phone = phoneMatch[1] || phoneMatch[0]
+        } else if (/^(?:91)?[6-9]\d{9}$/.test(cleanDigits)) {
+          lookupArgs.phone = cleanDigits.slice(-10)
+        }
         if (emailMatch) lookupArgs.email = emailMatch[0]
 
+        console.log('DEBUG [Fallback] isTrackingIntent lookupArgs:', lookupArgs)
         const lookupRes = await toolLookupOrder(lookupArgs)
+        console.log('DEBUG [Fallback] lookupRes:', lookupRes)
         finalReply = formatOrderResponse(lookupRes?.orders || [])
       } else {
         finalReply = await synthesizeDynamicAIResponse(message, retrievedContext, sanitizedHistory)
