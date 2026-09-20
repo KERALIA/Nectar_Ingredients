@@ -7,6 +7,7 @@ interface AnimatedCounterProps {
   duration?: number
   prefix?: string
   suffix?: string
+  useGrouping?: boolean
 }
 
 export default function AnimatedCounter({
@@ -14,6 +15,7 @@ export default function AnimatedCounter({
   duration = 1200,
   prefix = '',
   suffix = '',
+  useGrouping = true,
 }: AnimatedCounterProps) {
   const [count, setCount] = useState(0)
   const elementRef = useRef<HTMLSpanElement>(null)
@@ -58,5 +60,9 @@ export default function AnimatedCounter({
     return () => observer.disconnect()
   }, [endValue, duration])
 
-  return <span ref={elementRef}>{prefix}{count.toLocaleString()}{suffix}</span>
+  const formattedCount = useGrouping
+    ? count.toLocaleString()
+    : count.toLocaleString(undefined, { useGrouping: false })
+
+  return <span ref={elementRef}>{prefix}{formattedCount}{suffix}</span>
 }

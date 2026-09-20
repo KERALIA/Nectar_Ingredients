@@ -159,6 +159,11 @@ export default function ProductDrawer({
           }
         `}
       >
+        {/* Mobile Drag Handle Indicator */}
+        <div className="md:hidden flex justify-center pt-3 pb-1 bg-[#FDFCF8] dark:bg-[#18181B]" aria-hidden="true">
+          <div className="w-12 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
+        </div>
+
         {/* Fixed top bar with Close Button & Ambient Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-white/10 relative z-20 bg-[#FDFCF8] dark:bg-[#18181B]">
           <div className="flex items-center gap-2">
@@ -216,67 +221,104 @@ export default function ProductDrawer({
           {/* Content Specs Body — High Contrast Typography */}
           <div className="p-6 sm:p-8 space-y-6">
             <div>
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white leading-tight">
-                  {product.name}
-                </h2>
-                <span className="font-mono text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-200/80 dark:bg-white/10 px-2.5 py-1 rounded-lg border border-neutral-300/60 dark:border-white/10">
+              {/* Requirement: Structured Commercial H2 Tag */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div>
+                  <span className="font-mono text-[10px] font-bold text-ni-rust bg-ni-rust/10 border border-ni-rust/20 px-2.5 py-1 rounded-md uppercase tracking-wider inline-block mb-2">
+                    Commercial Specification Sheet
+                  </span>
+                  <h2 className="font-heading text-xl sm:text-2xl font-black tracking-tight text-neutral-900 dark:text-white leading-snug">
+                    Bulk {product.name} Supplier & Wholesale Distributor
+                  </h2>
+                </div>
+                <span className="font-mono text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-200/80 dark:bg-white/10 px-2.5 py-1 rounded-lg border border-neutral-300/60 dark:border-white/10 self-start">
                   {product.sku}
                 </span>
               </div>
 
               {product.tagline && (
-                <p className="font-body text-xs font-black text-[#BC4B20] uppercase tracking-wider mt-1.5">
+                <p className="font-body text-xs font-black text-[#BC4B20] uppercase tracking-wider mt-2">
                   {product.tagline}
                 </p>
               )}
 
-              <p className="font-body text-sm text-neutral-700 dark:text-neutral-200 font-medium leading-relaxed mt-3">
+              {/* Exact Wholesale B2B Introduction Sentence */}
+              <p className="font-body text-xs sm:text-sm text-neutral-700 dark:text-neutral-200 font-medium leading-relaxed mt-3 p-3.5 rounded-xl bg-neutral-100/80 dark:bg-white/[0.03] border border-neutral-200/80 dark:border-white/10">
+                Nectar Ingredients is a premier industrial food ingredients {product.name.toLowerCase()} distributor, offering wholesale commercial pricing for manufacturing scales.
+              </p>
+
+              <p className="font-body text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mt-3">
                 {product.description}
               </p>
             </div>
 
-            {/* Technical Specs Cards Grid */}
-            <div className="space-y-2.5">
-              <h3 className="font-body text-xs font-black uppercase tracking-widest text-neutral-900 dark:text-white mb-2">
-                Technical Specifications
-              </h3>
-              {[
-                { label: 'Category',             value: product.category, isCapitalize: true },
-                { label: 'Mesh / Particle Size', value: product.mesh || '80–100 Mesh Fine' },
-                { label: 'Standard Packaging',   value: product.packagingSize || '25 KG Corrugated Box' },
-                { label: 'Available Weights',    value: product.weights.join(' · ') },
-                { label: 'Purity Standard',      value: '100% Pure Single-Ingredient' },
-              ].map((spec) => (
-                <div
-                  key={spec.label}
-                  className="flex justify-between items-center px-4 py-3.5 rounded-2xl border border-neutral-200/80 dark:border-white/10 bg-white dark:bg-white/[0.05] shadow-xs"
-                >
-                  <span className="font-body text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                    {spec.label}
-                  </span>
-                  <span
-                    className={`font-body text-xs font-semibold text-neutral-700 dark:text-neutral-200 text-right ${
-                      spec.isCapitalize ? 'capitalize' : ''
-                    }`}
-                  >
-                    {spec.value}
-                  </span>
-                </div>
-              ))}
+            {/* Complete Micro-Data Technical Specifications Table */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-body text-xs font-black uppercase tracking-widest text-neutral-900 dark:text-white">
+                  Technical Specifications Table
+                </h3>
+                <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  Batch Verified
+                </span>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-neutral-200/80 dark:border-white/15 bg-white dark:bg-white/[0.03] shadow-xs">
+                <table className="w-full text-xs text-left border-collapse font-body">
+                  <tbody>
+                    <tr className="border-b border-neutral-200/60 dark:border-white/10">
+                      <td className="px-4 py-3 font-bold text-neutral-500 dark:text-neutral-400 w-1/3">Mesh Size / Form</td>
+                      <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-white text-right">{product.mesh || '80–100 Mesh Fine'}</td>
+                    </tr>
+                    <tr className="border-b border-neutral-200/60 dark:border-white/10">
+                      <td className="px-4 py-3 font-bold text-neutral-500 dark:text-neutral-400">Technical Grade</td>
+                      <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-white text-right">Industrial Food Grade</td>
+                    </tr>
+                    <tr className="border-b border-neutral-200/60 dark:border-white/10">
+                      <td className="px-4 py-3 font-bold text-neutral-500 dark:text-neutral-400">Minimum Order Qty (MOQ)</td>
+                      <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-white text-right">{product.weights[0]} (Sample) / {product.weights[product.weights.length - 1] || '25kg'} (Commercial Bag)</td>
+                    </tr>
+                    <tr className="border-b border-neutral-200/60 dark:border-white/10">
+                      <td className="px-4 py-3 font-bold text-neutral-500 dark:text-neutral-400">Packaging Format</td>
+                      <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-white text-right">{product.packagingSize || '25 KG Corrugated Moisture-Barrier Box'}</td>
+                    </tr>
+                    <tr className="border-b border-neutral-200/60 dark:border-white/10">
+                      <td className="px-4 py-3 font-bold text-neutral-500 dark:text-neutral-400">Shelf Life</td>
+                      <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-white text-right">24 Months from Harvest</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-bold text-neutral-500 dark:text-neutral-400">Certifications & Quality</td>
+                      <td className="px-4 py-3 font-semibold text-emerald-600 dark:text-emerald-400 text-right">FSSAI, Non-GMO, Lab Tested COA</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Purity Standard & Available Packaging Weights */}
+            <div className="p-4 rounded-2xl border border-neutral-200/80 dark:border-white/10 bg-neutral-50 dark:bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
+                <span className="font-body text-xs font-bold text-neutral-900 dark:text-white">
+                  100% Pure Single-Ingredient (Zero Fillers / Zero Anti-Caking)
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold text-ni-rust bg-ni-rust/10 px-2.5 py-1 rounded-lg border border-ni-rust/20">
+                {product.weights.join(' · ')}
+              </span>
             </div>
 
             {/* Industry Applications Tags */}
             {product.usageApplications && product.usageApplications.length > 0 && (
               <div>
                 <h3 className="font-body text-xs font-black uppercase tracking-widest text-neutral-900 dark:text-white mb-3">
-                  Recommended Applications
+                  Recommended Industrial Applications
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {product.usageApplications.map((app) => (
                     <span
                       key={app}
-                      className="font-body text-[10px] font-extrabold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-white/15 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-white/[0.06]"
+                      className="font-body text-[10px] font-extrabold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 border border-neutral-300/80 dark:border-white/15 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-white/[0.06]"
                     >
                       {app}
                     </span>
@@ -287,9 +329,27 @@ export default function ProductDrawer({
           </div>
         </div>
 
-        {/* Fixed Sticky CTA Footer — Solid High Contrast Surface */}
-        <div className="p-6 border-t border-neutral-200 dark:border-white/10 bg-[#FDFCF8] dark:bg-[#18181B] z-20">
+        {/* Fixed Sticky CTA Footer with Share Spec Link + Sample Box */}
+        <div className="p-4 sm:p-6 border-t border-neutral-200 dark:border-white/10 bg-[#FDFCF8] dark:bg-[#18181B] z-20 flex items-center gap-3">
+          {/* Share / Copy Spec Sheet Link */}
           <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                const url = `${window.location.origin}/products#product-${product.slug}`
+                navigator.clipboard?.writeText(url)
+                alert(`Direct link copied: ${url}`)
+              }
+            }}
+            className="py-4 px-4 sm:px-6 rounded-full border border-neutral-300 dark:border-white/15 hover:border-[#BC4B20] text-neutral-700 dark:text-neutral-200 font-body text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-white/5 active:scale-95 btn-press whitespace-nowrap"
+            title="Copy direct link to technical specification sheet"
+          >
+            <span>📋 Copy Spec Link</span>
+          </button>
+
+          {/* Primary Action Button */}
+          <button
+            type="button"
             onClick={() =>
               toggleBasket({
                 id: product.id,
@@ -299,15 +359,15 @@ export default function ProductDrawer({
                 category: product.category,
               })
             }
-            aria-label={inBasket ? `Remove ${product.name} from sample box` : `Add ${product.name} to sample box`}
+            aria-label={inBasket ? `Remove ${product.name} from cart` : `Add ${product.name} to cart`}
             aria-pressed={inBasket}
-            className={`w-full font-body text-xs font-black uppercase tracking-wider py-4 transition-all duration-300 rounded-full flex items-center justify-center gap-2 active:scale-[0.98] ${
+            className={`flex-1 font-body text-xs font-black uppercase tracking-wider py-4 transition-all duration-300 rounded-full flex items-center justify-center gap-2 active:scale-[0.98] btn-press ${
               inBasket
                 ? 'bg-emerald-600 text-white shadow-md'
                 : 'bg-[#BC4B20] text-white shadow-card hover:bg-[#D45E30] hover:shadow-hover hover:-translate-y-0.5'
             }`}
           >
-            {inBasket ? '✓ Added to Sample Box' : 'Add to Sample Box +'}
+            {inBasket ? '✓ In Cart' : '+ Add to Cart'}
           </button>
         </div>
       </div>

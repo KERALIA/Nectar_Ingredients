@@ -68,19 +68,50 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Column 3 — Categories (decorative, no links) */}
+        {/* Column 3 — Quality Standards & Categories */}
         <div>
           <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-ni-muted mb-4">
-            Categories
+            Quality & Compliance
           </p>
-          {CATEGORIES.map((category) => (
-            <span
-              key={category}
-              className="block font-body text-sm text-ni-secondary py-1"
-            >
-              {category}
-            </span>
-          ))}
+          <div className="space-y-2 mb-6">
+            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>FSSAI Quality Compliant</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>ISO 22000 Food Safety Principles</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>100% Single-Ingredient Pure Powders</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Batch-Specific Lab Tested COAs</span>
+            </div>
+          </div>
+
+          <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-ni-muted mb-2">
+            Catalog Categories
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
+              Vegetable
+            </Link>
+            <span className="text-ni-muted/40">·</span>
+            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
+              Fruit
+            </Link>
+            <span className="text-ni-muted/40">·</span>
+            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
+              Spice
+            </Link>
+            <span className="text-ni-muted/40">·</span>
+            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
+              Dairy Powders
+            </Link>
+          </div>
         </div>
       </div>
 

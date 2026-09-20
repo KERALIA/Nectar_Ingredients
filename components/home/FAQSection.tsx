@@ -7,15 +7,15 @@ type FAQItem = { question: string; answer: string }
 
 const faqs: FAQItem[] = [
   {
-    question: 'What is a single-ingredient nectaringredient powder?',
-    answer: `A nectaringredient is a pure, single-source dehydrated powder made by Nectaringredients. Unlike multi-ingredient mixtures, each powder has nothing added — no fillers, no preservatives, and no flow agents — just 100% pure dehydrated vegetable, fruit, or spice.`,
+    question: 'What is a single-ingredient Nectar Ingredients powder?',
+    answer: `A Nectar Ingredients powder is a pure, single-source dehydrated powder. Unlike multi-ingredient mixtures, each powder has nothing added — no fillers, no preservatives, and no flow agents — just 100% pure dehydrated vegetable, fruit, or spice.`,
   },
   {
     question: 'What order quantities do you support?',
     answer: `We ship 1 kg samples for trialling a new ingredient right up to 25 kg commercial bags and 500 kg bulk lots. Contact us with your monthly requirement and we'll confirm availability and pricing within one business day.`,
   },
   {
-    question: 'Where are Nectaringredients powders manufactured?',
+    question: 'Where are Nectar Ingredients powders manufactured?',
     answer: `Every powder is processed, quality-tested, and packaged at our dedicated facility in Surendranagar, Gujarat. We source raw agricultural material directly from farms to guarantee field-to-powder purity.`,
   },
   {

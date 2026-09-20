@@ -98,6 +98,11 @@ html, body { overflow-x: hidden; width: 100%; }
 * { max-width: 100%; box-sizing: border-box; }
 .scrollbar-hide { max-width: none; }
 
+/* Ensure all section anchor links clear the floating pill navbar */
+[id] {
+  scroll-margin-top: clamp(5.5rem, 8vw, 7rem);
+}
+
 /* ─── CSS Custom Properties for Theme Switching ──────────────────────────── */
 :root,
 [data-theme='dark'] {
@@ -247,6 +252,30 @@ html, body { overflow-x: hidden; width: 100%; }
 .shadow-premium { box-shadow: var(--shadow-premium); }
 .shadow-card    { box-shadow: var(--shadow-card); }
 .hover\:shadow-hover:hover { box-shadow: var(--shadow-hover); }
+
+/* Tactile button & card micro-interactions */
+.btn-press {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+.hairline-card {
+  position: relative;
+}
+.hairline-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(188, 75, 32, 0.25), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
 
 /* Category badge utilities */
 .cat-badge-vegetable {

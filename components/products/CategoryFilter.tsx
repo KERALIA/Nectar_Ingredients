@@ -26,14 +26,14 @@ export default function CategoryFilter({ active, onChange }: CategoryFilterProps
   ]
 
   return (
-    <div className="flex flex-wrap gap-2.5 mb-8 p-1.5 rounded-2xl bg-ni-surface2/30 dark:bg-white/[0.03] border border-ni-border/20 dark:border-white/5 w-fit">
+    <div className="flex items-center gap-2 sm:gap-2.5 mb-8 p-1.5 rounded-2xl bg-ni-surface2/30 dark:bg-white/[0.03] border border-ni-border/20 dark:border-white/5 w-full sm:w-fit overflow-x-auto scrollbar-hide overscroll-contain">
       {options.map((opt) => {
         const isActive = active === opt.value
         return (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`flex items-center gap-2 font-body text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
+            className={`flex-shrink-0 flex items-center gap-2 font-body text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer active:scale-[0.97] ${
               isActive
                 ? 'bg-ni-rust text-white shadow-card scale-[1.02]'
                 : 'text-ni-secondary hover:text-ni-primary hover:bg-ni-surface2/60 dark:hover:bg-white/10'

@@ -5,7 +5,7 @@ import Button from '../ui/Button'
 import { useScrollReveal } from '../../lib/hooks'
 
 const proofPoints = [
-  { icon: 'box',      text: '1 kg samples available' },
+  { icon: 'box',      text: '1 kg trial packs available' },
   { icon: 'factory',  text: 'Up to 2 MT/month capacity' },
   { icon: 'location', text: 'Surendranagar, Gujarat' },
 ]

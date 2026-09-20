@@ -23,7 +23,7 @@ export default function FeaturedProducts() {
           <SectionHeading
             tag="PRODUCTS"
             heading="Pure ingredients, nothing added"
-            sub="Each powder is single-source, batch-tested, and available from 1 kg samples to 25 kg commercial bags."
+            sub="Each powder is single-source, batch-tested, and available from 1 kg trial packs to 25 kg commercial bags."
           />
           <div className="flex-shrink-0">
             <Button variant="outline" size="md" href="/products" className="rounded-full whitespace-nowrap">

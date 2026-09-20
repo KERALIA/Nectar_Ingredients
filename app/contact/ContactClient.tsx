@@ -9,7 +9,7 @@ import CountryPhoneInput from '@/components/ui/CountryPhoneInput'
 import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
 
 // ─── Styling helpers ────────────────────────────────────────────────────────
-const inputBase = 'bg-ni-surface dark:bg-[#1A1A1D] border px-4 py-3.5 text-base sm:text-sm font-body text-ni-primary w-full transition-all duration-300 rounded-2xl outline-none focus:ring-2 focus:ring-ni-rust/50 shadow-sm'
+const inputBase = 'bg-ni-surface dark:bg-[#1A1A1D] border px-4 py-3.5 text-base font-body text-ni-primary w-full transition-all duration-300 rounded-2xl outline-none focus:ring-2 focus:ring-ni-rust/50 shadow-sm'
 const inputValid   = `${inputBase} border-ni-border/30 dark:border-white/10 focus:border-ni-rust`
 const inputInvalid = `${inputBase} border-red-500 focus:border-red-400 focus:ring-red-400`
 
@@ -64,6 +64,7 @@ export default function ContactClient() {
   const [address,         setAddress]         = useState('')
   const [message,         setMessage]         = useState('')
   const [productFilter,   setProductFilter]   = useState('')
+  const [categoryFilter,  setCategoryFilter]  = useState<'all' | 'vegetable' | 'fruit' | 'spice'>('all')
   const [mounted,         setMounted]         = useState(false)
 
   // Validation state
@@ -89,10 +90,14 @@ export default function ContactClient() {
     }
   }, [name, email, phone, address, basket, mounted, submitted])
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(productFilter.toLowerCase()) ||
-    p.category.toLowerCase().includes(productFilter.toLowerCase())
-  )
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter
+    const matchesSearch = !productFilter.trim() ||
+      p.name.toLowerCase().includes(productFilter.toLowerCase()) ||
+      p.category.toLowerCase().includes(productFilter.toLowerCase()) ||
+      p.sku.toLowerCase().includes(productFilter.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
 
   const handleCopyRef = () => {
     if (!orderRef) return
@@ -227,7 +232,7 @@ export default function ContactClient() {
             {/* Name + Company */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="contact-name" className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary block mb-2">
+                <label htmlFor="contact-name" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
                   Name <span className="text-ni-rust">*</span>
                 </label>
                 <input
@@ -244,7 +249,7 @@ export default function ContactClient() {
               </div>
 
               <div>
-                <label htmlFor="contact-company" className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary block mb-2">
+                <label htmlFor="contact-company" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
                   Company / Brand <span className="text-ni-muted font-normal uppercase tracking-normal">(Optional)</span>
                 </label>
                 <input
@@ -261,7 +266,7 @@ export default function ContactClient() {
             {/* Email + Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="contact-email" className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary block mb-2">
+                <label htmlFor="contact-email" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
                   Email Address <span className="text-ni-rust">*</span>
                 </label>
                 <input
@@ -278,7 +283,7 @@ export default function ContactClient() {
               </div>
 
               <div>
-                <label htmlFor="contact-phone" className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary block mb-2">
+                <label htmlFor="contact-phone" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
                   Phone / WhatsApp <span className="text-ni-rust">*</span>
                 </label>
                 <CountryPhoneInput
@@ -294,15 +299,38 @@ export default function ContactClient() {
 
             {/* Product Interest Selector */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary">
-                  Select Product Samples <span className="text-ni-rust">*</span>
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary">
+                  Select Ingredients / Order Items <span className="text-ni-rust">*</span>
                 </label>
                 {mounted && totalItems > 0 && (
-                  <span className="font-body text-xs font-bold text-ni-rust">
+                  <span className="font-body text-sm font-bold text-ni-rust">
                     ({totalItems} selected)
                   </span>
                 )}
+              </div>
+
+              {/* Quick Category Filter Chips */}
+              <div className="flex items-center gap-1.5 mb-2.5 overflow-x-auto scrollbar-hide py-1">
+                {[
+                  { label: 'All (40)', value: 'all' },
+                  { label: 'Vegetables', value: 'vegetable' },
+                  { label: 'Fruits', value: 'fruit' },
+                  { label: 'Spices & Herbs', value: 'spice' },
+                ].map((cat) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => setCategoryFilter(cat.value as any)}
+                    className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-body font-bold transition-all cursor-pointer active:scale-95 ${
+                      categoryFilter === cat.value
+                        ? 'bg-ni-rust text-white shadow-xs'
+                        : 'bg-ni-surface2/60 dark:bg-white/[0.06] text-ni-secondary hover:text-ni-primary border border-ni-border/20 dark:border-white/5'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
               </div>
 
               {/* Product Filter Search */}
@@ -311,9 +339,19 @@ export default function ContactClient() {
                   type="text"
                   value={productFilter}
                   onChange={e => setProductFilter(e.target.value)}
-                  placeholder="Filter powders by name..."
-                  className="w-full bg-ni-surface/60 dark:bg-[#1A1A1D]/60 border border-ni-border/20 dark:border-white/10 px-3.5 py-2 text-xs text-ni-primary rounded-xl outline-none focus:ring-1 focus:ring-ni-rust"
+                  placeholder="Filter powders by name or sku..."
+                  className="w-full bg-ni-surface/60 dark:bg-[#1A1A1D]/60 border border-ni-border/20 dark:border-white/10 px-4 py-3 pr-9 text-sm text-ni-primary rounded-xl outline-none focus:ring-2 focus:ring-ni-rust/50"
                 />
+                {productFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setProductFilter('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ni-muted hover:text-ni-primary text-xs font-bold p-1 cursor-pointer"
+                    aria-label="Clear filter"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
 
               {/* Scrollable Checkbox Grid */}
@@ -325,7 +363,7 @@ export default function ContactClient() {
               >
                 <div
                   data-lenis-prevent="true"
-                  className="max-h-56 overflow-y-auto bg-ni-surface/80 dark:bg-[#161618]/80 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ni-border/10 lenis-prevent"
+                  className="max-h-60 overflow-y-auto bg-ni-surface/80 dark:bg-[#161618]/80 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ni-border/10 lenis-prevent"
                   style={{ touchAction: 'pan-y', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}
                 >
                   {filteredProducts.map((p) => {
@@ -334,7 +372,7 @@ export default function ContactClient() {
                     return (
                       <div
                         key={p.id}
-                        className={`flex items-center justify-between p-3 transition-colors ${
+                        className={`flex items-center justify-between p-3.5 transition-colors ${
                           isSelected ? 'bg-ni-rust/10 border-ni-rust/30' : 'hover:bg-ni-surface2/50'
                         }`}
                       >
@@ -344,40 +382,40 @@ export default function ContactClient() {
                             toggleBasket({ id: p.id, slug: p.slug, name: p.name, sku: p.sku, category: p.category })
                             handleBlur('product')
                           }}
-                          className="flex items-center gap-2.5 text-left flex-1 min-w-0 py-1"
+                          className="flex items-center gap-3 text-left flex-1 min-w-0 py-1 cursor-pointer"
                         >
                           <span
-                            className={`w-4 h-4 rounded flex items-center justify-center border transition-all flex-shrink-0 ${
-                              isSelected ? 'bg-ni-rust border-ni-rust text-white' : 'border-ni-border bg-transparent'
+                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0 text-xs font-bold ${
+                              isSelected ? 'bg-ni-rust border-ni-rust text-white shadow-sm' : 'border-ni-border bg-transparent'
                             }`}
                           >
                             {isSelected && '✓'}
                           </span>
-                          <span className={`font-body text-xs truncate ${isSelected ? 'text-ni-rust font-bold' : 'text-ni-primary'}`}>
+                          <span className={`font-body text-sm truncate ${isSelected ? 'text-ni-rust font-bold' : 'text-ni-primary font-medium'}`}>
                             {p.name}
                           </span>
                         </button>
 
                         {isSelected && basketItem && (
-                          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                          <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
                             <button
                               type="button"
                               onClick={() => setItemQuantity(p.id, (basketItem.quantity ?? 1) - 1)}
-                              className="w-6 h-6 flex items-center justify-center rounded bg-ni-surface2 text-ni-primary text-xs font-bold active:scale-95"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-ni-surface2 text-ni-primary text-sm font-bold active:scale-95"
                             >
                               −
                             </button>
-                            <span className="font-mono text-xs font-bold text-ni-rust w-5 text-center">
+                            <span className="font-mono text-sm font-bold text-ni-rust w-6 text-center">
                               {basketItem.quantity ?? 1}
                             </span>
                             <button
                               type="button"
                               onClick={() => setItemQuantity(p.id, (basketItem.quantity ?? 1) + 1)}
-                              className="w-6 h-6 flex items-center justify-center rounded bg-ni-surface2 text-ni-primary text-xs font-bold active:scale-95"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-ni-surface2 text-ni-primary text-sm font-bold active:scale-95"
                             >
                               +
                             </button>
-                            <span className="text-[10px] text-ni-muted">kg</span>
+                            <span className="text-xs font-semibold text-ni-muted">kg</span>
                           </div>
                         )}
                       </div>
@@ -390,7 +428,7 @@ export default function ContactClient() {
 
             {/* Address */}
             <div>
-              <label htmlFor="contact-address" className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary block mb-2">
+              <label htmlFor="contact-address" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
                 Delivery Address <span className="text-ni-rust">*</span>
               </label>
               <textarea
@@ -407,7 +445,7 @@ export default function ContactClient() {
 
             {/* Additional Message */}
             <div>
-              <label htmlFor="contact-message" className="font-body text-[11px] font-extrabold uppercase tracking-wider text-ni-primary block mb-2">
+              <label htmlFor="contact-message" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
                 Special Specs / Custom Message <span className="text-ni-muted font-normal uppercase tracking-normal">(Optional)</span>
               </label>
               <textarea
@@ -422,7 +460,7 @@ export default function ContactClient() {
 
             {/* Error banner */}
             {errorMessage && (
-              <div role="alert" className="p-4 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-500 font-body text-xs">
+              <div role="alert" className="p-4 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-500 font-body text-sm font-medium">
                 {errorMessage}
               </div>
             )}
@@ -431,9 +469,9 @@ export default function ContactClient() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full font-body font-extrabold text-xs uppercase tracking-widest py-4 rounded-full bg-ni-rust text-white shadow-card hover:bg-ni-rust-lt hover:shadow-hover transition-all duration-300 disabled:opacity-50 min-h-[52px] cursor-pointer active:scale-[0.99] touch-manipulation relative z-10"
+              className="w-full font-body font-extrabold text-sm uppercase tracking-widest py-4 rounded-full bg-ni-rust text-white shadow-card hover:bg-ni-rust-lt hover:shadow-hover transition-all duration-300 disabled:opacity-50 min-h-[56px] cursor-pointer active:scale-[0.99] touch-manipulation relative z-10 btn-press"
             >
-              {isSubmitting ? 'Submitting Inquiry...' : 'Submit Inquiry & Request Samples →'}
+              {isSubmitting ? 'Submitting Inquiry...' : 'Submit Commercial Order Inquiry →'}
             </button>
 
             {/* Success Card with Reference Number and Chatbot Tracking Instructions Below Submit Button */}
@@ -521,10 +559,10 @@ export default function ContactClient() {
 
         {/* Right Info Sidebar */}
         <div className="lg:col-span-2">
-          <div className="glass-panel-premium p-8 rounded-[32px] border border-ni-border/30 dark:border-white/10 shadow-premium space-y-8 sticky top-28">
+          <div className="glass-panel-premium p-8 sm:p-9 rounded-[32px] border border-ni-border/30 dark:border-white/10 shadow-premium space-y-8 sticky top-28 hairline-card">
             <div>
-              <h3 className="font-heading text-xl font-extrabold text-ni-primary mb-4">Head Office & Inquiries</h3>
-              <p className="font-body text-xs text-ni-secondary leading-relaxed">
+              <h3 className="font-heading text-2xl font-extrabold text-ni-primary mb-4">Head Office &amp; Inquiries</h3>
+              <p className="font-body text-sm sm:text-base text-ni-secondary leading-relaxed">
                 Nectar Ingredients<br />
                 Shop No. 18 &amp; 19, Second Floor, Brahmanand Chamber<br />
                 Opp. M.P. Shah Arts &amp; Science College, S.T. Road<br />
@@ -532,32 +570,32 @@ export default function ContactClient() {
               </p>
             </div>
 
-            <div className="space-y-4 font-body text-xs border-t border-ni-border/20 pt-6">
+            <div className="space-y-5 font-body border-t border-ni-border/20 pt-6">
               <div>
-                <p className="font-bold text-ni-rust uppercase tracking-wider text-[10px] mb-1">Key Contact Person</p>
-                <p className="font-bold text-ni-primary text-sm">Mehul Patel</p>
+                <p className="font-extrabold text-ni-rust uppercase tracking-wider text-xs mb-1">Key Contact Person</p>
+                <p className="font-bold text-ni-primary text-base sm:text-lg">Mehul Patel</p>
               </div>
 
               <div>
-                <p className="font-bold text-ni-rust uppercase tracking-wider text-[10px] mb-1">Direct Call & WhatsApp</p>
-                <a href="https://wa.me/919879838281" className="text-ni-primary hover:text-ni-rust font-bold text-sm transition-colors">
+                <p className="font-extrabold text-ni-rust uppercase tracking-wider text-xs mb-1">Direct Call &amp; WhatsApp</p>
+                <a href="https://wa.me/919879838281" className="text-ni-primary hover:text-ni-rust font-bold text-base sm:text-lg transition-colors inline-block">
                   +91 98798 38281
                 </a>
               </div>
 
               <div>
-                <p className="font-bold text-ni-rust uppercase tracking-wider text-[10px] mb-1">Commercial Email</p>
-                <a href="mailto:nectaringredients@gmail.com" className="text-ni-rust font-bold hover:underline">
+                <p className="font-extrabold text-ni-rust uppercase tracking-wider text-xs mb-1">Commercial Email</p>
+                <a href="mailto:nectaringredients@gmail.com" className="text-ni-rust font-bold hover:underline text-base sm:text-lg inline-block">
                   nectaringredients@gmail.com
                 </a>
               </div>
             </div>
 
-            {/* Sample Policy */}
-            <div className="p-5 rounded-2xl bg-ni-surface2/50 dark:bg-white/[0.04] border border-ni-border/20">
-              <p className="font-body text-xs font-extrabold uppercase tracking-wider text-ni-rust mb-1">Sample Box Policy</p>
-              <p className="font-body text-xs text-ni-secondary leading-relaxed">
-                1 kg commercial samples dispatched for ₹350–₹600 per powder. Sample fee is 100% credited against your first commercial bulk order.
+            {/* Order & Trial Policy */}
+            <div className="p-6 rounded-2xl bg-ni-surface2/50 dark:bg-white/[0.04] border border-ni-border/20">
+              <p className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-rust mb-2">Order &amp; Trial Policy</p>
+              <p className="font-body text-sm text-ni-secondary leading-relaxed">
+                1 kg commercial trial packs dispatched for ₹350–₹600 per powder. Trial fee is 100% credited against your first commercial bulk order.
               </p>
             </div>
 
@@ -565,7 +603,7 @@ export default function ContactClient() {
             <a
               href="/NECTAR_BROCHURE.pdf"
               download
-              className="inline-flex items-center justify-center gap-2 font-body text-xs font-bold uppercase tracking-wider text-ni-rust border border-ni-rust px-5 py-3.5 rounded-full hover:bg-ni-rust hover:text-white transition-all w-full text-center"
+              className="inline-flex items-center justify-center gap-2 font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-rust border-2 border-ni-rust px-6 py-4 rounded-full hover:bg-ni-rust hover:text-white transition-all w-full text-center shadow-sm hover:shadow-md btn-press"
             >
               Download Full Brochure (PDF) ↓
             </a>

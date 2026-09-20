@@ -135,15 +135,37 @@ export default function ProductGrid({
         ))}
       </div>
 
-      {/* Empty state */}
+      {/* Empty state with Smart 1-Click Discovery Pills */}
       {displayed.length === 0 && (
-        <div className="py-16 text-center">
-          <p className="font-body text-base text-ni-muted">No products match your search.</p>
+        <div className="py-20 text-center max-w-md mx-auto p-8 rounded-3xl border border-ni-border/20 bg-ni-surface/60 dark:bg-white/[0.02] backdrop-blur-md shadow-sm">
+          <span className="text-3xl mb-3 block" aria-hidden="true">🔍</span>
+          <p className="font-heading text-lg font-bold text-ni-primary">No matching powders found</p>
+          <p className="font-body text-xs text-ni-muted mt-1 leading-relaxed">
+            We couldn't find anything matching &ldquo;{searchTerm}&rdquo;. Try browsing our top industrial ingredients:
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-2 mt-5">
+            {['Tomato', 'Onion', 'Garlic', 'Beetroot', 'Turmeric'].map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => {
+                  setSearchTerm(suggestion)
+                  setActive('all')
+                }}
+                className="font-body text-xs font-bold px-3.5 py-1.5 rounded-full bg-ni-rust/10 hover:bg-ni-rust text-ni-rust hover:text-white border border-ni-rust/20 transition-all active:scale-95"
+              >
+                + {suggestion}
+              </button>
+            ))}
+          </div>
+
           <button
+            type="button"
             onClick={() => { setSearchTerm(''); setActive('all') }}
-            className="mt-3 font-body text-sm text-ni-rust hover:text-ni-rust-lt transition-colors"
+            className="mt-6 font-body text-xs font-bold text-ni-muted hover:text-ni-primary transition-colors underline underline-offset-4 block mx-auto"
           >
-            Clear filters →
+            Clear all filters and search
           </button>
         </div>
       )}

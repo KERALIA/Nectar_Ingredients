@@ -13,15 +13,53 @@ import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import CertificatesSection from '@/components/products/CertificatesSection'
 
-// ── Sample box discovery banner ─────────────────────────────────────────────
+// ── Order Cart discovery banner with real-time tracker ─────────────────────
 function SampleBoxBanner() {
   const { totalItems } = useSampleBasket()
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  // Once items exist, the floating badge takes over
-  if (mounted && totalItems > 0) return null
+  if (!mounted) return null
 
+  // Active progress meter when powders are selected
+  if (totalItems > 0) {
+    return (
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
+                      glass-panel-premium border-l-4 border-l-emerald-500 p-6 mb-10 shadow-premium rounded-[24px] transition-all duration-300">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <h4 className="font-heading font-bold text-ni-primary text-base sm:text-lg">
+                Cart: {totalItems} Ingredient{totalItems !== 1 ? 's' : ''} Selected
+              </h4>
+            </div>
+            <p className="font-body text-xs sm:text-sm text-ni-secondary mt-1 leading-relaxed">
+              1 kg commercial trial samples and bulk drum dispatches. Batch verified for moisture &amp; color. Dispatches within 24–48 hours.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('open-sample-basket'))
+            }
+          }}
+          className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 px-7 py-3.5 rounded-full bg-ni-rust text-white font-body text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-ni-rust-lt shadow-card hover:shadow-hover transition-all btn-press cursor-pointer"
+        >
+          Review Cart &amp; Checkout →
+        </button>
+      </div>
+    )
+  }
+
+  // Initial discovery banner
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
                     glass-panel-premium border-l-4 border-l-ni-rust p-6 mb-10 shadow-premium rounded-[24px] transition-all duration-300">
@@ -32,20 +70,23 @@ function SampleBoxBanner() {
           </svg>
         </div>
         <div>
-          <h4 className="font-heading font-bold text-ni-primary text-base">Build your custom 1 kg Sample Box</h4>
-          <p className="font-body text-xs text-ni-secondary mt-0.5 leading-relaxed">
-            Select any number of single-ingredient powders and dispatch 1 kg commercial trial samples directly to your R&D lab or kitchen.
+          <h4 className="font-heading font-bold text-ni-primary text-base sm:text-lg">Order 1 kg Trial Packs or Bulk Drums</h4>
+          <p className="font-body text-xs sm:text-sm text-ni-secondary mt-1 leading-relaxed">
+            Select any single-ingredient powders and add them directly to your cart for lab evaluation or commercial manufacturing.
           </p>
         </div>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        href="/contact"
-        className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 rounded-full border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white"
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('open-sample-basket'))
+          }
+        }}
+        className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 px-7 py-3.5 rounded-full border-2 border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white font-body text-xs sm:text-sm font-bold uppercase tracking-wider transition-all btn-press cursor-pointer"
       >
-        How Sample Box Works →
-      </Button>
+        View Cart →
+      </button>
     </div>
   )
 }
@@ -272,10 +313,10 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
           />
           
           {/* Chatbot Inquiry Instruction Notice */}
-          <div className="mt-6 mb-4 p-4 sm:p-5 rounded-2xl border border-ni-rust/30 bg-ni-rust/10 dark:bg-ni-rust/15 backdrop-blur-md flex items-start sm:items-center gap-3.5 shadow-sm max-w-4xl mx-auto">
-            <span className="text-xl sm:text-2xl flex-shrink-0" aria-hidden="true">💬</span>
-            <p className="font-body text-xs sm:text-sm font-medium text-ni-primary leading-relaxed">
-              <strong className="font-bold text-ni-rust">Inquiry Notice:</strong> To send an inquiry or request custom cuts for these extended items, please chat directly with our <strong className="font-bold text-ni-rust underline underline-offset-2">AI Chatbot</strong> (bottom-right widget). The standard sample cart form above only processes the core listed product cards above.
+          <div className="mt-8 mb-6 p-5 sm:p-6 rounded-2xl border border-ni-rust/30 bg-ni-rust/10 dark:bg-ni-rust/15 backdrop-blur-md flex items-start sm:items-center gap-4 shadow-sm max-w-4xl mx-auto">
+            <span className="text-2xl sm:text-3xl flex-shrink-0" aria-hidden="true">💬</span>
+            <p className="font-body text-sm sm:text-base text-ni-primary leading-relaxed">
+              <strong className="font-bold text-ni-rust">Inquiry Notice:</strong> To send an inquiry or request custom cuts for these extended items, please chat directly with our <strong className="font-bold text-ni-rust underline underline-offset-2">AI Chatbot</strong> (bottom-right widget). The standard cart form above only processes the core listed product cards above.
             </p>
           </div>
 
@@ -283,17 +324,17 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
             {extendedItems.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-5 rounded-[20px]
+                className="flex items-center justify-between p-5 rounded-[22px]
                            border border-ni-border/20 bg-ni-surface/80 dark:bg-[#1A1A1D]/80 backdrop-blur-md
                            hover:shadow-card hover:-translate-y-1 hover:border-ni-rust/30
                            transition-all duration-300 group"
               >
                 <div className="flex items-center gap-3">
                   <span className="w-2.5 h-2.5 rounded-full bg-ni-rust flex-shrink-0 group-hover:scale-125 transition-transform" aria-hidden="true" />
-                  <span className="font-body text-sm font-bold text-ni-primary group-hover:text-ni-rust transition-colors">{item.name}</span>
+                  <span className="font-body text-base font-bold text-ni-primary group-hover:text-ni-rust transition-colors">{item.name}</span>
                 </div>
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-ni-muted
-                                 bg-ni-surface2/60 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-ni-border/10">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-ni-muted
+                                 bg-ni-surface2/60 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-ni-border/10">
                   {item.forms}
                 </span>
               </div>
@@ -301,7 +342,7 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
           </div>
 
           <div className="mt-12 text-center">
-            <Button variant="ghost" size="md" href="/contact" className="rounded-full text-ni-rust hover:bg-ni-rust/10">
+            <Button variant="ghost" size="lg" href="/contact" className="rounded-full text-ni-rust hover:bg-ni-rust/10 text-sm sm:text-base font-bold">
               Inquire About Custom Cuts & Bulk Rates →
             </Button>
           </div>

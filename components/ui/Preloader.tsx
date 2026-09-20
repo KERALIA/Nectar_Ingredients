@@ -11,12 +11,22 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Skip preloader if already seen in this session
+    if (typeof window !== 'undefined' && sessionStorage.getItem('ni-preloader-seen') === '1') {
+      setPhase('done')
+      onComplete?.()
+      return
+    }
+
     // Phase 1: kern expand (500ms)
     const t1 = setTimeout(() => setPhase('buffer'), 500)
     // Phase 2: Loading Buffer pulse (700ms)
     const t2 = setTimeout(() => setPhase('reveal'), 1200)
     // Phase 3: mask reveal (500ms) then done
     const t3 = setTimeout(() => {
+      try {
+        sessionStorage.setItem('ni-preloader-seen', '1')
+      } catch {}
       setPhase('done')
       onComplete?.()
     }, 1700)

@@ -115,35 +115,35 @@ export default function B2BIndustrySolutions() {
       >
         {/* ── Section Header ── */}
         <div className="max-w-3xl mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ni-rust/10 border border-ni-rust/20 text-ni-rust font-body text-[10px] font-extrabold uppercase tracking-widest mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-ni-rust animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ni-rust/10 border border-ni-rust/20 text-ni-rust font-body text-xs font-extrabold uppercase tracking-widest mb-5">
+            <span className="w-2 h-2 rounded-full bg-ni-rust animate-pulse" />
             <span>Target B2B Industry Solutions</span>
           </div>
 
-          <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-ni-primary tracking-tight leading-tight">
-            Engineered for Commercial Food Processing & Formulations
+          <h2 className="font-heading text-3xl sm:text-5xl font-black text-ni-primary tracking-tight leading-[1.15]">
+            Engineered for Commercial Food Processing &amp; Formulations
           </h2>
 
-          <p className="font-body text-ni-secondary text-base sm:text-lg mt-3 leading-relaxed">
+          <p className="font-body text-ni-secondary text-base sm:text-xl mt-4 leading-relaxed font-normal">
             Whether you operate high-speed snack extruder lines, manufacture instant curry premixes, or formulate functional health supplements — our 80–100 mesh single-ingredient powders deliver consistent batch-to-batch performance.
           </p>
         </div>
 
         {/* ── Tab Selectors (Mobile Scrollable / Desktop Grid) ── */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-4 mb-8 scrollbar-none border-b border-ni-border/15">
+        <div className="flex items-center gap-3.5 overflow-x-auto pb-4 mb-10 scrollbar-none border-b border-ni-border/15">
           {VERTICALS.map((v) => {
             const isActive = v.id === activeTab
             return (
               <button
                 key={v.id}
                 onClick={() => setActiveTab(v.id)}
-                className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-body text-xs font-bold whitespace-nowrap transition-all duration-300 border ${
+                className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl font-body text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all duration-300 border cursor-pointer ${
                   isActive
                     ? 'bg-ni-rust text-white border-ni-rust shadow-md scale-[1.02]'
                     : 'bg-ni-surface2/60 dark:bg-white/[0.04] text-ni-primary border-ni-border/20 hover:border-ni-rust/40 hover:bg-ni-surface2'
                 }`}
               >
-                <span className="text-base">{v.icon}</span>
+                <span className="text-lg">{v.icon}</span>
                 <span>{v.title}</span>
               </button>
             )
@@ -151,62 +151,62 @@ export default function B2BIndustrySolutions() {
         </div>
 
         {/* ── Active Vertical Feature Card (Glassmorphic Showcase) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch p-8 sm:p-10 rounded-[32px] glass-panel-premium border border-ni-border/30 dark:border-white/10 shadow-premium relative overflow-hidden transition-all duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch p-8 sm:p-12 rounded-[32px] glass-panel-premium hairline-card border border-ni-border/30 dark:border-white/10 shadow-premium relative overflow-hidden transition-all duration-500">
           
           {/* Subtle colored backdrop wash */}
           <div className={`absolute inset-0 bg-gradient-to-br ${activeVertical.bgGradient} opacity-60 pointer-events-none`} />
 
           {/* Left Column: Vertical Overview & Key Value */}
-          <div className="lg:col-span-7 space-y-6 relative z-10 flex flex-col justify-between">
+          <div className="lg:col-span-7 space-y-7 relative z-10 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">{activeVertical.icon}</span>
-                <span className="font-body text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-ni-border/20 text-ni-primary shadow-sm">
+              <div className="flex items-center gap-3.5 mb-5">
+                <span className="text-4xl">{activeVertical.icon}</span>
+                <span className="font-body text-xs font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-ni-border/20 text-ni-primary shadow-sm">
                   {activeVertical.tag}
                 </span>
               </div>
 
-              <h3 className="font-heading text-2xl sm:text-3xl font-extrabold text-ni-primary leading-tight">
+              <h3 className="font-heading text-2xl sm:text-4xl font-black text-ni-primary leading-tight">
                 {activeVertical.title}
               </h3>
 
-              <p className="font-body text-sm sm:text-base text-ni-secondary mt-3 leading-relaxed">
+              <p className="font-body text-base sm:text-lg text-ni-secondary mt-4 leading-relaxed">
                 {activeVertical.subtitle}
               </p>
             </div>
 
             {/* B2B Technical Advantage Box */}
-            <div className="p-5 rounded-2xl bg-white/90 dark:bg-black/60 border border-ni-border/20 backdrop-blur-md shadow-sm">
-              <div className="flex items-center gap-2 text-ni-rust font-body text-xs font-bold uppercase tracking-wider mb-1.5">
+            <div className="p-6 rounded-2xl bg-white/95 dark:bg-black/70 border border-ni-border/20 backdrop-blur-md shadow-sm">
+              <div className="flex items-center gap-2 text-ni-rust font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider mb-2">
                 <span>✓ Processing Advantage</span>
               </div>
-              <p className="font-body text-xs text-ni-primary leading-relaxed">
+              <p className="font-body text-sm sm:text-base text-ni-primary leading-relaxed font-medium">
                 {activeVertical.advantage}
               </p>
             </div>
 
             {/* Actions */}
             <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Button variant="primary" size="md" href="/products" className="rounded-full shadow-card hover:shadow-hover">
+              <Button variant="primary" size="md" href="/products" className="rounded-full shadow-card hover:shadow-hover text-xs sm:text-sm px-6 py-3.5 btn-press">
                 Explore {activeVertical.title.split(' ')[0]} Ingredients →
               </Button>
-              <Button variant="outline" size="md" href="/contact" className="rounded-full border-ni-border text-ni-primary hover:border-ni-rust">
+              <Button variant="outline" size="md" href="/contact" className="rounded-full border-ni-border text-ni-primary hover:border-ni-rust text-xs sm:text-sm px-6 py-3.5 btn-press">
                 Request Custom Formulation
               </Button>
             </div>
           </div>
 
           {/* Right Column: Key Ingredients & Applications Matrix */}
-          <div className="lg:col-span-5 space-y-5 relative z-10 flex flex-col justify-between">
+          <div className="lg:col-span-5 space-y-6 relative z-10 flex flex-col justify-between">
             {/* Target Raw Powders List */}
-            <div className="p-6 rounded-[24px] bg-white/80 dark:bg-[#18181B]/80 border border-ni-border/20 backdrop-blur-md shadow-card">
-              <h4 className="font-heading text-xs font-extrabold uppercase tracking-wider text-ni-rust mb-3">
+            <div className="p-6 sm:p-7 rounded-[24px] bg-white/85 dark:bg-[#18181B]/85 border border-ni-border/20 backdrop-blur-md shadow-card">
+              <h4 className="font-heading text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-rust mb-4">
                 Key Recommended Ingredients
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {activeVertical.ingredients.map((ing) => (
-                  <li key={ing} className="flex items-center gap-2.5 font-body text-xs font-semibold text-ni-primary">
-                    <span className="w-2 h-2 rounded-full bg-ni-rust flex-shrink-0" />
+                  <li key={ing} className="flex items-center gap-3 font-body text-sm sm:text-base font-semibold text-ni-primary">
+                    <span className="w-2.5 h-2.5 rounded-full bg-ni-rust flex-shrink-0" />
                     <span>{ing}</span>
                   </li>
                 ))}
@@ -214,15 +214,15 @@ export default function B2BIndustrySolutions() {
             </div>
 
             {/* Application End-Products */}
-            <div className="p-6 rounded-[24px] bg-white/80 dark:bg-[#18181B]/80 border border-ni-border/20 backdrop-blur-md shadow-card">
-              <h4 className="font-heading text-xs font-extrabold uppercase tracking-wider text-ni-primary mb-3">
+            <div className="p-6 sm:p-7 rounded-[24px] bg-white/85 dark:bg-[#18181B]/85 border border-ni-border/20 backdrop-blur-md shadow-card">
+              <h4 className="font-heading text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary mb-4">
                 Common B2B End-Products
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {activeVertical.applications.map((app) => (
                   <span
                     key={app}
-                    className="font-body text-[10px] font-bold text-ni-secondary bg-ni-surface2/70 dark:bg-white/[0.05] px-3 py-1.5 rounded-xl border border-ni-border/10"
+                    className="font-body text-xs font-bold text-ni-secondary bg-ni-surface2/70 dark:bg-white/[0.05] px-3.5 py-2 rounded-xl border border-ni-border/10"
                   >
                     {app}
                   </span>
@@ -234,46 +234,46 @@ export default function B2BIndustrySolutions() {
         </div>
 
         {/* ── Commercial Packaging & Bulk Dispatch Matrix ── */}
-        <div className="mt-16 pt-12 border-t border-ni-border/15">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <span className="font-body text-xs font-extrabold uppercase tracking-widest text-ni-rust block mb-1">
-              LOGISTICS & SUPPLY CHAIN SPECS
+        <div className="mt-20 pt-14 border-t border-ni-border/15">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-widest text-ni-rust block mb-2">
+              LOGISTICS &amp; SUPPLY CHAIN SPECS
             </span>
-            <h3 className="font-heading text-xl sm:text-2xl font-extrabold text-ni-primary">
-              Flexible Packaging Built for R&D Benchtop to Factory Lines
+            <h3 className="font-heading text-2xl sm:text-3xl font-black text-ni-primary tracking-tight">
+              Flexible Packaging Built for R&amp;D Benchtop to Factory Lines
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {PACKAGING_SPECS.map((pkg) => (
               <div
                 key={pkg.tier}
-                className="p-6 rounded-[24px] bg-ni-surface/90 dark:bg-[#1A1A1D]/90 border border-ni-border/30 dark:border-white/10 shadow-card hover:shadow-hover hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+                className="p-7 rounded-[28px] bg-ni-surface/90 dark:bg-[#1A1A1D]/90 border border-ni-border/30 dark:border-white/10 shadow-card hover:shadow-hover hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between hairline-card"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-2xl">{pkg.icon}</span>
-                    <span className="font-mono text-[10px] font-extrabold text-ni-rust uppercase bg-ni-rust/10 px-2.5 py-1 rounded-full border border-ni-rust/20">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <span className="text-3xl">{pkg.icon}</span>
+                    <span className="font-mono text-xs font-extrabold text-ni-rust uppercase bg-ni-rust/10 px-3 py-1 rounded-full border border-ni-rust/20">
                       {pkg.capacity}
                     </span>
                   </div>
 
-                  <h4 className="font-heading text-base font-bold text-ni-primary mb-2">
+                  <h4 className="font-heading text-lg sm:text-xl font-bold text-ni-primary mb-2">
                     {pkg.tier}
                   </h4>
 
-                  <p className="font-body text-xs font-semibold text-ni-rust mb-3">
+                  <p className="font-body text-xs sm:text-sm font-semibold text-ni-rust mb-3 leading-snug">
                     {pkg.packaging}
                   </p>
 
-                  <p className="font-body text-xs text-ni-secondary leading-relaxed">
+                  <p className="font-body text-xs sm:text-sm text-ni-secondary leading-relaxed">
                     {pkg.useCase}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-3 border-t border-ni-border/10 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-ni-muted">
+                <div className="mt-8 pt-4 border-t border-ni-border/10 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-ni-muted">
                   <span>Surendranagar Plant Dispatch</span>
-                  <span>✓ Moisture Sealed</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">✓ Moisture Sealed</span>
                 </div>
               </div>
             ))}

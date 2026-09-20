@@ -673,7 +673,7 @@ export default function ChatWidget() {
     }
   };
 
-  // Custom trigger events
+  // Custom trigger events & mutual dismiss with SampleBasket
   useEffect(() => {
     const handleOpenEvent = (e) => {
       setIsOpen(true);
@@ -683,9 +683,23 @@ export default function ChatWidget() {
         setTimeout(() => submitMessage(initialMessage), 150);
       }
     };
+    const handleCloseEvent = () => {
+      setIsOpen(false);
+    };
+
     window.addEventListener("open-nectar-chat", handleOpenEvent);
-    return () => window.removeEventListener("open-nectar-chat", handleOpenEvent);
+    window.addEventListener("close-nectar-chat", handleCloseEvent);
+    return () => {
+      window.removeEventListener("open-nectar-chat", handleOpenEvent);
+      window.removeEventListener("close-nectar-chat", handleCloseEvent);
+    };
   }, [submitMessage]);
+
+  useEffect(() => {
+    if (isOpen && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("close-sample-basket"));
+    }
+  }, [isOpen]);
 
   return (
     <div ref={widgetRef} className="fixed bottom-5 right-5 z-[1000] font-body flex flex-col items-end selection:bg-[#BC4B20]/20">

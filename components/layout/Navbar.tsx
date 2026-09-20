@@ -233,9 +233,9 @@ export default function Navbar() {
               <div ref={desktopSearchContainerRef} className="relative flex items-center">
                 <button
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2 text-neutral-900 dark:text-white hover:text-[#BC4B20] hover:bg-neutral-100 dark:hover:bg-white/10 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC4B20]"
+                  className="p-2 text-neutral-900 dark:text-white hover:text-[#BC4B20] hover:bg-neutral-100 dark:hover:bg-white/10 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC4B20] cursor-pointer"
                   aria-label="Toggle search bar"
-                  title="Search powders (⌘K)"
+                  title="Search powders"
                 >
                   <svg className="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -360,43 +360,57 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* Sample Box Counter Chip */}
-              {mounted && totalItems > 0 && (
-                <Link
-                  href="/contact"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#BC4B20]/10 dark:bg-[#BC4B20]/20 border border-[#BC4B20]/40 text-[#BC4B20] font-body text-xs font-black transition-transform duration-300 hover:scale-105"
-                  title="View Sample Box"
-                >
-                  <svg className="w-3.5 h-3.5 text-[#BC4B20]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  <span>{totalItems} {totalItems === 1 ? 'Sample' : 'Samples'}</span>
-                </Link>
-              )}
-
               {/* Theme Toggle */}
               <ThemeToggle />
 
-              {/* Adjust Get Samples CTA Pill — Perfectly proportioned spacing */}
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 font-heading text-xs font-extrabold uppercase tracking-wider px-6 py-2.5 rounded-full bg-[#BC4B20] text-white shadow-md hover:bg-[#D45E30] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 whitespace-nowrap"
+              {/* Single Unified Cart CTA — Shows count badge when items > 0 */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('open-sample-basket'))
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-2 font-heading text-xs font-extrabold uppercase tracking-wider px-5 py-2.5 rounded-full bg-[#BC4B20] text-white shadow-md hover:bg-[#D45E30] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 whitespace-nowrap cursor-pointer btn-press"
+                title={mounted && totalItems > 0 ? `View Cart (${totalItems} items)` : 'View Cart'}
               >
-                <span>GET SAMPLES</span>
+                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="21" r="1" fill="currentColor"/>
+                  <circle cx="19" cy="21" r="1" fill="currentColor"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                </svg>
+                <span>CART</span>
+                {mounted && totalItems > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-white text-[#BC4B20] text-[10px] font-black flex items-center justify-center shadow-xs">
+                    {totalItems}
+                  </span>
+                )}
                 <span className="text-xs font-black">→</span>
-              </Link>
+              </button>
             </div>
 
             {/* Mobile Actions & Hamburger */}
             <div className="md:hidden flex items-center gap-2">
-              {mounted && totalItems > 0 && (
-                <Link
-                  href="/contact"
-                  className="flex items-center justify-center w-8 h-8 rounded-full bg-[#BC4B20]/10 text-[#BC4B20] text-xs font-black border border-[#BC4B20]/30"
-                >
-                  {totalItems}
-                </Link>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('open-sample-basket'))
+                  }
+                }}
+                className="flex items-center justify-center min-w-[36px] h-9 px-2 rounded-full bg-[#BC4B20]/10 text-[#BC4B20] border border-[#BC4B20]/30 cursor-pointer btn-press"
+                title="Open Cart"
+                aria-label={mounted && totalItems > 0 ? `Cart (${totalItems} items)` : 'Cart'}
+              >
+                <svg className="w-4 h-4 text-[#BC4B20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="21" r="1" fill="currentColor"/>
+                  <circle cx="19" cy="21" r="1" fill="currentColor"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                </svg>
+                {mounted && totalItems > 0 && (
+                  <span className="ml-1 text-xs font-black">{totalItems}</span>
+                )}
+              </button>
 
               <ThemeToggle />
 
@@ -543,12 +557,20 @@ export default function Navbar() {
           </nav>
 
           {/* Mobile CTA */}
-          <Link
-            href="/contact"
-            className="w-full inline-flex items-center justify-center font-body text-xs font-black uppercase tracking-widest py-4 rounded-full bg-[#BC4B20] text-white shadow-card text-center"
+          <button
+            type="button"
+            onClick={() => {
+              setMobileOpen(false)
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('open-sample-basket'))
+              }
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 font-body text-xs font-black uppercase tracking-widest py-4 rounded-full bg-[#BC4B20] text-white shadow-card text-center cursor-pointer btn-press"
           >
-            GET SAMPLES →
-          </Link>
+            <span>VIEW CART &amp; INQUIRY</span>
+            {mounted && totalItems > 0 && <span>({totalItems})</span>}
+            <span>→</span>
+          </button>
         </div>
       </div>
     </>

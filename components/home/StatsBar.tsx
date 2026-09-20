@@ -16,7 +16,7 @@ export default function StatsBar() {
           visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}
       >
-        <div className="glass-panel-premium rounded-[var(--radius-xl)] overflow-hidden shadow-premium">
+        <div className="glass-panel-premium hairline-card rounded-[var(--radius-xl)] overflow-hidden shadow-premium">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x-0 md:divide-x divide-y md:divide-y-0 divide-ni-border/20">
 
             <div className="flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10 gap-2 transition-colors duration-300 hover:bg-ni-rust/[0.03]">
@@ -42,7 +42,7 @@ export default function StatsBar() {
 
             <div className="flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10 gap-2 transition-colors duration-300 hover:bg-ni-rust/[0.03]">
               <span className="font-heading font-extrabold text-neutral-900 dark:text-neutral-50 tracking-tight tabular-nums" style={{ fontSize: 'var(--text-h2)' }}>
-                <AnimatedCounter endValue={2021} prefix="Est. " />
+                <AnimatedCounter endValue={2021} prefix="Est. " useGrouping={false} />
               </span>
               <span className="font-body text-[10px] font-bold uppercase tracking-[0.14em] text-ni-muted">Trusted Since</span>
             </div>

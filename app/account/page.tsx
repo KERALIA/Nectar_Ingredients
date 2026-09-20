@@ -97,17 +97,17 @@ export default function AccountPage() {
   const getStatusConfig = (status: OrderStatus) => {
     switch (status) {
       case 'pending_payment_setup':
-        return { label: 'Manual Pay Required', classes: 'bg-yellow-50 text-yellow-800 border-yellow-200' }
+        return { label: 'Manual Pay Required', classes: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' }
       case 'pending_payment':
-        return { label: 'Awaiting Payment', classes: 'bg-blue-50 text-blue-800 border-blue-200' }
+        return { label: 'Awaiting Payment', classes: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20' }
       case 'paid':
-        return { label: 'Payment Confirmed', classes: 'bg-green-50 text-green-800 border-green-200' }
+        return { label: 'Payment Confirmed', classes: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20' }
       case 'dispatched':
-        return { label: 'Shipped / Dispatched', classes: 'bg-purple-50 text-purple-800 border-purple-200' }
+        return { label: 'Shipped / Dispatched', classes: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20' }
       case 'failed':
-        return { label: 'Payment Failed', classes: 'bg-red-50 text-red-800 border-red-200' }
+        return { label: 'Payment Failed', classes: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20' }
       default:
-        return { label: status, classes: 'bg-neutral-50 text-neutral-800 border-neutral-200' }
+        return { label: status, classes: 'bg-neutral-500/10 text-neutral-700 dark:text-neutral-400 border-neutral-500/20' }
     }
   }
 
@@ -169,7 +169,7 @@ export default function AccountPage() {
               return (
                 <div
                   key={order.id}
-                  className="bg-ni-surface border border-ni-border/20 rounded-2xl p-6 transition-all duration-300 hover:shadow-card flex flex-col md:flex-row md:items-center justify-between gap-6"
+                  className="bg-ni-surface hairline-card border border-ni-border/20 rounded-2xl p-6 transition-all duration-300 hover:shadow-card flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center flex-wrap gap-2.5">

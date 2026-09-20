@@ -71,17 +71,17 @@ export default function Hero() {
         </div>
 
         {/* Crisp Dark Vignette Overlay (NO white haze) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/20 pointer-events-none" />
-        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/30 pointer-events-none" />
+        <div className="absolute inset-0 bg-black/25 pointer-events-none" />
       </div>
 
       {/* Hero content — text scrolls cleanly over background */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-12 sm:pb-16 pt-32 sm:pt-36 lg:pt-44">
         <div className="max-w-3xl">
 
-          {/* Location & Brand Pill — crisp black text for light theme */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-panel border border-neutral-900/10 dark:border-white/20 shadow-sm mb-6 animate-float-slow bg-white/85 dark:bg-black/40 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-ni-rust animate-ping" />
+          {/* Location & Brand Pill — stationary, clean grounded badge */}
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-panel border border-neutral-900/10 dark:border-white/20 shadow-sm mb-6 bg-white/90 dark:bg-black/40 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-ni-rust" />
             <span className="font-body text-[10px] font-bold tracking-[0.18em] text-neutral-900 dark:text-white uppercase">
               SURENDRANAGAR, GUJARAT — EST. 2021
             </span>
@@ -97,7 +97,7 @@ export default function Hero() {
           </h1>
 
           {/* Sub-text with high-contrast frosted glass card */}
-          <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-neutral-900/10 dark:border-white/15 backdrop-blur-xl mb-8 sm:mb-10 max-w-2xl shadow-premium bg-white/85 dark:bg-black/50">
+          <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-neutral-900/10 dark:border-white/15 backdrop-blur-xl mb-8 sm:mb-10 max-w-2xl shadow-premium bg-white/90 dark:bg-black/60">
             <p className="font-body text-sm sm:text-lg text-neutral-900 dark:text-neutral-100 font-semibold leading-[1.6] sm:leading-[1.7]">
               We make pure dehydrated vegetable, fruit, and spice powders for food businesses
               and home kitchens. No fillers, no additives — just concentrated ingredient.
@@ -126,15 +126,15 @@ export default function Hero() {
               className="h-14 px-8 flex items-center justify-center rounded-full text-xs font-bold uppercase tracking-widest
                          glass-panel border border-white/30 text-white bg-black/30 backdrop-blur-md
                          hover:border-ni-rust hover:text-orange-300 hover:-translate-y-0.5
-                         transition-all duration-300 min-w-[180px] sm:min-w-[200px]"
+                         transition-all duration-300 min-w-[180px] sm:min-w-[200px] btn-press"
             >
-              Request a Sample
+              Order Commercial Trial
             </Button>
           </div>
 
           {/* Proof Badges */}
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-x-6 sm:gap-y-3 pt-6 border-t border-white/15">
-            {['100% additive-free', 'Batch-tested quality', '1 kg samples available'].map((tag) => (
+            {['100% additive-free', 'Batch-tested quality', '1 kg MOQ Trial Packs'].map((tag) => (
               <span
                 key={tag}
                 className="flex items-center gap-2 font-body text-[11px] sm:text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white glass-panel px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/20 shadow-sm bg-white/80 dark:bg-black/40 backdrop-blur-md"

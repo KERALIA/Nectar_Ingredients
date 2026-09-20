@@ -821,41 +821,76 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
       if (addrMatch && !address) {
         address = addrMatch[1].trim()
       }
-
-      // Check assistant message for listed products
-      const summaryLines = text.split('\n')
-      for (const line of summaryLines) {
-        const lineMatch = line.match(/(?:•|[🍅🫘💜📦✅\s])*\s*([A-Za-z\s]+?)\s*[—–-]\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i)
-        if (lineMatch && !line.includes('Box') && !line.includes('Trial')) {
-          const rawName = lineMatch[1].trim()
-          const pQty = parseFloat(lineMatch[2])
-          const pUnit = lineMatch[3].toLowerCase()
-          if (!['mobile', 'phone', 'number', 'address', 'email', 'name', 'quantities', 'products', 'pin', 'code', 'inquiry', 'quote', 'reference'].some((k) => rawName.toLowerCase().includes(k))) {
-            const matched = matchCatalogProduct(rawName)
-            if (matched.sku || extendedRange.some((e) => e.name.toLowerCase() === matched.name.toLowerCase())) {
-              if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
-                orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
-              }
-            }
-          }
-        }
-      }
+      // Note: Assistant messages are NEVER parsed for order products, to prevent packaging examples or summaries from polluting user orders.
     }
 
     // User message heuristics
     if (m.role === 'user') {
-      // 1. Strict regex for products with required unit (prevents house/block numbers or pin codes from matching)
-      const itemRegex = /([a-zA-Z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/gi
-      let iMatch: RegExpExecArray | null
-      while ((iMatch = itemRegex.exec(text)) !== null) {
-        const rawName = iMatch[1].trim().replace(/^[,|&]|[,|&]$/g, '').trim()
-        const pQty = parseFloat(iMatch[2])
-        const pUnit = iMatch[3].toLowerCase()
-        const pName = rawName.replace(/^(and|or|plus|with|,)\s+/i, '').trim()
-        if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
-          const matched = matchCatalogProduct(pName)
-          if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
-            orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
+      // Explicit Name extractor
+      const explicitNameMatch = text.match(/(?:my\s+name\s+is|name\s*[:=-]|customer\s*name\s*[:=-])\s*([A-Za-z\s]{2,40})/i)
+      if (explicitNameMatch && !customerName) {
+        const rawN = explicitNameMatch[1].split(/[,|\n]|(?:\s+(?:email|phone|address|mobile|pin)\b)/i)[0].trim()
+        if (rawN.length >= 2 && !['take', 'order', 'powder', 'need', 'want', 'submit', 'hello', 'hi', 'please', 'buy'].some((b) => rawN.toLowerCase().includes(b))) {
+          customerName = rawN
+        }
+      }
+
+      // Explicit Address extractor
+      const explicitAddrMatch = text.match(/(?:delivery\s*address\s*[:=-]|address\s*[:=-]|ship\s*to\s*[:=-])\s*([^,\n]+(?:,[^,\n]+)*)/i)
+      if (explicitAddrMatch && !address) {
+        const rawAddr = explicitAddrMatch[1].split(/(?:\s+(?:email|phone|mobile|name)\b)/i)[0].trim()
+        if (rawAddr.length >= 6) {
+          address = rawAddr
+        }
+      }
+
+      const uText = text.toLowerCase()
+      // Skip parsing products if the user message is an informational query or recipe question
+      const isInformationalUserQuery =
+        uText.includes('recipe') ||
+        uText.includes('recepie') ||
+        uText.includes('how to make') ||
+        uText.includes('how to cook') ||
+        uText.includes('how do i') ||
+        uText.includes('how can i') ||
+        uText.includes('explain') ||
+        uText.includes('what is') ||
+        uText.includes('tell me about') ||
+        uText.includes('difference between') ||
+        uText.includes('where is your') ||
+        uText.includes('where are you')
+
+      if (!isInformationalUserQuery) {
+        // Pattern A: Product Quantity (e.g. Tomato Powder 25kg, Onion Powder - 10kg)
+        const itemRegexA = /([a-zA-Z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/gi
+        let iMatchA: RegExpExecArray | null
+        while ((iMatchA = itemRegexA.exec(text)) !== null) {
+          const rawName = iMatchA[1].trim().replace(/^[,|&]|[,|&]$/g, '').trim()
+          const pQty = parseFloat(iMatchA[2])
+          const pUnit = iMatchA[3].toLowerCase()
+          const pName = rawName.replace(/^(and|or|plus|with|,|i want to order|i want to buy|order|buy|please send)\s+/i, '').trim()
+          if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
+            const matched = matchCatalogProduct(pName)
+            if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
+              orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
+            }
+          }
+        }
+
+        // Pattern B: Quantity Product (e.g. 25kg Tomato Powder, 10kg of Garlic Powder)
+        const itemRegexB = /\b(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b\s*(?:of\s+)?([a-zA-Z\s]+)/gi
+        let iMatchB: RegExpExecArray | null
+        while ((iMatchB = itemRegexB.exec(text)) !== null) {
+          const pQty = parseFloat(iMatchB[1])
+          const pUnit = iMatchB[2].toLowerCase()
+          let rawName = iMatchB[3].trim().replace(/^[,|&]|[,|&]$/g, '').trim()
+          rawName = rawName.split(/[,|\n]|(?:\s+(?:and|with|\+|phone|email|address|pin|name)\b)/i)[0].trim()
+          const pName = rawName.replace(/^(and|or|plus|with|,)\s+/i, '').trim()
+          if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
+            const matched = matchCatalogProduct(pName)
+            if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
+              orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
+            }
           }
         }
       }
@@ -866,11 +901,25 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
         const pClean = p.trim()
 
         // Check if individual part is a product + quantity
-        const prodPartMatch = pClean.match(/^([A-Za-z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i)
-        if (prodPartMatch) {
-          const pName = prodPartMatch[1].trim()
-          const pQty = parseFloat(prodPartMatch[2])
-          const pUnit = prodPartMatch[3].toLowerCase()
+        const prodPartMatchA = pClean.match(/^([A-Za-z\s]+?)\s*[-:]?\s*(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i)
+        if (prodPartMatchA) {
+          const pName = prodPartMatchA[1].trim()
+          const pQty = parseFloat(prodPartMatchA[2])
+          const pUnit = prodPartMatchA[3].toLowerCase()
+          if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
+            const matched = matchCatalogProduct(pName)
+            if (!orderProducts.some((prod) => prod.name.toLowerCase() === matched.name.toLowerCase())) {
+              orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
+            }
+          }
+          continue
+        }
+
+        const prodPartMatchB = pClean.match(/^(\d+(?:\.\d+)?)\s*(kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b\s*(?:of\s+)?([A-Za-z\s]+)$/i)
+        if (prodPartMatchB) {
+          const pQty = parseFloat(prodPartMatchB[1])
+          const pUnit = prodPartMatchB[2].toLowerCase()
+          const pName = prodPartMatchB[3].trim()
           if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
             const matched = matchCatalogProduct(pName)
             if (!orderProducts.some((prod) => prod.name.toLowerCase() === matched.name.toLowerCase())) {
@@ -1127,6 +1176,43 @@ async function callOpenCodeZen(messages: any[], apiKey: string) {
 // DYNAMIC CONVERSATIONAL AI SYNTHESIZER (ZERO-TEMPLATE GUARANTEE)
 // ============================================================================
 
+function getProductEmoji(name: string): string {
+  const n = name.toLowerCase()
+  if (n.includes('tomato')) return '🍅'
+  if (n.includes('onion')) return '🧅'
+  if (n.includes('garlic')) return '🧄'
+  if (n.includes('ginger') || n.includes('sounth')) return '🫚'
+  if (n.includes('turmeric')) return '🟡'
+  if (n.includes('beetroot')) return '🟣'
+  if (n.includes('carrot')) return '🥕'
+  if (n.includes('spinach') || n.includes('methi') || n.includes('mint')) return '🥬'
+  if (n.includes('lemon') || n.includes('amla')) return '🍋'
+  if (n.includes('orange')) return '🍊'
+  if (n.includes('mango')) return '🥭'
+  if (n.includes('banana')) return '🍌'
+  if (n.includes('watermelon')) return '🍉'
+  if (n.includes('pomegranate')) return '🍇'
+  if (n.includes('strawberry')) return '🍓'
+  if (n.includes('cheese') || n.includes('butter') || n.includes('cream') || n.includes('curd')) return '🧀'
+  if (n.includes('chili') || n.includes('pepper') || n.includes('spice')) return '🌶️'
+  return '🌿'
+}
+
+function getLastDiscussedProductFromHistory(history: Array<{ role: string; content: string }>): KnowledgeItem | null {
+  if (!Array.isArray(history) || history.length === 0) return null
+  for (let i = history.length - 1; i >= 0; i--) {
+    const text = (history[i].content || '').toLowerCase()
+    for (const item of KNOWLEDGE_CATALOG) {
+      const pName = item.name.toLowerCase()
+      const base = pName.replace(' powder', '').trim()
+      if (text.includes(pName) || (base.length >= 4 && text.includes(base))) {
+        return item
+      }
+    }
+  }
+  return null
+}
+
 async function synthesizeDynamicAIResponse(
   message: string,
   retrievedContext: string,
@@ -1134,108 +1220,385 @@ async function synthesizeDynamicAIResponse(
 ): Promise<string> {
   const clean = message.toLowerCase().trim()
   const historyWithMsg = [...history, { role: 'user', content: message }]
-  const state = extractOrderStateFromHistory(historyWithMsg)
 
-  // 1. COMPLETE ORDER INTAKE / SUBMISSION (ALL REQUIRED DETAILS PRESENT)
-  if (state.customerName && state.email && state.address && state.products.length > 0 && !state.existingRef) {
-    const submitRes = await toolSubmitNewOrder({
-      name: state.customerName,
-      email: state.email,
-      phone: state.phone,
-      address: state.address,
-      items: state.products,
-      message: 'Order inquiry submitted via chatbot dynamic synthesizer',
-    })
-    if (submitRes.orderRef) {
-      return formatSubmittedOrderMessage(submitRes.orderRef, {
-        name: state.customerName,
-        email: state.email,
-        phone: state.phone,
-        address: state.address,
-        items: state.products,
-      })
+  // Normalize common phonetic and keyboard typos
+  const normalized = clean
+    .replace(/\b(recepie|recipie|recepi|recipi|recpie)\b/g, 'recipe')
+    .replace(/\b(romato|tamato|tomoto|tomatto)\b/g, 'tomato')
+    .replace(/\b(onoin|oinon|oniyon)\b/g, 'onion')
+    .replace(/\b(garliic|garli)\b/g, 'garlic')
+    .replace(/\b(powderz|powdr)\b/g, 'powder')
+
+  // Identify referential context from history (ONLY used when user says 'it', 'this', 'that', 'its', etc.)
+  const historyProduct = getLastDiscussedProductFromHistory(history)
+  const hasPronounRef = /\b(it|its|this|that|the powder|these powders)\b/i.test(normalized)
+
+  // ========================================================================
+  // 1. RECIPES, CULINARY PREPARATION & CULINARY FORMULATION INTENT (HIGHEST PRIORITY)
+  // Evaluated FIRST so recipe requests are NEVER intercepted by order intake or raw specs!
+  // ========================================================================
+  const isRecipeIntent =
+    /(recipe|how to make|how to cook|how to prepare|how do i make|how can i make|method to make|preparation of|cook with|dish with|soup recipe|sauce recipe|curry recipe|gravy recipe|soup premix|seasoning blend|culinary use|cooking use)/i.test(
+      normalized
+    ) ||
+    ((normalized.includes('soup') ||
+      normalized.includes('dip') ||
+      normalized.includes('curry') ||
+      normalized.includes('sauce') ||
+      normalized.includes('bread') ||
+      normalized.includes('chai') ||
+      normalized.includes('tea') ||
+      normalized.includes('smoothie') ||
+      normalized.includes('latte') ||
+      normalized.includes('puree')) &&
+      (normalized.includes('how') ||
+        normalized.includes('tell') ||
+        normalized.includes('give') ||
+        normalized.includes('make') ||
+        normalized.includes('cook') ||
+        normalized.includes('prepare') ||
+        normalized.includes('use') ||
+        normalized.includes('method') ||
+        normalized.includes('can i')))
+
+  if (isRecipeIntent) {
+    // 1A. TOMATO RECIPES
+    if (
+      normalized.includes('tomato') ||
+      (!normalized.includes('onion') &&
+        !normalized.includes('garlic') &&
+        !normalized.includes('ginger') &&
+        !normalized.includes('cheese') &&
+        !normalized.includes('beet') &&
+        !normalized.includes('carrot') &&
+        !normalized.includes('spinach') &&
+        normalized.includes('soup') &&
+        (!hasPronounRef || !historyProduct || historyProduct.name.toLowerCase().includes('tomato')))
+    ) {
+      return `🥣 **Rich & Velvety Tomato Soup (Using Nectar 80-Mesh Tomato Powder)** 🍅✨
+
+Using pure dehydrated Tomato Powder allows you to prepare restaurant-quality, silky tomato soup in just 8–10 minutes with zero chopping, boiling down, or straining!
+
+📋 **Ingredients (Serves 2–3):**
+• 🍅 **Nectar Tomato Powder (80 mesh):** 3 tablespoons (approx. 30g)
+• 🧅 **Nectar White Onion Powder:** 1/2 teaspoon (for sweet aromatic base)
+• 🧄 **Nectar Garlic Powder:** 1/4 teaspoon (for savory depth)
+• 💧 **Water or Vegetable Broth:** 2.5 cups (500 ml)
+• 🧈 **Butter or Olive Oil:** 1 tablespoon
+• 🌾 **Cornstarch:** 1 teaspoon dissolved in 2 tbsp water (for classic smooth body)
+• 🧂 **Seasonings:** 1/2 tsp salt, 1/4 tsp crushed black pepper, 1/2 tsp sugar (to balance natural acidity)
+• 🥛 **Garnish:** 2 tablespoons fresh cream, crisp garlic croutons, or torn basil
+
+👨‍🍳 **Step-by-Step Preparation:**
+1. **Cold Slurry (Zero-Lump Rule):** In a small bowl, whisk 3 tbsp Tomato Powder into 1/2 cup room-temperature water until completely smooth and lump-free.
+2. **Bloom the Aromatics:** Melt butter in a saucepan over low heat. Add the Onion Powder and Garlic Powder; stir for 20 seconds to release their fragrant sweetness (do not brown).
+3. **Combine & Simmer:** Pour in the remaining 2 cups of water/broth and the smooth tomato slurry. Stir well and bring to a gentle simmer.
+4. **Thicken & Season:** Stir in the cornstarch slurry, salt, crushed black pepper, and sugar. Simmer on low heat for 3–5 minutes until thick, glossy, and fragrant.
+5. **Garnish & Serve:** Swirl in fresh cream, top with crunchy croutons or black pepper, and serve hot! 🥣✨
+
+🏭 **Commercial Premix Formula (Per 100g Dry Sachet):**
+62g Tomato Powder (80 mesh), 12g Cornstarch, 8g White Onion Powder, 2g Garlic Powder, 10g Sugar, 4g Salt, 2g Soya HVP.
+
+Would you like 1 KG R&D trial packs of Tomato, Onion, or Garlic powders for your trials? 😊`
     }
+
+    // 1B. ONION RECIPES
+    if (
+      normalized.includes('onion') ||
+      (hasPronounRef && historyProduct && historyProduct.name.toLowerCase().includes('onion'))
+    ) {
+      return `🧅 **Classic French Onion Soup & Creamy Onion Dip (Using Nectar Onion Powder)** 🌿✨
+
+Nectar's low-temperature dehydrated White Onion Powder delivers instant caramelized sweetness and allium aroma without peeling or crying!
+
+🥣 **1. Quick French Onion Soup (Serves 2):**
+• 🧅 **Nectar White Onion Powder:** 2 tablespoons (approx. 20g)
+• 🧄 **Nectar Garlic Powder:** 1/4 teaspoon
+• 🧈 **Butter:** 1.5 tablespoons
+• 💧 **Broth or Water:** 3 cups (600 ml) vegetable or mushroom broth
+• 🍞 **Baguette slices & grated Gruyère / Mozzarella cheese**
+• **Method:** Melt butter, sauté onion and garlic powder for 30 seconds until golden. Pour in broth and 1/2 tsp soy sauce or Soya HVP. Simmer 5 mins. Ladle into oven-safe bowls, float toasted baguette, cover with cheese, and broil until bubbly and golden brown!
+
+🥣 **2. 2-Minute Creamy Onion Dip (Party Favorite):**
+• Mix **2 tbsp Nectar Onion Powder** + **1/2 tsp Garlic Powder** + **1/2 tsp salt** into 1 cup Greek yogurt, hung curd, or sour cream. Rest for 15 minutes in the fridge for flavors to bloom. Serve with chips or pita!
+
+Would you like 1 KG trial packs or bulk 25 KG pricing for White Onion Powder? 😊`
+    }
+
+    // 1C. GARLIC RECIPES
+    if (
+      normalized.includes('garlic') ||
+      (hasPronounRef && historyProduct && historyProduct.name.toLowerCase().includes('garlic'))
+    ) {
+      return `🧄 **Ultimate Garlic Butter Spread & Toasted Garlic Bread (Using Nectar Garlic Powder)** 🌿✨
+
+Our 100-mesh cryo-milled Garlic Powder dissolves seamlessly into warm fats without the raw bitter chunks or burning risk of fresh minced garlic.
+
+📋 **Ingredients:**
+• 🧄 **Nectar Garlic Powder:** 1.5 teaspoons
+• 🧈 **Salted Butter (Softened):** 100g (1/2 cup)
+• 🌿 **Dried Oregano / Parsley:** 1 teaspoon
+• 🌶️ **Red Chili Flakes:** 1/2 teaspoon
+• 🥖 **French Baguette or Loaf:** Sliced diagonally
+
+👨‍🍳 **Preparation:**
+1. In a bowl, whip the softened butter with Garlic Powder, herbs, and chili flakes until fluffy and pale.
+2. Generously spread the garlic butter over sliced bread.
+3. Bake at 190°C (375°F) for 6–8 minutes until golden and crisp around the crust. (Top with mozzarella for Cheese Garlic Bread!)
+
+Would you like sample packs or specifications for 100-mesh Garlic Powder? 😊`
+    }
+
+    // 1D. GINGER CHAI & TEA
+    if (
+      normalized.includes('ginger') ||
+      normalized.includes('sounth') ||
+      normalized.includes('chai') ||
+      normalized.includes('tea') ||
+      (hasPronounRef && historyProduct && (historyProduct.name.toLowerCase().includes('ginger') || historyProduct.name.toLowerCase().includes('sounth')))
+    ) {
+      return `🫚 **Authentic Kadak Ginger Chai & Warming Honey Elixir** 🌿✨
+
+Made with 100% pure dehydrated ginger powder (Sounth) for intense, warming gingerol heat without stringy fibers.
+
+☕ **1. Royal Ginger Kadak Chai (2 Cups):**
+• Boil 1 cup water with 2 tsp black tea leaves and **1/4 tsp Nectar Ginger Powder**.
+• Add 1 cup milk and 2 tsp sugar/jaggery. Simmer for 3 minutes until rich and aromatic. Strain and serve piping hot!
+
+🍯 **2. Soothing Throat Honey Drops:**
+• Mix 1/4 tsp Ginger Powder + a pinch of Turmeric Powder + 1 tbsp pure raw honey. Sip slowly to soothe coughs, colds, and chills.
+
+Would you like a sample pack or COA test report for Sounth Ginger Powder? 😊`
+    }
+
+    // 1E. CHEESE SAUCE & SEASONING
+    if (
+      normalized.includes('cheese') ||
+      (hasPronounRef && historyProduct && historyProduct.name.toLowerCase().includes('cheese'))
+    ) {
+      return `🧀 **Velvety Nacho Cheese Sauce & Seasoning Blend (Using Nectar Cheese Powder)** ✨
+
+Our spray-dried Grade A Cheese Powder yields velvety, clump-free sauces and snack dustings instantly.
+
+📋 **Ingredients:**
+• 🧀 **Nectar Cheese Powder:** 4 tablespoons (approx. 40g)
+• 🧈 **Butter:** 1 tablespoon
+• 🌾 **Flour or Cornstarch:** 1 tablespoon
+• 🥛 **Milk:** 1 cup (warm)
+• 🧄 **Nectar Garlic Powder:** 1/4 teaspoon
+• 🌶️ **Paprika / Chili Powder:** 1/4 teaspoon
+
+👨‍🍳 **Preparation:**
+1. Melt butter in a saucepan on low heat. Whisk in flour for 1 minute.
+2. Slowly pour in warm milk while whisking constantly to create a smooth béchamel base.
+3. Turn heat to lowest, whisk in Cheese Powder and Garlic Powder until completely melted and silky.
+4. Serve immediately with nachos, fries, or pasta!
+
+Would you like sample packs or bulk specs for Cheese Powder Grade A? 😊`
+    }
+
+    // 1F. BEETROOT RECIPES
+    if (
+      normalized.includes('beet') ||
+      normalized.includes('beetroot') ||
+      (hasPronounRef && historyProduct && historyProduct.name.toLowerCase().includes('beet'))
+    ) {
+      return `🟣 **Energizing Ruby Beetroot Smoothie & Velvet Crimson Latte** 🌿✨
+
+Our 80-mesh Beetroot Powder preserves vivid betalain pigments and natural nitric oxide benefits without the peeling or red-stained hands!
+
+🥤 **1. Ruby Pre-Workout Smoothie:**
+• Whisk **1 tablespoon Nectar Beetroot Powder** into 1 glass chilled coconut water or almond milk with 1 banana and a dash of lemon juice.
+• Rehydrates instantly with a deep natural magenta glow!
+
+☕ **2. Pink Velvet Detox Latte:**
+• Whisk **1 teaspoon Beetroot Powder** + **1/4 tsp Ginger Powder** + 1 cup warm frothed oat milk or whole milk. Sweeten with a dash of honey or vanilla.
+
+Would you like a 1 KG trial pack or COA report for Beetroot Powder? 😊`
+    }
+
+    // 1G. UNIVERSAL RECONSTITUTION & GENERAL PREMIX RATIOS
+    return `🌿 **Universal Dehydrated Powder Culinary Ratios & Premix Guide** ✨
+
+Our 80–100 mesh dehydrated powders are engineered for instant reconstitution, vibrant color, and zero-lump blending:
+
+💡 **Golden Reconstitution Rules:**
+• **Fresh Puree Equivalent:** 1 part powder + 4 to 5 parts warm water = instant rich puree (Tomato, Beetroot, Carrot, Spinach).
+• **Cold-Slurry Rule:** Always whisk dry powder into a small amount of room-temperature liquid first before adding to hot simmering pots to avoid clumping.
+• **All-Purpose Instant Soup Premix:** Combine 60% Vegetable Powder, 15% Cornstarch, 8% Onion Powder, 2% Garlic Powder, 12% Seasoning (Salt/Sugar/Pepper), and 3% Soya HVP.
+
+Which specific dish or powder formulation would you like a recipe for? 😊`
   }
 
-  // 2. ORDER STATUS / SUBMISSION CONFIRMATION INTENT
-  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+(?:my\s+)?order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed|check\s+(?:my\s+)?order|check\s+orders?\s+status|track\s+(?:my\s+)?order)/i.test(clean)
+  // ========================================================================
+  // 2. PRODUCT SPECIFICATION & DETAILS INQUIRY
+  // Evaluated SECOND: Directly answers what the powder is, mesh size, purity, etc.
+  // ========================================================================
+  let matchedProduct: KnowledgeItem | null = null
+  for (const p of KNOWLEDGE_CATALOG) {
+    const pName = p.name.toLowerCase()
+    const base = pName.replace(' powder', '').trim()
+    if (normalized.includes(pName) || (base.length >= 4 && normalized.includes(base))) {
+      matchedProduct = p
+      break
+    }
+  }
+  // Referential fallback using history if the user asks with pronouns ('it', 'this', 'that', 'its')
+  if (!matchedProduct && hasPronounRef && historyProduct) {
+    matchedProduct = historyProduct
+  }
+
+  const isDirectProductNameOnly =
+    Boolean(matchedProduct) &&
+    (normalized === matchedProduct?.name.toLowerCase() ||
+      normalized === matchedProduct?.name.toLowerCase().replace(' powder', '').trim() ||
+      normalized === `${matchedProduct?.name.toLowerCase().replace(' powder', '').trim()} powder`)
+
+  const hasOrderActionWords =
+    /(order|buy|purchase|deliver|taking\s+order|i\s+want\s+to\s+order|i\s+want\s+to\s+buy)/i.test(normalized) ||
+    /\b\d+\s*(?:kg|gm|g|grams|kilo|bags?|boxes?)\b/i.test(normalized)
+
+  const isSpecOrDetailQuery =
+    (isDirectProductNameOnly && !hasOrderActionWords) ||
+    normalized.includes('explain') ||
+    normalized.includes('details') ||
+    normalized.includes('overview') ||
+    normalized.includes('spec') ||
+    normalized.includes('specification') ||
+    normalized.includes('mesh') ||
+    normalized.includes('moisture') ||
+    normalized.includes('purity') ||
+    normalized.includes('shelf life') ||
+    normalized.includes('application') ||
+    /(what is|tell me about|info on|how is .* made|is it pure)/i.test(normalized)
+
+  if (matchedProduct && isSpecOrDetailQuery && !hasOrderActionWords) {
+    const isCustom = matchedProduct.isOnRequest ? ' *(Made to Order)*' : ''
+    const apps = matchedProduct.applications.length > 0 ? matchedProduct.applications.join(', ') : 'Seasonings, premixes, and instant culinary formulations'
+    const emoji = getProductEmoji(matchedProduct.name)
+
+    // If specific question about mesh
+    if (normalized.includes('mesh') || normalized.includes('fineness') || normalized.includes('particle')) {
+      return `${emoji} **${matchedProduct.name} — Particle Fineness & Mesh Specifications** 🔬\n\n• **Standard Mesh Size:** ${matchedProduct.mesh}\n• **Milling Protocol:** Cryo-milled and uniform micro-particle sizing engineered for instant cold dispersion without sediment or grit.\n• **Packaging:** ${matchedProduct.packaging}\n\nWould you like a sample pack or official batch COA for ${matchedProduct.name}? 😊`
+    }
+
+    // If specific question about moisture
+    if (normalized.includes('moisture') || normalized.includes('water content')) {
+      return `${emoji} **${matchedProduct.name} — Moisture & Shelf Stability** 🔬\n\n• **Moisture Content:** Strictly maintained **below 8%** (batch-tested down to 5–6% on COA).\n• **Shelf Life:** 12 to 18 months in unopened hermetic barrier packaging.\n• **Zero Additives:** 100% pure with zero added anti-caking agents, starch, or carriers.\n\nWould you like our lab COA report for ${matchedProduct.name}? 😊`
+    }
+
+    return `${emoji} **${matchedProduct.name}**${isCustom} — Detailed Overview 🌿\n\n${matchedProduct.description}\n\n🔬 **Key Technical Specifications:**\n• **Mesh / Fineness:** ${matchedProduct.mesh} (fine, uniform particle sizing for fast dispersion)\n• **Purity & Moisture:** 100% pure & additive-free; moisture strictly maintained below 8% for long shelf stability.\n• **Key Applications:** ${apps}\n\n📦 **Packaging & Samples:**\nWe supply standard **25 KG bulk corrugated boxes** (food-grade HDPE lined) alongside **1 KG & 5 KG R&D trial packs** for formulation and sample testing.\n\nWould you like a commercial price quote or the verified batch Certificate of Analysis (COA) for ${matchedProduct.name}? 😊`
+  }
+
+  // ========================================================================
+  // 3. DEHYDRATION TECHNOLOGIES & PROCESS INQUIRY
+  // ========================================================================
+  if (/(freeze dry|spray dry|drum dry|air dry|dehydration method|how is it made|drying process|manufacturing process)/i.test(clean)) {
+    return `🔬 **Dehydration Technologies at Nectar Ingredients** 🌿\n\nWe utilize advanced, low-temperature dehydration processes tailored to each raw ingredient to preserve natural pigments, delicate aromas, and active bioactives:\n\n• **Low-Temperature Spray Drying:** Ideal for fruit concentrates and dairy powders (like Pomegranate and Cheese Powder). Atomized droplets dry rapidly in warm air, yielding ultra-fine, highly dispersible powders with instant solubility.\n• **Freeze Drying (Lyophilization):** Sublimates ice crystals under vacuum at sub-zero temperatures. It provides unmatched nutrient and volatile aroma retention with a light, porous structure that rehydrates instantly — ideal for premium fruit and herbal applications.\n• **Hot Air & Drum Drying:** Perfect for root vegetables, spices, and leafy greens (like Onion, Garlic, and Kasuri Methi). Gentle low heat preserves robust pungency, fiber integrity, and standard 60–100 mesh fineness.\n\nAll our powders maintain moisture strictly below 8% with zero added salt, carriers, or artificial fillers. Would you like technical specs or R&D trial packs for your specific application? 😊`
+  }
+
+  // ========================================================================
+  // 4. CONTACT, FACILITY & DIRECT COMMERCIAL DESK
+  // ========================================================================
+  if (
+    /(contact|phone number|call you|whatsapp|reach you|mehul|owner|factory|office address|where are you located|facility address|office location|where is your)/i.test(clean) &&
+    !clean.includes('track') && !clean.includes('status')
+  ) {
+    return `👋 **Nectar Ingredients — Direct B2B Commercial Desk**\n\n• 📞 **Key Contact Person:** Mehul Patel\n• 💬 **Direct Call & WhatsApp:** [+91 98798 38281](https://wa.me/919879838281) (Fastest for custom rates, sample dispatches & dispatch updates)\n• 📧 **Official Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) (For custom commercial quotes and official PDF bills upon dispatch)\n• 🏢 **Manufacturing Facility & Office:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿\n\nFeel free to WhatsApp Mehul directly with your target product, quantity, and destination pin code! 😊`
+  }
+
+  // ========================================================================
+  // 5. GREETING & SOCIAL PLEASANTRIES
+  // ========================================================================
+  if (/^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean)) {
+    return `Hello! 👋 Welcome to **Nectar Intelligence**! 🌿\n\nI'm your AI technical and commercial assistant for Nectar Ingredients (Surendranagar, Gujarat). How can I assist you today? I'd be happy to explain our dehydrated powders, share recipe formulations, or answer any technical questions! 😊`
+  }
+  if (/^(thanks|thank you|thankyou|thx|bye|goodbye)\b/i.test(clean)) {
+    return `You're very welcome! 🌿 It's always a pleasure assisting you. If you ever need sample packs, Certificate of Analysis (COA) reports, or commercial bulk quotes, feel free to ask or WhatsApp **Mehul Patel** at [+91 98798 38281](https://wa.me/919879838281). Have a wonderful day! 😊✨`
+  }
+
+  // ========================================================================
+  // 6. HEALTH / WELLNESS / SYMPTOM SUPPORT
+  // ========================================================================
+  if (/(fever|sick|ill|cold|cough|headache|flu|immunity|throat|infection|weakness|pain)/i.test(clean)) {
+    return `I'm sorry to hear you're feeling unwell! 💛 Here are some gentle, supportive natural wellness measures that can help keep you comfortable during a fever:\n\n💧 **Stay Thoroughly Hydrated:**\nDrink plenty of warm water, oral electrolytes, or light clear vegetable broths to replenish fluids lost through temperature regulation.\n\n🫚 **Warm Ginger (Sounth) Infusion:**\nGinger is traditionally celebrated for its warming, comforting properties. Steeping a pinch of pure ginger powder in hot water with a teaspoon of honey can bring soothing relief against chills and body aches.\n\n🥛 **Golden Turmeric (Haldi) Milk:**\nTurmeric contains natural **curcumin**, widely used in Indian wellness traditions to support the body's natural immune and recovery response.\n\n🍋 **Vitamin C & Hydration:**\nAmla (Indian gooseberry) or lemon water provides natural vitamin C to support immune health during recovery.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary and wellness measures. Pure spice powders are dietary ingredients and not a substitute for professional medical treatment. If your fever is high (above 102°F/39°C), lasts more than 48 hours, or comes with severe symptoms, please consult a qualified doctor or healthcare provider promptly!\n\nWishing you a speedy and restful recovery! 🤗💛`
+  }
+
+  // ========================================================================
+  // 7. ORDER FOLLOW-UP & VERIFICATION
+  // ========================================================================
+  const isOrderFollowUp = /(is\s+it\s+submitted|did\s+you\s+submit|is\s+it\s+done|is\s+my\s+order|order\s+submitted|order\s+status|status\s+of\s+(?:my\s+)?order|did\s+you\s+take\s+my\s+order|is\s+my\s+order\s+placed|order\s+placed|confirm\s+my\s+order|order\s+confirmed)/i.test(clean)
   if (isOrderFollowUp) {
+    const state = extractOrderStateFromHistory(historyWithMsg)
     if (state.existingRef) {
       return `Yes, absolutely! 🎉 Your order has been successfully registered in our system! 🌿\n\n📋 **Reference Number:** \`${state.existingRef}\`\n\nOur commercial sales team in Surendranagar (led by **Mehul Patel**) has logged your inquiry. An official commercial quote and proforma invoice will be sent to your registered email shortly.\n\n💡 For priority dispatch or immediate questions:\nReach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) 📞`
     }
-    // Partial details
     if (state.products.length > 0) {
       const missing: string[] = []
       if (!state.customerName) missing.push('Full Name')
       if (!state.email) missing.push('Email Address')
       if (!state.phone) missing.push('Mobile Number')
       if (!state.address || !state.pin) missing.push('Complete Delivery Address with 6-digit PIN')
-      return `We have noted your order details for **${state.products.map((p) => p.name).join(', ')}**, but to formally submit it and generate your Reference ID, we still need: ${missing.join(', ')}. Please share these details, and I will submit it right away! 🌿`
+      return `We have noted your inquiry for **${state.products.map((p) => p.name).join(', ')}**, but to formally submit it and generate your Reference ID, we still need: ${missing.join(', ')}. Please share these details, and I will register it immediately! 🌿`
     }
-    return `🌿 Sure, I can help you check your order status!\n\nTo look up your order, I'll need one of the following details from you:\n📋 **Reference ID** (e.g., \`NEC-20260815-122335\`)\n📞 **Mobile Number** (10-digit registered number)\n📧 **Email Address** used during ordering\n\nCould you please share any one of these so I can pull up your order details right away? 😊`
+    return `🌿 To check your order status, please share your **Reference ID** (e.g., \`NEC-20260815-122335\`), registered **Mobile Number**, or **Email Address**, and I will look it up right away! 😊`
   }
 
-  // 3. USER PROVIDED PRODUCTS WITH QUANTITIES OR PARTIAL DETAILS
+  // ========================================================================
+  // 8. ORDER INTAKE & SUBMISSION (ONLY WHEN CURRENT MESSAGE IS AN ORDER ACTION)
+  // ========================================================================
+  const isOrderAction =
+    /(take\s+(?:an?\s+)?order|place\s+(?:an?\s+)?order|order\s+powders|buy\s+powder|purchase\s+powders|i\s+want\s+to\s+order|i\s+want\s+to\s+buy)/i.test(clean)
   const hasQuantities = /\b\d+\s*(?:kg|gm|g|grams|kilo|bags?|boxes?)\b/i.test(clean)
-  if ((hasQuantities || state.products.length > 0) && !state.existingRef) {
-    const pList = state.products.map((p) => `• **${p.name}**${p.sku ? ` (SKU: ${p.sku})` : ''} — ${p.quantity} ${p.unit || 'kg'}`).join('\n')
-    const missing: string[] = []
-    if (!state.customerName) missing.push('👤 **Full Name**')
-    if (!state.email) missing.push('📧 **Email Address**')
-    if (!state.phone) missing.push('📞 **Mobile Number** (10-digit)')
-    if (!state.address || !state.pin) missing.push('🏠 **Complete Delivery Address** (Street, City, State, & 6-digit PIN Code)')
+  const hasOrderCredentials = clean.includes('@') || /^(?:91)?[6-9]\d{9}$/.test(clean.replace(/[\s\-+]/g, '')) || /\b([1-9]\d{5})\b/.test(clean)
 
-    return `🛒 **Excellent choices! I've noted your requested powders:**\n${pList}\n\nTo formally submit your order and email your official commercial quote & PDF invoice, I just need:\n${missing.join('\n')}\n\nFeel free to share ${missing.length === 1 ? 'this' : 'these'}, and I'll submit your order immediately! 🌿✨`
+  if (isOrderAction || hasQuantities || hasOrderCredentials) {
+    const state = extractOrderStateFromHistory(historyWithMsg)
+
+    // Complete order submission if all required fields are present
+    if (state.customerName && state.email && state.address && state.products.length > 0 && !state.existingRef) {
+      const submitRes = await toolSubmitNewOrder({
+        name: state.customerName,
+        email: state.email,
+        phone: state.phone,
+        address: state.address,
+        items: state.products,
+        message: 'Order inquiry submitted via chatbot dynamic synthesizer',
+      })
+      if (submitRes.orderRef) {
+        return formatSubmittedOrderMessage(submitRes.orderRef, {
+          name: state.customerName,
+          email: state.email,
+          phone: state.phone,
+          address: state.address,
+          items: state.products,
+        })
+      } else if (submitRes.error) {
+        return `We have your order details for **${state.products.map((p) => p.name).join(', ')}**, but there's a small correction needed: ${submitRes.error}. Could you please update this detail so I can register your order right away? 🌿`
+      }
+    }
+
+    // Explicit request to place order without products yet
+    if (isOrderAction && state.products.length === 0) {
+      return `🌿 **Welcome to Nectar Ingredients!** 🌿\n\nWe'd love to help you place an order! To get started, please share:\n📦 **Products & Quantities** — Which powders and quantities are you looking for? (e.g., Tomato Powder 25kg, Onion Powder 1kg sample, Garlic Powder 5kg)\n👤 **Full Name**\n📧 **Email Address**\n📞 **Mobile Number** (10-digit)\n🏠 **Complete Delivery Address** (Street, City, State, and 6-digit PIN Code)\n\nOnce we have these, our sales team will register your order and email your custom commercial quote right away! 😊`
+    }
+
+    // Products noted, but missing contact/delivery details
+    if (state.products.length > 0 && !state.existingRef) {
+      const pList = state.products.map((p) => `• **${p.name}**${p.sku ? ` (SKU: ${p.sku})` : ''} — ${p.quantity} ${p.unit || 'kg'}`).join('\n')
+      const missing: string[] = []
+      if (!state.customerName) missing.push('👤 **Full Name**')
+      if (!state.email) missing.push('📧 **Email Address**')
+      if (!state.phone) missing.push('📞 **Mobile Number** (10-digit)')
+      if (!state.address || !state.pin) missing.push('🏠 **Complete Delivery Address** (Street, City, State, & 6-digit PIN Code)')
+
+      return `🛒 **Excellent choices! I've noted your requested powders:**\n${pList}\n\nTo formally submit your order and email your official commercial quote & PDF invoice, I just need:\n${missing.join('\n')}\n\nFeel free to share ${missing.length === 1 ? 'this' : 'these'}, and I'll register your order immediately! 🌿✨`
+    }
   }
 
-  // 4. USER EXPLICITLY ASKS TO PLACE AN ORDER (e.g. "Take a order", "I want to order")
-  if (/(take\s+(?:an?\s+)?order|place\s+(?:an?\s+)?order|order\s+powders|buy\s+powder|purchase\s+powders)/i.test(clean)) {
-    return `🌿 **Welcome to Nectar Ingredients!** 🌿\n\nWe'd love to help you place an order! To get started, please share:\n📦 **Products & Quantities** — Which powders and quantities are you looking for? (e.g., Tomato Powder 25kg, Onion Powder 1kg sample, Soya HVP 5kg)\n👤 **Full Name**\n📧 **Email Address**\n📞 **Mobile Number** (10-digit)\n🏠 **Complete Delivery Address** (Street, City, State, and 6-digit PIN Code)\n\nOnce we have these, our sales team will register your order and email your custom commercial quote right away! 😊`
-  }
-
-  // 5. GREETING INTENT
-  if (/^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean)) {
-    return `Hello! 👋 Welcome to **Nectar Intelligence**! 🌿\n\nI'm your AI technical and commercial assistant for Nectar Ingredients (Surendranagar, Gujarat). How can I assist you today? I'd be happy to explain our dehydrated powders, help with formulation ideas, or answer any technical questions! 😊`
-  }
-
-  // 6. HEALTH / WELLNESS / SYMPTOM INTENT (fever, cold, immunity, digestion)
-  if (/(fever|sick|ill|cold|cough|headache|flu|immunity|throat|infection|weakness|pain)/i.test(clean)) {
-    return `I'm sorry to hear you're feeling unwell! 💛 Here are some gentle, supportive natural wellness measures that can help keep you comfortable during a fever:\n\n💧 **Stay Thoroughly Hydrated:**\nDrink plenty of warm water, oral electrolytes, or light clear vegetable broths to replenish fluids lost through temperature regulation.\n\n🫚 **Warm Ginger (Sounth) Infusion:**\nGinger is traditionally celebrated for its warming, comforting properties. Steeping a pinch of pure ginger powder in hot water with a teaspoon of honey can bring soothing relief against chills and body aches.\n\n🥛 **Golden Turmeric (Haldi) Milk:**\nTurmeric contains natural **curcumin**, widely used in Indian wellness traditions to support the body's natural immune and recovery response.\n\n🍋 **Vitamin C & Hydration:**\nAmla (Indian gooseberry) or lemon water provides natural vitamin C to support immune health during recovery.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary and wellness measures. Pure spice powders are dietary ingredients and not a substitute for professional medical treatment. If your fever is high (above 102°F/39°C), lasts more than 48 hours, or comes with severe symptoms, please consult a qualified doctor or healthcare provider promptly!\n\nWishing you a speedy and restful recovery! 🤗💛`
-  }
-
-  // 7. PRODUCT EXPLANATION / DETAILS
-  const matched = KNOWLEDGE_CATALOG.find((p) => {
-    const pName = p.name.toLowerCase()
-    const base = pName.replace(' powder', '').trim()
-    return (
-      clean.includes(pName) ||
-      (clean.includes(base) &&
-        (clean.includes('powder') ||
-          clean.includes('explain') ||
-          clean.includes('tell') ||
-          clean.includes('what') ||
-          clean.includes('details') ||
-          clean.includes('spec')))
-    )
-  })
-
-  if (matched) {
-    const isCustom = matched.isOnRequest ? ' *(Made to Order)*' : ''
-    const apps = matched.applications.length > 0 ? matched.applications.join(', ') : 'Seasonings, premixes, and instant culinary formulations'
-    return `🍅 **${matched.name}**${isCustom} — Detailed Overview 🌿\n\n${matched.description}\n\n🔬 **Key Technical Specifications:**\n• **Mesh / Fineness:** ${matched.mesh} (fine, uniform particle sizing for fast dispersion)\n• **Purity & Moisture:** 100% pure & additive-free; moisture strictly maintained below 8% for long shelf stability.\n• **Key Applications:** ${apps}\n\n📦 **Packaging & Samples:**\nWe supply standard **25 KG bulk corrugated boxes** (food-grade HDPE lined) alongside **1 KG & 5 KG R&D trial packs** for formulation and sample testing.\n\nWould you like a commercial price quote or the verified batch Certificate of Analysis (COA) for ${matched.name}? 😊`
-  }
-
-  // 8. RECIPE / FORMULATION / PREMIX ADVISORY
-  if (/(recipe|formulation|how to make|soup|seasoning|blend|mix)/i.test(clean)) {
-    return `🌿 **Formulation Advisory from Nectar Intelligence:**\n\nFor commercial dry seasonings and instant soup premixes, dehydrated powders offer consistent flavor, long shelf life, and zero moisture clumping:\n\n• **Savory Soup Premixes:** Combine **Tomato Powder (80 mesh)** with **White Onion Powder**, a touch of **Garlic Powder**, and **Soya HVP** for deep umami depth.\n• **Snack Seasonings:** Blend **Cheese Powder Grade A** with **Garlic Powder** and mild herbs for popcorn or chip coatings.\n• **Natural Food Colors:** Use **Beetroot Powder** for vibrant ruby-reds and **Turmeric Powder** for golden-yellow tones without synthetic food dyes.\n\nWould you like sample packs of any of these powders for your R&D trials? 😊`
-  }
-
-  // 9. DEHYDRATION TECHNOLOGIES (Freeze drying vs Spray drying vs Drum drying)
-  if (/(freeze dry|spray dry|drum dry|dehydration method|how is it made|drying process)/i.test(clean)) {
-    return `🔬 **Dehydration Technologies at Nectar Ingredients** 🌿\n\nWe utilize advanced, low-temperature dehydration processes tailored to each raw ingredient to preserve natural pigments, delicate aromas, and active bioactives:\n\n• **Low-Temperature Spray Drying:** Ideal for fruit concentrates and dairy powders (like Pomegranate and Cheese Powder). Atomized droplets dry rapidly in warm air, yielding ultra-fine, highly dispersible powders with instant solubility.\n• **Freeze Drying (Lyophilization):** Sublimates ice crystals under vacuum at sub-zero temperatures. It provides unmatched nutrient and volatile aroma retention with a light, porous structure that rehydrates instantly — ideal for premium fruit and herbal applications.\n• **Hot Air & Drum Drying:** Perfect for root vegetables, spices, and leafy greens (like Onion, Garlic, and Kasuri Methi). Gentle low heat preserves robust pungency, fiber integrity, and standard 60–100 mesh fineness.\n\nAll our powders maintain moisture strictly below 8% with zero added salt, carriers, or artificial fillers. Would you like technical specs or R&D trial packs for your specific application? 😊`
-  }
-
-  // 10. IF RETRIEVED CONTEXT EXISTS, CONVERSATIONAL SUMMARY (NO RAW DUMPS)
+  // ========================================================================
+  // 9. MASTER CATALOG RAG ADVISORY (FROM RETRIEVED CONTEXT)
+  // ========================================================================
   if (retrievedContext) {
     const lines = retrievedContext.split('\n').filter((l) => l.includes('• **'))
     const productNames = lines
@@ -1252,9 +1615,11 @@ async function synthesizeDynamicAIResponse(
     }
   }
 
-  // 11. GENERAL CONVERSATIONAL INQUIRY
+  // ========================================================================
+  // 10. GENERAL CONVERSATIONAL INQUIRY
+  // ========================================================================
   if (history && history.length > 0) {
-    return `I'm here! 👋 How can I assist you further with your powder specifications, formulation guidance, or order status? Feel free to ask about any specific powders, mesh sizes, or lab COA reports! 🌿`
+    return `I'm here! 👋 How can I assist you further with your powder specifications, formulation guidance, or order status? Feel free to ask about any specific powders, mesh sizes, recipes, or lab COA reports! 🌿`
   }
 
   return `Hello! 👋 At **Nectar Intelligence**, we're here to assist you with all your wholesale spice, vegetable, fruit, and dairy powder inquiries.\n\nWe manufacture 100% pure, low-temperature dehydrated powders in Surendranagar, Gujarat. Could you share a bit more detail on what you're looking for — such as specific powders, target mesh fineness, or sample requirements? I'd be happy to help! 🌿`
@@ -1508,8 +1873,44 @@ export async function POST(req: Request) {
 
     // ========================================================================
     // FAST PATH 4.5: Instant Complete Order Intake & Placement (<80ms)
+    // STRICT RULE: Only triggers when the user's CURRENT message is actively
+    // providing order details (quantities, address, contact) or requesting order placement,
+    // and is NOT an informational inquiry, recipe question, technical question, or greeting!
     // ========================================================================
-    if (!isTrackingIntent) {
+    const isOrderActionCurrentMessage =
+      /\b\d+\s*(?:kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i.test(cleanLower) ||
+      cleanLower.includes('@') ||
+      /^(?:91)?[6-9]\d{9}$/.test(cleanDigits) ||
+      /\b([1-9]\d{5})\b/.test(cleanLower) ||
+      /\b(place order|confirm order|submit order|buy now|take order|order this|deliver to|proceed with order|finalize order)\b/i.test(cleanLower)
+
+    const isInformationalOrRecipeQuery =
+      cleanLower.includes('recipe') ||
+      cleanLower.includes('recepie') ||
+      cleanLower.includes('how to') ||
+      cleanLower.includes('how do') ||
+      cleanLower.includes('how can') ||
+      cleanLower.includes('explain') ||
+      cleanLower.includes('what is') ||
+      cleanLower.includes('tell me') ||
+      cleanLower.includes('spec') ||
+      cleanLower.includes('mesh') ||
+      cleanLower.includes('freeze dry') ||
+      cleanLower.includes('spray dry') ||
+      cleanLower.includes('drum dry') ||
+      cleanLower.includes('contact') ||
+      cleanLower.includes('phone number') ||
+      cleanLower.includes('office') ||
+      cleanLower.includes('factory') ||
+      cleanLower.includes('brochure') ||
+      cleanLower.includes('coa') ||
+      cleanLower.includes('hello') ||
+      cleanLower.includes('hi') ||
+      cleanLower.includes('namaste') ||
+      cleanLower.includes('fever') ||
+      cleanLower.includes('cold')
+
+    if (!isTrackingIntent && isOrderActionCurrentMessage && !isInformationalOrRecipeQuery) {
       const incomingOrderState = extractOrderStateFromHistory([
         ...sanitizedHistory,
         { role: 'user', content: message },

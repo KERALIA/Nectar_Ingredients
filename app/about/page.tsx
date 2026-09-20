@@ -203,7 +203,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {[
               { value: '40', label: 'Single-Ingredient Powders' },
-              { value: '1 kg', label: 'Trial Sample Box Size' },
+              { value: '1 kg', label: 'Minimum Order Quantity' },
               { value: '25 kg', label: 'Commercial Bag Capacity' },
               { value: '100%', label: 'Natural & Pure' },
             ].map((stat) => (
@@ -230,7 +230,7 @@ export default function AboutPage() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button variant="primary" size="md" href="/contact" className="rounded-full px-8 shadow-card hover:shadow-hover">
-              Request Sample Box →
+              Order Commercial Trial →
             </Button>
             <Button variant="outline" size="md" href="/products" className="rounded-full border-ni-border text-ni-primary hover:border-ni-rust">
               Explore 40 Products

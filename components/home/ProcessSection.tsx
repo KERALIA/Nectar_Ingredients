@@ -11,7 +11,7 @@ const steps = [
   { num: '03', label: 'Dehydrate', desc: 'Low-temperature drying retains colour, aroma, and nutritional profile without chemical preservatives.' },
   { num: '04', label: 'Grind', desc: 'Precision grinding to your mesh specification — 40, 60, or 80 mesh — for consistent particle size.' },
   { num: '05', label: 'Test', desc: 'Moisture, colour (Hunter Lab), and aroma benchmarks checked on every batch before release.' },
-  { num: '06', label: 'Pack & Ship', desc: 'Sealed in food-grade multilayer pouches. 1 kg samples to 25 kg commercial bags, dispatched within 3–5 days.' },
+  { num: '06', label: 'Pack & Ship', desc: 'Sealed in food-grade multilayer pouches. 1 kg trial packs to 25 kg commercial bags, dispatched within 3–5 days.' },
 ]
 
 export default function ProcessSection() {

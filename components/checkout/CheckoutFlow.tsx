@@ -49,9 +49,9 @@ export default function CheckoutFlow({ user }: CheckoutFlowProps) {
         </p>
         <Link
           href="/products"
-          className="inline-flex items-center justify-center rounded-full font-body font-bold uppercase tracking-widest text-[10px] px-6 py-3.5 bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-premium transition-all duration-300"
+          className="inline-flex items-center justify-center rounded-full font-body font-bold uppercase tracking-widest text-[10px] px-6 py-3.5 bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-premium transition-all duration-300 active:scale-[0.98] btn-press"
         >
-          Browse Products
+          Browse 40 Powders →
         </Link>
       </div>
     )
