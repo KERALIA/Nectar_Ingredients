@@ -12,8 +12,7 @@ import https from 'https'
 import http from 'http'
 import { products, extendedRange } from '@/lib/data'
 import { validateName, validateEmail, validatePhone, validateAddress } from '@/lib/validation'
-import { getActiveModelQueue } from '@/lib/modelBenchmark'
-import { initModelBenchmarkCronDaemon } from '@/lib/cronDaemon'
+import { callGroqWithFailover, getGroqKeys } from '@/lib/groqPool'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -392,8 +391,28 @@ function retrieveRelevantKnowledge(query: string): string {
     return `\nRELEVANT PRODUCT CATALOG OVERVIEW:\n- Vegetable Powders (80-100 Mesh): ${vegList}\n- Fruit Powders (Spray/Freeze-Dried): ${fruitList}\n- Dairy Powders: ${dairyList}\n- Made-to-Order / Custom Range: ${customList}\n- All standard items available in 25kg bulk boxes and 1kg/5kg sample packs.\n`
   }
 
+  // Stop words to prevent general conversational, health, or tourism words from triggering random powders
+  const STOP_WORDS = new Set([
+    'the', 'and', 'for', 'are', 'what', 'where', 'when', 'which', 'who', 'whom',
+    'this', 'that', 'these', 'those', 'with', 'from', 'have', 'has', 'had', 'will',
+    'would', 'could', 'should', 'can', 'about', 'need', 'visit', 'places', 'there',
+    'here', 'also', 'some', 'any', 'how', 'tell', 'give', 'please', 'help', 'more',
+    'know', 'want', 'like', 'good', 'well', 'been', 'being', 'they', 'their', 'them',
+    'were', 'your', 'look', 'make', 'just', 'does', 'done', 'doing', 'much', 'many',
+    'gujarat', 'india', 'state', 'city', 'tour', 'travel', 'trip', 'ache', 'fever',
+    'pain', 'sick', 'ill', 'hurt', 'injury'
+  ])
+
   // Scoring match for specific products
-  const words = cleanQuery.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length > 2)
+  const words = cleanQuery
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w))
+
+  if (words.length === 0 && !isFruitQuery && !isVegetableQuery && !isDairyQuery && !isCustomQuery) {
+    return ''
+  }
+
   const scoredItems = KNOWLEDGE_CATALOG.map((item) => {
     let score = 0
     const nameLower = item.name.toLowerCase()
@@ -411,7 +430,7 @@ function retrieveRelevantKnowledge(query: string): string {
     if (isCustomQuery && item.isOnRequest) score += 3
     return { item, score }
   })
-    .filter((entry) => entry.score > 0)
+    .filter((entry) => entry.score >= 4)
     .sort((a, b) => b.score - a.score)
 
   if (scoredItems.length === 0) {
@@ -838,7 +857,7 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
       // Explicit Address extractor
       const explicitAddrMatch = text.match(/(?:delivery\s*address\s*[:=-]|address\s*[:=-]|ship\s*to\s*[:=-])\s*([^,\n]+(?:,[^,\n]+)*)/i)
       if (explicitAddrMatch && !address) {
-        const rawAddr = explicitAddrMatch[1].split(/(?:\s+(?:email|phone|mobile|name)\b)/i)[0].trim()
+        const rawAddr = explicitAddrMatch[1].split(/(?:\s+(?:email|phone|mobile|name|please\s+send|i\s+need|i\s+want|items?|products?)\b)|\.\s+/i)[0].trim()
         if (rawAddr.length >= 6) {
           address = rawAddr
         }
@@ -868,10 +887,10 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
           const rawName = iMatchA[1].trim().replace(/^[,|&]|[,|&]$/g, '').trim()
           const pQty = parseFloat(iMatchA[2])
           const pUnit = iMatchA[3].toLowerCase()
-          const pName = rawName.replace(/^(and|or|plus|with|,|i want to order|i want to buy|order|buy|please send)\s+/i, '').trim()
-          if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road'].some((bad) => pName.toLowerCase().includes(bad))) {
+          const pName = rawName.replace(/^(?:and|or|plus|with|,|i want to order|i want to buy|order|buy|please send|please|send)\s*/i, '').trim()
+          if (pName.length >= 3 && !['order', 'call', 'take', 'pin', 'code', 'block', 'soc', 'nagar', 'street', 'road', 'please', 'send'].some((bad) => pName.toLowerCase().includes(bad))) {
             const matched = matchCatalogProduct(pName)
-            if (!orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
+            if (matched && matched.name && !orderProducts.some((p) => p.name.toLowerCase() === matched.name.toLowerCase())) {
               orderProducts.push({ name: matched.name, sku: matched.sku, quantity: pQty, unit: pUnit })
             }
           }
@@ -935,11 +954,10 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
         }
 
         const hasKgOrQty = /\b\d+\s*(?:kg|gm|g|grams|kilos?|bags?|boxes?|packs?|cartons?|tons?|mt)\b/i.test(pClean)
-        if (!hasKgOrQty) {
-          if (
-            pClean.length > 15 ||
-            /\b(nagar|soc|society|street|road|floor|flat|house|block|near|opp|behind|gujarat|mumbai|delhi|india|surendranagar|ahmedabad)\b/i.test(pClean)
-          ) {
+        const isQuerySentence = /\b(what|how|why|when|where|can you|offer|tell me|brochure|price|rate|quote|spec)\b/i.test(pClean)
+        if (!hasKgOrQty && !isQuerySentence) {
+          const isAddressFragment = /\b(nagar|soc|society|street|road|floor|flat|house|block|plot|gidc|phase|estate|near|opp|behind|gujarat|mumbai|delhi|india|surendranagar|ahmedabad|rajkot|surat|vadodara)\b/i.test(pClean)
+          if (isAddressFragment) {
             if (!address) {
               address = pClean
             } else if (!address.includes(pClean)) {
@@ -949,7 +967,7 @@ function extractOrderStateFromHistory(history: Array<{ role: string; content: st
             !customerName &&
             pClean.split(/\s+/).length >= 2 &&
             pClean.length >= 4 &&
-            !/\b(take|order|powder|need|want|submit|hello|hi|please|buy)\b/i.test(pClean)
+            !/\b(take|order|powder|need|want|submit|hello|hi|please|buy|send)\b/i.test(pClean)
           ) {
             customerName = pClean
           }
@@ -1114,63 +1132,6 @@ EMOJI & CHAT BUBBLE FORMATTING:
 - Use bold text for product names and reference codes.
 - Keep responses concise and engaging (<150 words).`
 
-// ============================================================================
-// OPENCODE ZEN MODEL CALLER WITH BENCHMARKED FALLBACKS
-// ============================================================================
-
-async function callOpenCodeZen(messages: any[], apiKey: string) {
-  // Dynamically load the top models (champion + runner-ups) from live hourly benchmark queue
-  const candidateModels = getActiveModelQueue().slice(0, 3)
-
-  let lastError: Error | null = null
-
-  for (const model of candidateModels) {
-    try {
-      const response = await fetchIPv4(
-        'https://opencode.ai/zen/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'x-session-id': `nectar-chat-${Date.now()}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.4,
-            max_tokens: 1500,
-          }),
-        },
-        8000
-      )
-
-      if (response.ok) {
-        const resJson = await response.json()
-        const choice = resJson.choices?.[0]?.message
-        if (choice) {
-          const mainContent = (choice.content || '').trim()
-          if (mainContent) {
-            return resJson
-          }
-          if (choice.reasoning_content && parseToolCall(choice.reasoning_content)) {
-            return {
-              ...resJson,
-              choices: [{ ...resJson.choices[0], message: { ...choice, content: choice.reasoning_content } }],
-            }
-          }
-        }
-      }
-      const errText = await response.text()
-      lastError = new Error(`OpenCode Zen HTTP ${response.status} (${model}): ${errText}`)
-      // Immediately failover to next candidate model without stalling user
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err))
-    }
-  }
-
-  throw lastError || new Error('All model attempts failed.')
-}
 
 // ============================================================================
 // DYNAMIC CONVERSATIONAL AI SYNTHESIZER (ZERO-TEMPLATE GUARANTEE)
@@ -1518,10 +1479,21 @@ Which specific dish or powder formulation would you like a recipe for? 😊`
   }
 
   // ========================================================================
-  // 6. HEALTH / WELLNESS / SYMPTOM SUPPORT
+  // 6. HEALTH / WELLNESS / SYMPTOM SUPPORT (WITH MEDICAL DISCLAIMER)
   // ========================================================================
+  if (/(stomach|tummy|indigestion|acid|acidity|gas|bloat|cramp|digest|nausea|vomit|loose motion|diarrhea)/i.test(clean)) {
+    return `I'm sorry you're experiencing stomach discomfort! 💛 Here are some gentle, time-tested natural wellness measures that can help soothe an upset stomach:\n\n🍵 **Warm Jeera (Cumin) & Ajwain Water:**\nBoiling a pinch of cumin and carom seeds in warm water is traditionally used to ease bloating, heaviness, and digestion distress.\n\n🫚 **Warm Ginger (Sounth) & Mint Infusion:**\nGinger and mint are widely cherished in natural wellness for settling gastric irritation and nausea.\n\n🥛 **Light Buttermilk with Roasted Cumin:**\nFresh buttermilk tempered with a pinch of cumin and rock salt helps restore gut balance and cools acidity.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary measures. Pure food & spice powders are culinary and nutritional ingredients, not medical treatments. If your stomach pain is severe, accompanied by continuous vomiting, fever, or persists beyond 24 hours, please consult a qualified medical professional immediately!\n\nWishing you quick and gentle relief! 🤗🌿`
+  }
+
   if (/(fever|sick|ill|cold|cough|headache|flu|immunity|throat|infection|weakness|pain)/i.test(clean)) {
     return `I'm sorry to hear you're feeling unwell! 💛 Here are some gentle, supportive natural wellness measures that can help keep you comfortable during a fever:\n\n💧 **Stay Thoroughly Hydrated:**\nDrink plenty of warm water, oral electrolytes, or light clear vegetable broths to replenish fluids lost through temperature regulation.\n\n🫚 **Warm Ginger (Sounth) Infusion:**\nGinger is traditionally celebrated for its warming, comforting properties. Steeping a pinch of pure ginger powder in hot water with a teaspoon of honey can bring soothing relief against chills and body aches.\n\n🥛 **Golden Turmeric (Haldi) Milk:**\nTurmeric contains natural **curcumin**, widely used in Indian wellness traditions to support the body's natural immune and recovery response.\n\n🍋 **Vitamin C & Hydration:**\nAmla (Indian gooseberry) or lemon water provides natural vitamin C to support immune health during recovery.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary and wellness measures. Pure spice powders are dietary ingredients and not a substitute for professional medical treatment. If your fever is high (above 102°F/39°C), lasts more than 48 hours, or comes with severe symptoms, please consult a qualified doctor or healthcare provider promptly!\n\nWishing you a speedy and restful recovery! 🤗💛`
+  }
+
+  // ========================================================================
+  // 6B. GUJARAT & SURENDRANAGAR TRAVEL / TOURISM / LOCAL HERITAGE
+  // ========================================================================
+  if (/(gujarat|surendranagar|visit gujarat|tourist|travel gujarat|places to visit|sightseeing|tarnetar|wadhwan)/i.test(clean)) {
+    return `Welcome to **Gujarat** — the land of vibrant culture, rich heritage, and entrepreneurship! 🌿✨\n\nNectar Ingredients is proudly based in **Surendranagar**, Gujarat — famously known as the Gateway to Saurashtra. If you are visiting or exploring our region, here are a few iconic highlights:\n\n🏛️ **Heritage & Culture in Surendranagar:**\n• **Wadhwan Heritage Town:** Historic stepwells (Madha Vav, Ganga Vav), royal palaces, and authentic handloom weaving traditions.\n• **Tarnetar Fair:** World-renowned cultural folk festival and traditional rural celebration.\n• **Wild Ass Sanctuary (Little Rann of Kutch):** Just an hour's drive away, home to the endangered Indian Wild Ass and surreal salt plains.\n\n🕌 **Gujarat's Must-Visit Destinations:**\n• **Rann of Kutch (White Desert & Rann Utsav)**\n• **Gir National Park** (the last refuge of the Asiatic Lion)\n• **Statue of Unity** (Kevadia)\n• **Somnath & Dwarka** (ancient sacred heritage)\n• **Sun Temple, Modhera & Rani ki Vav (UNESCO World Heritage)**\n\n🏭 If you are visiting Surendranagar for business, you are warmly invited to tour our state-of-the-art dehydration facility! Reach **Mehul Patel** at [+91 98798 38281](https://wa.me/919879838281) to coordinate a visit! 😊👋`
   }
 
   // ========================================================================
@@ -1686,9 +1658,6 @@ function formatOrderResponse(orders: any[]): string {
 
 export async function POST(req: Request) {
   try {
-    // Ensure in-process automated benchmark cron daemon is running
-    initModelBenchmarkCronDaemon()
-
     const { message, history } = await req.json()
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({ error: 'A message is required.' }), {
@@ -1992,9 +1961,9 @@ export async function POST(req: Request) {
     }
 
     // ========================================================================
-    // DYNAMIC AI CONVERSATION PATH (via ling-3.0-flash-fin-free / mimo-v2.5-free)
+    // DYNAMIC AI CONVERSATION PATH (via Enterprise Groq Multi-Key Pool)
     // ========================================================================
-    const apiKey = process.env.OPENCODE_ZEN_API_KEY
+    const groqKeys = getGroqKeys()
     const retrievedContext = retrieveRelevantKnowledge(message)
 
     // Build Augmented Prompt with Clean Persona
@@ -2009,12 +1978,51 @@ export async function POST(req: Request) {
     ]
 
     let finalReply = ''
-    if (apiKey) {
+    if (groqKeys.length > 0) {
       try {
-        const result = await callOpenCodeZen(messages, apiKey)
-        const choice = result.choices?.[0]?.message
-        if (choice && typeof choice.content === 'string' && choice.content.trim()) {
-          const rawContent = choice.content
+        const groqResult = await callGroqWithFailover(messages, tools as any, {
+          preferredModel: 'qwen/qwen3.8-27b',
+          fallbackModel: 'openai/gpt-oss-120b',
+          temperature: 0.3,
+          maxTokens: 1000,
+        })
+
+        // 1. Process native Groq tool call
+        if (groqResult.tool_calls && groqResult.tool_calls.length > 0) {
+          const tc = groqResult.tool_calls[0]
+          const fnName = tc.function?.name
+          let fnArgs: any = {}
+          try {
+            fnArgs = JSON.parse(tc.function?.arguments || '{}')
+          } catch (e) {
+            console.warn('Failed to parse Groq tool call arguments JSON:', e)
+          }
+
+          if (fnName === 'submit_new_order') {
+            const submitRes = await toolSubmitNewOrder({
+              name: fnArgs.name || fnArgs.customer_name,
+              email: fnArgs.email,
+              phone: fnArgs.phone || fnArgs.mobile,
+              company: fnArgs.company,
+              address: fnArgs.address,
+              items: normalizeItems(fnArgs.items || fnArgs.products),
+              message: fnArgs.message || 'Order inquiry placed via Groq chatbot tool',
+            })
+            if (submitRes.orderRef) {
+              finalReply = formatSubmittedOrderMessage(submitRes.orderRef, fnArgs)
+            } else if (submitRes.error) {
+              finalReply = `I have your order details, but I just need one small correction: ${submitRes.error}. Could you please update this detail so I can submit it immediately? 🌿`
+            }
+          } else if (fnName === 'lookup_order') {
+            console.log('DEBUG [Groq Tool] lookup_order args:', fnArgs)
+            const lookupRes = await toolLookupOrder(fnArgs)
+            finalReply = formatOrderResponse(lookupRes?.orders || [])
+          }
+        }
+
+        // 2. Process text content or embedded tool tags fallback
+        if (!finalReply && groqResult.content) {
+          const rawContent = groqResult.content
           const parsedTool = parseToolCall(rawContent)
           if (parsedTool) {
             if (parsedTool.toolName === 'submit_new_order') {
@@ -2043,7 +2051,7 @@ export async function POST(req: Request) {
           }
         }
       } catch (llmError) {
-        console.warn('LLM API call timed out or failed, using intelligent dynamic fallback:', llmError)
+        console.warn('Groq Pool API call timed out or failed, using intelligent dynamic fallback:', llmError)
       }
     }
 

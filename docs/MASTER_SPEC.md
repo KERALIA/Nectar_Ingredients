@@ -289,7 +289,7 @@ Supabase-managed OAuth utilizing `@supabase/ssr` cookies and Next.js middleware 
 | 11 | `TELEGRAM_BOT_TOKEN` | **Yes** | None | Already in Vercel | Existing chatbot bot token |
 | 12 | `TELEGRAM_CHAT_ID` | No | None | Already in Vercel | Existing chatbot chat ID |
 | 13 | `GOOGLE_APPS_SCRIPT_URL` | No | None | Already in Vercel | Existing app form sync URL |
-| 14 | `OPENCODE_ZEN_API_KEY` | **Yes** | None | Already in Vercel | Existing chatbot API Key |
+| 14 | `GROQ_API_KEYS` | **Yes** | None | `.env.local` + Vercel | Enterprise multi-account Groq API key pool |
 
 ---
 

@@ -63,7 +63,7 @@ This repository contains the complete production code for the B2B web applicatio
                 │                               │                              │
                 ▼                               ▼                              ▼
     ┌────────────────────────┐      ┌────────────────────────┐     ┌────────────────────────┐
-    │ OpenCode Zen LLM Engine│      │  Google Apps Script    │     │ Telegram Bot API       │
+    │ Enterprise Groq Pool   │      │  Google Apps Script    │     │ Telegram Bot API       │
     │ In-Memory RAG Indexer  │      │  Sheets DB & PDF Bills │     │ Zero-Latency Admin Msg │
     │ Real-time Tool Calling │      │  NVIDIA OCR v2 Parser  │     │ via next/server after()│
     └────────────────────────┘      └────────────────────────┘     └────────────────────────┘
@@ -79,7 +79,7 @@ This repository contains the complete production code for the B2B web applicatio
 | **Frontend Core** | React 19, TypeScript | Server Components, Hooks, Context Providers |
 | **Styling & Design** | Tailwind CSS v3 & Modern Vanilla CSS | Custom design tokens, dark/light theme, glassmorphism, responsive utilities |
 | **Animation & Physics** | Custom rAF Lerp Loop & Lenis | 120fps GPU-composited background parallax, smooth momentum scroll |
-| **AI / LLM Engine** | OpenCode Zen API | Multi-model candidate fallback, Function Tool Calling (`lookup_order`, `submit_new_order`) |
+| **AI / LLM Engine** | Groq Cloud LPU API | Enterprise Multi-Key Round-Robin Pool (`qwen/qwen3.8-27b`), Native Tool Calling (`lookup_order`, `submit_new_order`) |
 | **RAG Architecture** | In-Memory Pre-Retrieval Catalog RAG | Sub-millisecond indexed product specs, keyword scoring, COA PDF retrieval |
 | **Cloud Database** | Google Sheets via Google Apps Script | Real-time order logging, status tracking, customer inquiries |
 | **Receipt OCR** | NVIDIA OCR v2 API | 10-minute automated cron transaction receipt verification |
@@ -114,7 +114,7 @@ The platform features an intelligent AI Sales & Advisory Consultant (`/api/chatb
                                            │
                                            ▼
                     ┌──────────────────────────────────────────────┐
-                    │       OpenCode Zen Tool Calling Loop         │
+                    │      Groq Native Tool Calling Loop           │
                     ├──────────────────────┬───────────────────────┤
                     │   `lookup_order`     │   `submit_new_order`  │
                     │  (Google Sheets)     │ (Validation + Insert) │
@@ -157,13 +157,11 @@ The chatbot directly retrieves and delivers clickable download links for officia
      • Items: Garlic Powder (50kg), Onion Powder (25kg)
   ```
 
-### 5. Resilient Multi-Model Fallback System
-To prevent downtime, the API client dynamically cycles through benchmarked LLM model endpoints:
-1. `deepseek-v4-flash-free`
-2. `mimo-v2.5-free`
-3. `laguna-s-2.1-free`
-4. `longcat-2.0-free`
-5. `nemotron-3-ultra-free`
+### 5. Enterprise Multi-Account Groq Pool & Failover
+To ensure uninterrupted uptime and ultra-fast (<300ms) execution:
+- **Round-Robin Key Pool (`lib/groqPool.ts`)**: Rotates customer inquiries across multiple distinct Groq API accounts to pool rate limits (4,000 requests/day, 120 RPM).
+- **HTTP 429 Auto-Cooldown**: If any key encounters a rate limit, it is placed on an automatic 60-second cooldown while requests seamlessly route to healthy keys.
+- **Model Hierarchy**: Primary execution on `qwen/qwen3.8-27b` with instant fallback to `openai/gpt-oss-120b`.
 
 ### 6. Strict Input Verification & Sales Routing
 - **Anti-Repetition Engine**: Prevents echoing chat history or re-summarizing previous answers.
@@ -251,7 +249,7 @@ Nectar_Ingredients/
 │   ├── privacy/page.tsx            # Privacy policy
 │   ├── terms/page.tsx              # Commercial terms & conditions
 │   ├── api/
-│   │   ├── chatbot/route.ts        # OpenCode Zen AI Chatbot with In-Memory RAG & Tools
+│   │   ├── chatbot/route.ts        # Enterprise Groq AI Chatbot with In-Memory RAG & Native Tools
 │   │   ├── web-form-router/route.ts# Next.js 15 after() background inquiry pipeline
 │   │   ├── admin/dispatch/route.ts # Order dispatch status handler
 │   │   ├── payment/                # Payment webhook & verification handlers
@@ -308,7 +306,7 @@ npm install
 
 # 3. Setup environment variables
 cp .env.example .env.local
-# (Fill in your OpenCode Zen API key, Google Apps Script URL, and Telegram tokens)
+# (Fill in your Groq API keys, Google Apps Script URL, and Telegram tokens)
 
 # 4. Start local development server
 npm run dev
@@ -333,8 +331,8 @@ npm run start
 Create a `.env.local` file in the root directory:
 
 ```env
-# AI Chatbot Engine
-OPENCODE_ZEN_API_KEY=sk-gmdVSiR1KsbAOIwOT5txkEIqGMW5Q6a8BSAC0TWyvInJwkLLrz8yzChZCC1paxno
+# Enterprise Groq AI Chatbot Pool (Comma-separated keys from https://console.groq.com/keys)
+GROQ_API_KEYS=gsk_account1_key,gsk_account2_key,gsk_account3_key,gsk_account4_key
 
 # Google Apps Script Cloud Database
 GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
