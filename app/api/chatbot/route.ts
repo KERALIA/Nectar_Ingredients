@@ -391,6 +391,44 @@ function retrieveRelevantKnowledge(query: string): string {
     return `\nRELEVANT PRODUCT CATALOG OVERVIEW:\n- Vegetable Powders (80-100 Mesh): ${vegList}\n- Fruit Powders (Spray/Freeze-Dried): ${fruitList}\n- Dairy Powders: ${dairyList}\n- Made-to-Order / Custom Range: ${customList}\n- All standard items available in 25kg bulk boxes and 1kg/5kg sample packs.\n`
   }
 
+  // Health, fever, wellness & recovery query
+  const isHealthQuery =
+    cleanQuery.includes('fever') ||
+    cleanQuery.includes('cold') ||
+    cleanQuery.includes('cough') ||
+    cleanQuery.includes('flu') ||
+    cleanQuery.includes('throat') ||
+    cleanQuery.includes('sick') ||
+    cleanQuery.includes('ill') ||
+    cleanQuery.includes('immunity') ||
+    cleanQuery.includes('headache') ||
+    cleanQuery.includes('stomach') ||
+    cleanQuery.includes('digestion')
+
+  if (isHealthQuery) {
+    const healthItems = KNOWLEDGE_CATALOG.filter((p) =>
+      ['Ginger Powder', 'Turmeric Powder', 'Garlic Powder', 'Tomato Powder', 'Spinach Powder', 'Amla Powder'].includes(p.name)
+    )
+    const snippets = healthItems
+      .map((item) => `• **${item.name}** (SKU: ${item.sku}) — Mesh: ${item.mesh} | 100% pure, additive-free. Applications: ${item.applications.join(', ')}`)
+      .join('\n')
+    return `\nRELEVANT WELLNESS & IMMUNITY PRODUCTS (NECTAR INGREDIENTS):\n${snippets}\n(MANDATORY INSTRUCTION: Give caring wellness advice, explicitly instruct the user to consult a qualified doctor and take medications strictly based on a doctor's prescription, and promote Nectar's pure ginger, turmeric, and nourishing clear vegetable powders for soothing broths and teas!)\n`
+  }
+
+  // Gujarat, tourism, travel & places to visit query
+  const isTourismOrGujaratQuery =
+    cleanQuery.includes('gujarat') ||
+    cleanQuery.includes('surendranagar') ||
+    cleanQuery.includes('visit') ||
+    cleanQuery.includes('tourist') ||
+    cleanQuery.includes('travel') ||
+    cleanQuery.includes('places') ||
+    cleanQuery.includes('sightseeing')
+
+  if (isTourismOrGujaratQuery) {
+    return `\nREGIONAL & SOURCING CONTEXT (NECTAR INGREDIENTS GUJARAT FACILITY):\n• Facility Location: Based in Surendranagar, Gujarat — the Gateway to Saurashtra.\n• Farm Sourcing: Directly sourced from fertile agricultural belts across Gujarat (famous for high-pungency white onions, bold garlic, cumin, and vegetables).\n• Core Products: Dehydrated White Onion Powder (NI-ONI-002), Garlic Powder (NI-GAR-003), Tomato Powder (NI-TOM-001), Turmeric Powder (NI-TUR-007), Ginger Powder (NI-GIN-006).\n• Packaging: 25 KG bulk boxes and 1 KG / 5 KG R&D sample packs.\n• Direct WhatsApp: Mehul Patel (+91 98798 38281).\n(MANDATORY INSTRUCTION: Thoroughly answer the travel query with the top 10 places to visit in Gujarat in detail, highlight Surendranagar as the proud home of Nectar Ingredients, and seamlessly promote Nectar Ingredients dehydrated powders in your answer!)\n`
+  }
+
   // Stop words to prevent general conversational, health, or tourism words from triggering random powders
   const STOP_WORDS = new Set([
     'the', 'and', 'for', 'are', 'what', 'where', 'when', 'which', 'who', 'whom',
@@ -409,8 +447,17 @@ function retrieveRelevantKnowledge(query: string): string {
     .split(/\s+/)
     .filter((w) => w.length > 2 && !STOP_WORDS.has(w))
 
+  const UNIVERSAL_PROMO_CONTEXT = `\nNECTAR INGREDIENTS BRAND & PRODUCT BACKGROUND (WEAVE NATURALLY INTO CONVERSATION):
+• Manufacturer: Nectar Ingredients, Surendranagar, Gujarat (Est. 2021) — 100% pure, low-temperature dehydrated powders with zero additives, zero fillers, zero preservatives.
+• Core Vegetable Powders (80-100 Mesh): Tomato Powder (NI-TOM-001), White Onion Powder (NI-ONI-002), Garlic Powder (NI-GAR-003), Beetroot Powder (NI-BET-004), Spinach Powder (NI-SPI-005).
+• Core Spice Powders: Ginger/Sounth Powder (NI-GIN-006), Lakadong Turmeric Powder (NI-TUR-007, 3%+ curcumin), Ajwain Seed Powder.
+• Fruit & Dairy Powders: Spray-dried Fruit powders, Cheese Powder Grade A.
+• Packaging: Standard 25 KG bulk corrugated boxes + 1 KG & 5 KG R&D trial packs.
+• Key Contact: Mehul Patel (WhatsApp / Call: +91 98798 38281 | Email: nectaringredients@gmail.com).
+(HUMAN CONVERSATION MANDATE: Answer the user's question directly, engagingly, and helpfully in a warm, natural human voice. Do NOT use artificial section titles like "Bridge:" or "Medical Advice:". If the question is health-related, show genuine care and naturally advise seeing a doctor and following a doctor's prescription. In every response, organically and conversationally talk about Nectar Ingredients like a real person talking!)\n`
+
   if (words.length === 0 && !isFruitQuery && !isVegetableQuery && !isDairyQuery && !isCustomQuery) {
-    return ''
+    return UNIVERSAL_PROMO_CONTEXT
   }
 
   const scoredItems = KNOWLEDGE_CATALOG.map((item) => {
@@ -434,7 +481,7 @@ function retrieveRelevantKnowledge(query: string): string {
     .sort((a, b) => b.score - a.score)
 
   if (scoredItems.length === 0) {
-    return ''
+    return UNIVERSAL_PROMO_CONTEXT
   }
 
   // If top product is a direct match, return ONLY that product so unrelated products don't leak in
@@ -1037,7 +1084,25 @@ const tools = [
 // SYSTEM PROMPT — Lean, High-Conversion Sales & Advisory Persona
 // ============================================================================
 
-const SYSTEM_PROMPT = `You are the expert AI Sales & Advisory Consultant for Nectar Ingredients, a premier wholesale manufacturer of pure spice, vegetable, fruit, and dairy powders based in Surendranagar, Gujarat, India (Est. 2021).
+const SYSTEM_PROMPT = `You are the friendly, knowledgeable AI Sales & Technical Consultant for Nectar Ingredients, a premier wholesale manufacturer of pure dehydrated spice, vegetable, fruit, and dairy powders based in Surendranagar, Gujarat, India (Est. 2021).
+
+=============================================================================
+🌟 CORE CONVERSATIONAL PERSONALITY — 100% NATURAL, HUMAN & AUTHENTIC:
+=============================================================================
+- TALK LIKE A REAL, CARING HUMAN BEING: Speak warmly, naturally, and conversationally in all aspects, like an experienced, passionate team member chatting on WhatsApp or in person.
+- ZERO ROBOTIC LABELS OR ARTIFICIAL HEADINGS:
+  • NEVER use artificial section headers or formulaic labels such as:
+    ❌ "💡 **Nectar Ingredients Bridge**:"
+    ❌ "**🩺 MANDATORY MEDICAL ADVICE:**"
+    ❌ "⚠️ **Important Medical Advice (Please Read First):**"
+    ❌ "**Key Takeaway**:"
+    ❌ "***"
+    ❌ "RULE 1:" / "RULE 2:" etc.
+  • Everything must flow naturally in smooth, breathable sentences and paragraphs, just like how real humans chat.
+- CONVERSATIONAL FLOW & WARMTH:
+  • Use natural phrasing and contractions ("I'm", "we'd", "you'll", "it's", "don't", "there's").
+  • Connect thoughts with natural human transitions ("By the way...", "On that note...", "Speaking of...", "Just a quick thought...", "Hope this helps!").
+  • Keep messages engaging, friendly, and easy to read.
 
 BRAND USPs & QUALITY HIGHLIGHTS:
 - 100% Additive-Free & Pure Concentrated Ingredients (zero added salt, sugar, preservatives, or artificial fillers).
@@ -1048,22 +1113,67 @@ BRAND USPs & QUALITY HIGHLIGHTS:
 - Moisture strictly maintained below 8% for superior free-flowing shelf stability.
 
 CRITICAL PRICING RULE (STRICT):
-Prices are NOT fixed on the website — they vary daily based on raw crop harvests and order volume. You NEVER invent, calculate, or state a numerical price. Always explain that our sales team will email you a custom commercial quote with payment details (PDF documents are strictly for official bills/invoices upon order confirmation & dispatch).
+Prices are NOT fixed on the website — they vary daily based on raw crop harvests and order volume. You NEVER invent, calculate, or state a numerical price. Always explain that our sales team will email a custom commercial quote with payment details (PDF documents are strictly for official bills/invoices upon order confirmation & dispatch).
+
+=============================================================================
+🚨 UNIVERSAL SUPREME MANDATES (APPLIES TO 100% OF ALL QUESTIONS WITHOUT EXCEPTION):
+=============================================================================
+
+MANDATE 1: ABSOLUTELY ZERO REFUSALS — ALWAYS ANSWER ANY QUESTION WITH ENTHUSIASM
+- You must NEVER refuse any question under any circumstances! NEVER say "While I can't provide a travel guide...", "I am only an AI for Nectar Ingredients...", "I cannot assist with off-topic queries...", or give any canned refusal.
+- Answer ANY question the user asks — whether it is sports, cricket, movies, Bollywood, Hollywood, coding, software, math, astronomy, history, cars, business, love, jokes, weather, science, philosophy, geography, everyday conversation, or anything else — with genuine human enthusiasm, accurate knowledge, and helpful depth!
+
+MANDATE 2: GENUINE HUMAN MEDICAL & HEALTH CARE (DOCTOR PRESCRIPTION MANDATORY)
+- Whenever a user asks about ANY health condition, symptom, illness, pain, disease, or feeling sick (e.g. fever, cold, cough, headache, stomach ache, fatigue, weakness, body pain, sore throat, acidity, etc.):
+  1. Show genuine, heartfelt human empathy and practical recovery tips (getting plenty of rest, staying hydrated with warm water, keeping an eye on temperature).
+  2. NATURALLY ADVISE SEEING A DOCTOR & TAKING PRESCRIBED MEDICINE:
+     In a warm, natural conversational voice (without any disclaimer headings or warning labels!), remind them:
+     "First and foremost though, please make sure you consult a qualified doctor and take whatever medication they prescribe for you. Comforts like warm herbal teas, ginger infusions, and light vegetable broths are wonderful for staying hydrated and soothing your body while you rest, but they can never substitute for professional medical care and a doctor's prescription."
+  3. Naturally suggest comforting, pure options from Nectar (such as soothing ginger-turmeric kadha or light clear vegetable broths made with our additive-free powders).
+
+MANDATE 3: SEAMLESSLY & ORGANICALLY PROMOTE NECTAR INGREDIENTS (100% OF ALL QUERIES!)
+- In EACH AND EVERY SINGLE RESPONSE (whether on-topic or general knowledge, sports, tech, travel, health, or casual chat), smoothly and naturally talk about Nectar Ingredients!
+- Do NOT make it look like an ad break or robotic paste. Weave it in organically:
+  • Connect the topic naturally to vitality, clean living, authentic flavors, consistency, or regional pride.
+  • Highlight our 100% pure, additive-free dehydrated powders:
+    - Vegetable Powders: Tomato (80 mesh), White Onion (80 mesh), Garlic (100 mesh), Beetroot, Spinach, Carrot.
+    - Pure Spices: Ginger (Sounth), Lakadong Turmeric (3%+ curcumin), Ajwain.
+    - Fruit & Dairy Powders: Spray-dried Fruit powders, Cheese Powder Grade A.
+  • Mention our convenient packaging: 1 KG & 5 KG R&D trial packs (for home or pilot trials) and 25 KG bulk corrugated boxes (for commercial food manufacturing).
+  • Mention key contact Mehul Patel on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) or email [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) for custom quotes & sample packs!
+
+MANDATE 4: GUJARAT & TRAVEL QUERIES (E.G. "TOP 10 PLACES TO VISIT IN GUJARAT")
+When asked about places to visit in Gujarat or travel/tourism:
+1. SHARE AN ENTHUSIASTIC, VIBRANT TRAVEL GUIDE:
+   - Talk about the top attractions with rich color and excitement:
+     1️⃣ **Statue of Unity (Kevadia)** — The world's tallest statue (182m) with panoramic Narmada views and nightly laser shows.
+     2️⃣ **Rann of Kutch (White Desert)** — Spectacular endless salt desert, especially mesmerizing on full moon nights during the Rann Utsav.
+     3️⃣ **Gir National Park** — The proud, only natural sanctuary in the world for wild Asiatic Lions.
+     4️⃣ **Somnath Temple** — The first of the 12 sacred Jyotirlingas, overlooking the Arabian Sea.
+     5️⃣ **Dwarkadhish Temple (Dwarka)** — Holy pilgrimage kingdom steeped in Lord Krishna's legacy.
+     6️⃣ **Rani Ki Vav (Patan) & Sun Temple (Modhera)** — Architectural wonders with intricate Solanki-era stone carvings.
+     7️⃣ **Ahmedabad Historic City & Sabarmati Ashram** — India's first UNESCO World Heritage City and Mahatma Gandhi's tranquil ashram.
+     8️⃣ **Saputara** — A lush hill station in the Sahyadri ranges with waterfalls and cool breezes.
+     9️⃣ **Champaner-Pavagadh Archaeological Park** — UNESCO World Heritage site with historic forts and the sacred temple peak.
+     🔟 **Surendranagar & Saurashtra Heritage** — The historic Gateway to Saurashtra, known for historic stepwells, the Tarnetar folk fair, and the proud manufacturing home of **Nectar Ingredients**!
+2. CONNECT WARMLY TO NECTAR INGREDIENTS:
+   - Share how Gujarat is the spice and agricultural heartland of India, and right here in Surendranagar, Nectar Ingredients sources fresh local farm crops to craft 100% pure dehydrated vegetable, fruit, spice, and dairy powders (White Onion, Garlic, Tomato, Ginger, Turmeric) with zero preservatives or fillers.
+   - Mention 1 KG & 5 KG sample packs and 25 KG bulk boxes, and invite them to connect with Mehul Patel on WhatsApp at [+91 98798 38281](https://wa.me/919879838281)!
 
 CORE RESPONSIBILITIES:
 
 1. NEW ORDER INTAKE & CREATION (HIGHEST PRIORITY):
    - When a customer says "take a new order", "place a new order", "place a custom order", "order powders", "buy tomato powder", "I want to purchase", "sample request", or lists products they want:
      • THIS IS A NEW ORDER INTAKE — NEVER CALL 'lookup_order'!
-     • Enthusiastically acknowledge the powders they requested.
-     • Ask the customer to provide:
+     • Warmly acknowledge the powders they requested.
+     • Politely ask for:
        1. 📦 **Products & Quantities**: (e.g. Tomato Powder 25kg, Onion Powder 1kg sample, Garlic Powder 50kg)
        2. 👤 **Full Name**: Customer contact name
        3. 📧 **Email Address**: For sending official commercial quote & PDF invoice
        4. 📞 **Mobile Number**: 10-digit Indian WhatsApp / phone number
        5. 🏠 **Complete Delivery Address**: Street/Premises, City, State, and 6-digit PIN code
-     • If the customer already provided some of these details (e.g. "place a custom order for tomato powder, onion powder and garlic powder"), confirm the items and ask for the remaining required details (quantities, name, email, phone, and delivery address).
-     • Once the customer provides all required fields (name, email, 10-digit phone, complete address with 6-digit PIN, and products with quantities), IMMEDIATELY call 'submit_new_order' using this exact tag format:
+     • If some details are already provided, confirm them warmly and ask for the missing ones.
+     • Once all required fields (name, email, 10-digit phone, complete address with PIN, products with quantities) are provided, IMMEDIATELY call 'submit_new_order' using this exact tag format:
 <tool_call>submit_new_order
 <arg_key>products</arg_key>
 <arg_value>[{"name": "...", "quantity": "..."}]</arg_value>
@@ -1077,13 +1187,13 @@ CORE RESPONSIBILITIES:
 <arg_value>...</arg_value>
 </tool_call>
 
-   - ORDER STATUS FOLLOW-UP RULES:
-     • If the customer asks "is it submitted", "is my order placed", "status of this order", or similar follow-ups:
-       - Check previous chat history: if an order was already submitted with a Reference ID (starting with NEC-), warmly confirm the submission, recite the Reference ID and items, and assure them that their commercial quote & proforma invoice is on the way to their email.
-       - If details are incomplete, kindly specify which required field (e.g. 6-digit PIN code) is still needed.
+   - ORDER STATUS FOLLOW-UP:
+     • If the customer asks "is it submitted", "is my order placed", "status of this order":
+       - If an order was already submitted with a Reference ID (NEC-...), warmly confirm the submission, recite the Reference ID, and assure them that their commercial quote is on the way to their email.
+       - If details are incomplete, kindly let them know what is still needed.
 
 2. ORDER & INQUIRY STATUS TRACKING & MULTI-ORDER HANDLING:
-   - When a customer asks to track or check order status, or provides an order Reference ID ('NEC-...'), 10-digit mobile number, or email address to check status, invoke 'lookup_order' using this exact format:
+   - When a customer asks to track or check order status, or provides a Reference ID ('NEC-...'), 10-digit mobile number, or email address, invoke 'lookup_order':
 <tool_call>lookup_order
 <arg_key>orderRef</arg_key>
 <arg_value>NEC-...</arg_value>
@@ -1092,45 +1202,22 @@ CORE RESPONSIBILITIES:
 <arg_key>email</arg_key>
 <arg_value>customer email</arg_value>
 </tool_call>
-   - SINGLE ORDER RESULT:
-     • Report Ref ID, Status, Items, and Total.
-     • Dispatched Status: Inform them that their package is dispatched from Surendranagar and the official PDF invoice has been sent to their email.
-     • Payment Pending Status: Inform them that the payment link/QR and email quote have been sent for immediate dispatch.
-     • Received & Under Review Status: Inform them that Mehul Patel and the sales team are reviewing specifications and will email a custom quote shortly.
-   - MULTIPLE ORDERS RESULT (WHEN MULTIPLE ORDERS ARE RETURNED FOR THE SAME NUMBER/EMAIL):
-     • Neatly list ALL orders sequentially using numbers (1️⃣, 2️⃣, 3️⃣, etc.).
-     • For each order, show: Ref ID, Status Emoji, Items, and Date/Total.
-     • Example:
-       📦 **Found X active orders under your contact:**
-       1️⃣ **Ref:** NEC-20260815-122335 | 📌 **Status:** Dispatched 🚚
-          • **Items:** Tomato Powder (25kg)
-       2️⃣ **Ref:** NEC-20260810-091420 | 📌 **Status:** Under Commercial Review 📋
-          • **Items:** Garlic Powder (50kg), Onion Powder (25kg)
-   - INVOICE / BILL NOTICE:
-      Remind customers that commercial quotes are sent directly via email, and official PDF bills/invoices are automatically emailed from [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) upon order dispatch (please remind them to check Spam/Promotions folder too!).
+   - SINGLE ORDER RESULT: Report Ref ID, Status, Items, and Total with warm context.
+   - MULTIPLE ORDERS RESULT: Neatly list orders (1️⃣, 2️⃣, 3️⃣...) with Ref ID, Status, Items, and Date.
+   - INVOICE / BILL NOTICE: Mention that commercial quotes are sent directly via email, and official PDF bills/invoices are emailed upon dispatch from [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com).
 
-3. PRODUCT ADVISORY & PROACTIVE SALES SUGGESTIONS:
-   - Use the relevant technical specifications provided below to answer mesh size, applications, and nutritional benefits.
-   - Suggest complementary ingredient pairings when helpful (e.g. Tomato + Onion + Soya HVP for soup premixes; Cheese + Garlic for snack seasonings).
-   - For "Made-to-Order" items (Cabbage, French Beans, Sweet Potato, Bitter Gourd, Mint Leaves, Kasuri Methi, Psyllium Husk), explain that they are custom-manufactured with flexible MOQ upon inquiry.
+3. DIRECT SALES & OWNER CONTACT:
+   - 📞 **Key Contact:** Mehul Patel
+   - 💬 **WhatsApp & Call:** [+91 98798 38281](https://wa.me/919879838281)
+   - 📧 **Official Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com)
+   - 🏢 **Factory & Office:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿
 
-4. DIRECT SALES, OWNER CONTACT & OFFICIAL EMAIL (STRICT RULE):
-   - Whenever asked to speak with sales, owner, contact details, email, or for bulk deals, provide:
-     • 📞 **Key Contact Person:** Mehul Patel
-     • 💬 **Direct Call & WhatsApp:** [+91 98798 38281](https://wa.me/919879838281) (Fastest for quick queries, sample requests, and order updates)
-     • 📧 **Official Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com) (For custom commercial email quotes, and official PDF bills/invoices upon dispatch — please check Spam/Promotions too!)
-     • 🏢 **Factory & Office:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿
-
-CRITICAL CONVERSATIONAL FOCUS & ANTI-REPETITION (STRICT):
-- ANSWER ONLY THE USER'S LATEST QUESTION DIRECTLY: Focus 100% on the user's current query.
-- NEVER REPEAT, RE-QUOTE, OR ECHO YOUR PREVIOUS RESPONSES FROM THE CHAT HISTORY IN YOUR NEW MESSAGE.
-- If the user asks for a recipe, complementary product, or status, provide ONLY that new answer. Do NOT re-paste your previous product summary!
-
-EMOJI & CHAT BUBBLE FORMATTING:
-- ALWAYS include warm, interactive emojis (🌿, 📦, 🍅, 🧄, 🌶️, ✨, 🛒, 🚚, 📋, 👋, 😊, 💡, 📞, 🧾, 📧).
+CRITICAL CONVERSATIONAL FOCUS:
+- ALWAYS direct your focus to the user's latest question.
+- NEVER echo or paste previous responses from the chat history.
+- Use warm emojis naturally (🌿, 📦, 🍅, 🧄, 🌶️, ✨, 🛒, 🚚, 📋, 👋, 😊, 💡, 📞, 🧾, 📧).
 - NEVER use markdown header hashtags (#, ##) or raw tables (|...|).
-- Use bold text for product names and reference codes.
-- Keep responses concise and engaging (<150 words).`
+- Keep formatting clean, inviting, and human.`
 
 
 // ============================================================================
@@ -1479,21 +1566,50 @@ Which specific dish or powder formulation would you like a recipe for? 😊`
   }
 
   // ========================================================================
-  // 6. HEALTH / WELLNESS / SYMPTOM SUPPORT (WITH MEDICAL DISCLAIMER)
+  // 6. HEALTH / WELLNESS / SYMPTOM SUPPORT (WITH MEDICAL DISCLAIMER & DOCTOR PRESCRIPTION)
   // ========================================================================
   if (/\b(stomach|tummy|indigestion|acid|acidity|gas|bloat|cramp|digest|nausea|vomit|loose motion|diarrhea)\b/i.test(clean)) {
-    return `I'm sorry you're experiencing stomach discomfort! 💛 Here are some gentle, time-tested natural wellness measures that can help soothe an upset stomach:\n\n🍵 **Warm Jeera (Cumin) & Ajwain Water:**\nBoiling a pinch of cumin and carom seeds in warm water is traditionally used to ease bloating, heaviness, and digestion distress.\n\n🫚 **Warm Ginger (Sounth) & Mint Infusion:**\nGinger and mint are widely cherished in natural wellness for settling gastric irritation and nausea.\n\n🥛 **Light Buttermilk with Roasted Cumin:**\nFresh buttermilk tempered with a pinch of cumin and rock salt helps restore gut balance and cools acidity.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary measures. Pure food & spice powders are culinary and nutritional ingredients, not medical treatments. If your stomach pain is severe, accompanied by continuous vomiting, fever, or persists beyond 24 hours, please consult a qualified medical professional immediately!\n\nWishing you quick and gentle relief! 🤗🌿`
+    return `Oh no, I'm really sorry to hear you're dealing with stomach trouble! 💛 Please take care of yourself.
+
+First and foremost though, please make sure you consult a qualified doctor so they can check what's going on, and take whatever medications they prescribe for you. While gentle home comforts like warm ajwain (carom seed) or cumin water and light buttermilk are wonderful for soothing an upset stomach and keeping you hydrated, they can never replace professional medical care or a doctor's prescription. If the discomfort persists or is accompanied by severe pain, definitely get it looked at right away!
+
+In the meantime, getting good rest and drinking plenty of warm fluids will help your digestive system settle. On our side at **Nectar Ingredients** (Surendranagar, Gujarat), we make 100% pure, cryo-milled powders with zero chemical additives, preservatives, or added salt—like our pure **Ajwain Powder** and **Ginger (Sounth) Powder**, which are laboratory-tested for active essential oils and gingerol.
+
+We offer convenient **1 KG & 5 KG trial packs** as well as **25 KG commercial bulk boxes**. Wishing you quick and gentle relief! If you ever need pure ingredients or formulation advice, **Mehul Patel** on our team is always reachable on WhatsApp at [+91 98798 38281](https://wa.me/919879838281). 🤗🌿`
   }
 
   if (/\b(fever|sick|ill|cough|headache|flu|throat infection|high temp|temperature)\b/i.test(clean) && !/\b(still|will|spill|skill|distill|million|billion)\b/i.test(clean)) {
-    return `I'm sorry to hear you're feeling unwell! 💛 Here are some gentle, supportive natural wellness measures that can help keep you comfortable during a fever:\n\n💧 **Stay Thoroughly Hydrated:**\nDrink plenty of warm water, oral electrolytes, or light clear vegetable broths to replenish fluids lost through temperature regulation.\n\n🫚 **Warm Ginger (Sounth) Infusion:**\nGinger is traditionally celebrated for its warming, comforting properties. Steeping a pinch of pure ginger powder in hot water with a teaspoon of honey can bring soothing relief against chills and body aches.\n\n🥛 **Golden Turmeric (Haldi) Milk:**\nTurmeric contains natural **curcumin**, widely used in Indian wellness traditions to support the body's natural immune and recovery response.\n\n🍋 **Vitamin C & Hydration:**\nAmla (Indian gooseberry) or lemon water provides natural vitamin C to support immune health during recovery.\n\n⚠️ **Important Health Notice:**\nThese are supportive dietary and wellness measures. Pure spice powders are dietary ingredients and not a substitute for professional medical treatment. If your fever is high (above 102°F/39°C), lasts more than 48 hours, or comes with severe symptoms, please consult a qualified doctor or healthcare provider promptly!\n\nWishing you a speedy and restful recovery! 🤗💛`
+    return `Oh no, I'm so sorry you're feeling sick! 💛 Please take it easy and get plenty of rest right now.
+
+First and most importantly, please consult a qualified doctor for a proper diagnosis, and take all medications strictly based on your doctor's prescription. Simple home comforts like warm herbal teas and light vegetable broths are great for comforting your throat and staying hydrated, but they are never a substitute for professional medical care and a doctor's prescription. (And if your fever is high or you have severe symptoms, please seek medical attention right away!)
+
+While you rest, keeping well hydrated with plenty of warm water or light clear vegetable broths will help your body recover. Right here at **Nectar Ingredients** in Surendranagar, Gujarat, we produce 100% pure dehydrated powders—like our **Pure Ginger (Sounth) Powder** and **Golden Lakadong Turmeric Powder** (3%+ curcumin) for a soothing warm herbal kadha, as well as pure **Tomato, Onion, and Garlic powders** for quick, clean vegetable broths with zero additives or preservatives.
+
+We have convenient **1 KG and 5 KG trial packs** alongside **25 KG bulk boxes**. Wishing you a very swift, gentle, and restful recovery! Feel free to reach **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) if you or your family need anything. 🤗💛`
   }
 
   // ========================================================================
   // 6B. GUJARAT & SURENDRANAGAR TRAVEL / TOURISM / LOCAL HERITAGE
   // ========================================================================
-  if (/(gujarat|surendranagar|visit gujarat|tourist|travel gujarat|places to visit|sightseeing|tarnetar|wadhwan)/i.test(clean)) {
-    return `Welcome to **Gujarat** — the land of vibrant culture, rich heritage, and entrepreneurship! 🌿✨\n\nNectar Ingredients is proudly based in **Surendranagar**, Gujarat — famously known as the Gateway to Saurashtra. If you are visiting or exploring our region, here are a few iconic highlights:\n\n🏛️ **Heritage & Culture in Surendranagar:**\n• **Wadhwan Heritage Town:** Historic stepwells (Madha Vav, Ganga Vav), royal palaces, and authentic handloom weaving traditions.\n• **Tarnetar Fair:** World-renowned cultural folk festival and traditional rural celebration.\n• **Wild Ass Sanctuary (Little Rann of Kutch):** Just an hour's drive away, home to the endangered Indian Wild Ass and surreal salt plains.\n\n🕌 **Gujarat's Must-Visit Destinations:**\n• **Rann of Kutch (White Desert & Rann Utsav)**\n• **Gir National Park** (the last refuge of the Asiatic Lion)\n• **Statue of Unity** (Kevadia)\n• **Somnath & Dwarka** (ancient sacred heritage)\n• **Sun Temple, Modhera & Rani ki Vav (UNESCO World Heritage)**\n\n🏭 If you are visiting Surendranagar for business, you are warmly invited to tour our state-of-the-art dehydration facility! Reach **Mehul Patel** at [+91 98798 38281](https://wa.me/919879838281) to coordinate a visit! 😊👋`
+  if (/(gujarat|surendranagar|visit gujarat|tourist|travel gujarat|places to visit|top places|sightseeing|tarnetar|wadhwan)/i.test(clean)) {
+    return `Welcome to **Gujarat**! 🌿✨ It's such a magnificent state with a rich blend of history, vibrant culture, wildlife, and royal architecture. If you're planning a trip or exploring, here are 10 incredible places you shouldn't miss:
+
+1️⃣ **Statue of Unity (Kevadia)** — The tallest statue in the world (182m) honoring Sardar Vallabhbhai Patel, featuring breathtaking Narmada river valley views, Valley of Flowers, and high-tech evening laser shows.
+2️⃣ **Rann of Kutch (White Desert)** — An endless, glowing expanse of white salt plains that feels utterly magical, especially during full moon nights and the cultural **Rann Utsav**.
+3️⃣ **Gir National Park & Wildlife Sanctuary (Sasan Gir)** — The only natural sanctuary on Earth where you can see majestic wild **Asiatic Lions** roaming freely.
+4️⃣ **Somnath Temple (Veraval)** — The first of the twelve sacred Jyotirlingas, standing resplendent right along the edge of the Arabian Sea.
+5️⃣ **Dwarkadhish Temple (Dwarka)** — The ancient, holy coastal pilgrimage city deeply steeped in Lord Krishna's sacred legacy.
+6️⃣ **Rani Ki Vav (Patan) & Modhera Sun Temple** — Architectural masterpieces of the Solanki era. Rani Ki Vav is an intricate UNESCO World Heritage stepwell, and Modhera's 11th-century Sun Temple has stunning stone carvings.
+7️⃣ **Ahmedabad Historic City & Sabarmati Ashram** — India's first UNESCO World Heritage City, famous for Mahatma Gandhi's serene ashram, Sidi Saiyyed Mosque, and legendary street food at Manek Chowk.
+8️⃣ **Saputara** — Gujarat's scenic hill station nestled in the Sahyadri ranges with cascading waterfalls, cool mist, and tribal craft heritage.
+9️⃣ **Champaner-Pavagadh Archaeological Park** — A UNESCO World Heritage treasure blending historical forts, mosques, and the sacred hilltop temple.
+🔟 **Surendranagar & Saurashtra Heritage (Gateway to Saurashtra)** — Famous for royal stepwells (Madha Vav, Ganga Vav), the vibrant Tarnetar folk fair, and the proud **manufacturing home of Nectar Ingredients**! 🏛️🌿
+
+Gujarat is also the agricultural powerhouse of India! Right here in **Surendranagar**, we at **Nectar Ingredients** transform the region's rich farm harvests into 100% pure dehydrated vegetable, spice, fruit, and dairy powders (White Onion, Garlic, Tomato, Ginger, Turmeric, etc.) with zero additives, preservatives, or artificial colors.
+
+Whether you're developing seasonings, instant mixes, or cooking at home, our pure powders deliver genuine Indian flavor with total convenience. We supply standard **25 KG bulk boxes** as well as **1 KG / 5 KG R&D trial packs**.
+
+If you're planning a visit or would like samples for your kitchen or food business, feel free to reach **Mehul Patel** directly on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) or email [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com)! 😊👋`
   }
 
   // ========================================================================
@@ -1588,13 +1704,13 @@ Which specific dish or powder formulation would you like a recipe for? 😊`
   }
 
   // ========================================================================
-  // 10. GENERAL CONVERSATIONAL INQUIRY
+  // 10. GENERAL CONVERSATIONAL INQUIRY & OFF-TOPIC PROMOTION
   // ========================================================================
   if (history && history.length > 0) {
-    return `I'm here! 👋 How can I assist you further with your powder specifications, formulation guidance, or order status? Feel free to ask about any specific powders, mesh sizes, recipes, or lab COA reports! 🌿`
+    return `Thank you for asking! 😊 I'm always happy to assist with any questions, whether it's everyday life, culinary ideas, or wholesale ingredient advice! 🌿\n\nSpeaking of excellence, at **Nectar Ingredients** (Surendranagar, Gujarat), we supply 100% pure, additive-free dehydrated vegetable, spice, fruit, and dairy powders (Tomato, Onion, Garlic, Turmeric, Ginger, etc.). We offer standard **25 KG bulk boxes** as well as **1 KG & 5 KG R&D trial packs**.\n\nHow else can I assist you today? Feel free to ask anything or reach **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281)! ✨`
   }
 
-  return `Hello! 👋 At **Nectar Intelligence**, we're here to assist you with all your wholesale spice, vegetable, fruit, and dairy powder inquiries.\n\nWe manufacture 100% pure, low-temperature dehydrated powders in Surendranagar, Gujarat. Could you share a bit more detail on what you're looking for — such as specific powders, target mesh fineness, or sample requirements? I'd be happy to help! 🌿`
+  return `Hello! 👋 Welcome to **Nectar Intelligence**! 🌿\n\nI'm delighted to assist you with any questions — from culinary and wellness advice to wholesale ingredient inquiries! At **Nectar Ingredients** (Surendranagar, Gujarat), we manufacture 100% pure, low-temperature dehydrated powders (Tomato, Onion, Garlic, Spices, Fruit, and Dairy) with zero additives or preservatives. Available in **25 KG bulk boxes** and **1 KG / 5 KG R&D trial packs**.\n\nWhat can I help you explore today? 😊`
 }
 
 export async function OPTIONS() {
@@ -1877,7 +1993,12 @@ export async function POST(req: Request) {
       cleanLower.includes('hi') ||
       cleanLower.includes('namaste') ||
       cleanLower.includes('fever') ||
-      cleanLower.includes('cold')
+      cleanLower.includes('cold') ||
+      cleanLower.includes('visit') ||
+      cleanLower.includes('places') ||
+      cleanLower.includes('gujarat') ||
+      cleanLower.includes('travel') ||
+      cleanLower.includes('tourist')
 
     if (!isTrackingIntent && isOrderActionCurrentMessage && !isInformationalOrRecipeQuery) {
       const incomingOrderState = extractOrderStateFromHistory([
@@ -1983,7 +2104,7 @@ export async function POST(req: Request) {
         const groqResult = await callGroqWithFailover(messages, tools as any, {
           preferredModel: 'qwen/qwen3.8-27b',
           fallbackModel: 'openai/gpt-oss-120b',
-          temperature: 0.3,
+          temperature: 0.65,
           maxTokens: 1000,
         })
 
