@@ -1163,16 +1163,15 @@ When asked about places to visit in Gujarat or travel/tourism:
 CORE RESPONSIBILITIES:
 
 0. GREETINGS & CAPABILITY EXPLANATIONS (WHEN USERS SAY HI, HELLO, OR ASK "WHAT CAN YOU DO?" / "WHAT ARE YOUR CAPABILITIES?"):
-   - Warmly welcome the user to **Nectar Intelligence** (Surendranagar, Gujarat).
-   - Lay out the 7 core capabilities pointwise with clear bullet points so that any visitor, food technologist, buyer, or manufacturer immediately understands what this assistant is made for:
-     • 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
-     • 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID ('NEC-...'), phone number, or email.
-     • 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
-     • 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
-     • 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
-     • 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
-     • 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
-   - Invite them to ask any question or choose an option to get started!
+   - For simple greetings ("hi", "hello", "hey"): Respond warmly in 2 short lines with emojis asking how you can help (do NOT dump long capability lists for simple hellos).
+   - When asked "what can you do?" or "what are your capabilities?":
+     Keep it punchy, compact, and pointwise:
+     • 📦 **Orders & Samples:** 1kg & 5kg trial packs or 25kg bulk boxes
+     • 🚚 **Live Tracking:** Track dispatch status via Ref ID ('NEC-...'), phone, or email
+     • 🔬 **Specs & COA:** Particle mesh (80–100), moisture <8% & lab test reports
+     • 📄 **Brochure:** Instant PDF download of our full product range
+     • 💡 **Formulations:** Recipe tips for premixes, seasonings & soups
+     • 💬 **WhatsApp Sales:** Direct pricing with **Mehul Patel** (+91 98798 38281)
 
 1. NEW ORDER INTAKE & CREATION (HIGHEST PRIORITY):
    - When a customer says "take a new order", "place a new order", "place a custom order", "order powders", "buy tomato powder", "I want to purchase", "sample request", or lists products they want:
@@ -1224,12 +1223,16 @@ CORE RESPONSIBILITIES:
    - 📧 **Official Email:** [nectaringredients@gmail.com](mailto:nectaringredients@gmail.com)
    - 🏢 **Factory & Office:** Shop 18 & 19, 2nd Floor, Brahmanand Chamber, Opp. M.P. Shah College, Surendranagar, Gujarat - 363001, India 🌿
 
-CRITICAL CONVERSATIONAL FOCUS:
-- ALWAYS direct your focus to the user's latest question.
+CRITICAL CONVERSATIONAL FOCUS & CONCISENESS (MANDATORY):
+- BE CONCISE & TO THE POINT: Always give short, direct, high-value answers without rambling, long introductions, or writing essays. Keep standard answers to 2–3 brief paragraphs or short bullet points (<150-180 words).
+- RICH INTERACTIVE EMOJIS: Generously and naturally use emojis (👋, 🌿, 📦, 🍅, 🧄, 🧅, 🫚, 🥣, 🩺, 💛, ✨, 📞, 😊, 💡) to make every interaction visually lively and engaging!
+- SIMPLE GREETINGS ("hi", "hello"): 2 short lines asking how you can help.
+- RECIPES: Short & crisp! 4-5 bulleted ingredients, 3 brief numbered steps, and 1 short concluding sentence about Nectar pure powder & Mehul Patel's WhatsApp (+91 98798 38281).
+- HEALTH INQUIRIES: 1 short caring paragraph (fluids, rest, temperature + visit a doctor and take doctor-prescribed medicine) + 1 short paragraph suggesting soothing kadha/broth with Nectar ginger/turmeric powder & Mehul Patel's WhatsApp.
+- ALWAYS direct your focus to the user's latest question directly.
 - NEVER echo or paste previous responses from the chat history.
-- Use warm emojis naturally (🌿, 📦, 🍅, 🧄, 🌶️, ✨, 🛒, 🚚, 📋, 👋, 😊, 💡, 📞, 🧾, 📧).
 - NEVER use markdown header hashtags (#, ##) or raw tables (|...|).
-- Keep formatting clean, inviting, and human.`
+- Keep formatting clean, punchy, inviting, and human.`
 
 
 // ============================================================================
@@ -1570,24 +1573,24 @@ Which specific dish or powder formulation would you like a recipe for? 😊`
   // ========================================================================
   // 5. GREETING, CAPABILITIES & SOCIAL PLEASANTRIES
   // ========================================================================
-  const isGreetingOrCapability =
-    /^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean) ||
-    /\b(what can you do|who are you|what are your capabilities|how can you help|what is this|what are you made for|capabilities|features|help me|tell me about yourself)\b/i.test(clean)
+  // Simple greetings: Keep short and friendly without dumping long capability lists
+  if (/^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean)) {
+    return `Hi there! 👋 Welcome to **Nectar Ingredients** (Surendranagar, Gujarat)! 🌿✨\n\nHow can I help you today? Looking for sample trial packs (1kg/5kg), bulk boxes (25kg), lab COA reports, or formulation recipes? Let me know! 😊`
+  }
 
-  if (isGreetingOrCapability) {
-    return `Hello! 👋 Welcome to **Nectar Intelligence** — your 24/7 technical, commercial & formulation assistant for **Nectar Ingredients** (Surendranagar, Gujarat). 🌿
+  // Capability inquiries: Punchy, clean, pointwise
+  if (/\b(what can you do|who are you|what are your capabilities|how can you help|what is this|what are you made for|capabilities|features|help me|tell me about yourself)\b/i.test(clean)) {
+    return `Hello! 👋 Welcome to **Nectar Intelligence** (Surendranagar, Gujarat) 🌿
 
-Here is what I am built to help you with:
+How I can help you today:
+• 📦 **Orders & Samples:** 1kg & 5kg trial packs or 25kg bulk orders
+• 🚚 **Live Tracking:** Track dispatch status via Ref ID, phone, or email
+• 🔬 **Specs & COA:** Particle mesh (80–100), moisture <8% & lab test reports
+• 📄 **Brochure:** Instant PDF download of our full product range
+• 💡 **Formulations:** Recipe guidance for premixes, seasonings & soups
+• 💬 **WhatsApp Sales:** Direct pricing with **Mehul Patel** ([+91 98798 38281](https://wa.me/919879838281))
 
-• 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
-• 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID (\`NEC-...\`), phone number, or email.
-• 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
-• 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
-• 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
-• 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
-• 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
-
-Ask me any question in plain words below, or tap one of the quick options to get started! 😊✨`
+Ask me anything or tap a quick option below! ✨`
   }
   if (/^(thanks|thank you|thankyou|thx|bye|goodbye)\b/i.test(clean)) {
     return `You're very welcome! 🌿 It's always a pleasure assisting you. If you ever need sample packs, Certificate of Analysis (COA) reports, or commercial bulk quotes, feel free to ask or WhatsApp **Mehul Patel** at [+91 98798 38281](https://wa.me/919879838281). Have a wonderful day! 😊✨`
@@ -1597,23 +1600,23 @@ Ask me any question in plain words below, or tap one of the quick options to get
   // 6. HEALTH / WELLNESS / SYMPTOM SUPPORT (WITH MEDICAL DISCLAIMER & DOCTOR PRESCRIPTION)
   // ========================================================================
   if (/\b(stomach|tummy|indigestion|acid|acidity|gas|bloat|cramp|digest|nausea|vomit|loose motion|diarrhea)\b/i.test(clean)) {
-    return `Oh no, I'm really sorry to hear you're dealing with stomach trouble! 💛 Please take care of yourself.
+    return `Oh no, I'm really sorry to hear you're dealing with stomach discomfort! 💛 Please take care of yourself.
 
-First and foremost though, please make sure you consult a qualified doctor so they can check what's going on, and take whatever medications they prescribe for you. While gentle home comforts like warm ajwain (carom seed) or cumin water and light buttermilk are wonderful for soothing an upset stomach and keeping you hydrated, they can never replace professional medical care or a doctor's prescription. If the discomfort persists or is accompanied by severe pain, definitely get it looked at right away!
+🩺 **Medical Guidance:** Please consult a qualified doctor if discomfort persists or pain is severe, and take any medications strictly per your doctor's prescription. Dietary spices provide gentle comfort, but never replace medical care.
 
-In the meantime, getting good rest and drinking plenty of warm fluids will help your digestive system settle. On our side at **Nectar Ingredients** (Surendranagar, Gujarat), we make 100% pure, cryo-milled powders with zero chemical additives, preservatives, or added salt—like our pure **Ajwain Powder** and **Ginger (Sounth) Powder**, which are laboratory-tested for active essential oils and gingerol.
+🍵 **Soothing Comfort:** Sip warm water with a pinch of pure cumin or ajwain (carom seed), or enjoy light buttermilk to cool stomach heat.
 
-We offer convenient **1 KG & 5 KG trial packs** as well as **25 KG commercial bulk boxes**. Wishing you quick and gentle relief! If you ever need pure ingredients or formulation advice, **Mehul Patel** on our team is always reachable on WhatsApp at [+91 98798 38281](https://wa.me/919879838281). 🤗🌿`
+🌿 At **Nectar Ingredients** (Surendranagar, Gujarat), our pure **Ajwain Powder** & **Ginger Powder** are cryo-milled with zero additives or added salt. Available in **1kg/5kg trial packs** and **25kg bulk boxes**. Feel free to WhatsApp **Mehul Patel** at [+91 98798 38281](https://wa.me/919879838281). Get well soon! 🤗`
   }
 
   if (/\b(fever|sick|ill|cough|headache|flu|throat infection|high temp|temperature)\b/i.test(clean) && !/\b(still|will|spill|skill|distill|million|billion)\b/i.test(clean)) {
-    return `Oh no, I'm so sorry you're feeling sick! 💛 Please take it easy and get plenty of rest right now.
+    return `Oh no, I'm so sorry you're feeling unwell! 😔 Please get plenty of rest, drink warm fluids, and monitor your temperature. 🌡️
 
-First and most importantly, please consult a qualified doctor for a proper diagnosis, and take all medications strictly based on your doctor's prescription. Simple home comforts like warm herbal teas and light vegetable broths are great for comforting your throat and staying hydrated, but they are never a substitute for professional medical care and a doctor's prescription. (And if your fever is high or you have severe symptoms, please seek medical attention right away!)
+🩺 **Doctor's Care First:** Please consult a qualified doctor for a proper diagnosis and take all medications strictly per your doctor's prescription. Home broths and teas are gentle comforts while resting, but never replace medical care!
 
-While you rest, keeping well hydrated with plenty of warm water or light clear vegetable broths will help your body recover. Right here at **Nectar Ingredients** in Surendranagar, Gujarat, we produce 100% pure dehydrated powders—like our **Pure Ginger (Sounth) Powder** and **Golden Lakadong Turmeric Powder** (3%+ curcumin) for a soothing warm herbal kadha, as well as pure **Tomato, Onion, and Garlic powders** for quick, clean vegetable broths with zero additives or preservatives.
+🌿 **Soothing Recovery Comfort:** A warm herbal kadha with **Nectar Pure Ginger & Turmeric Powder** (100% additive-free, 3%+ curcumin) or a light vegetable broth can be wonderfully soothing on your throat.
 
-We have convenient **1 KG and 5 KG trial packs** alongside **25 KG bulk boxes**. Wishing you a very swift, gentle, and restful recovery! Feel free to reach **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) if you or your family need anything. 🤗💛`
+📦 We offer **1kg/5kg trial packs** & **25kg bulk boxes**. Wishing you a swift recovery! Feel free to reach **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281). 💛✨`
   }
 
   // ========================================================================
@@ -1738,19 +1741,17 @@ If you're planning a visit or would like samples for your kitchen or food busine
     return `Thank you for asking! 😊 I'm always happy to assist with any questions, whether it's everyday life, culinary ideas, or wholesale ingredient advice! 🌿\n\nSpeaking of excellence, at **Nectar Ingredients** (Surendranagar, Gujarat), we supply 100% pure, additive-free dehydrated vegetable, spice, fruit, and dairy powders (Tomato, Onion, Garlic, Turmeric, Ginger, etc.). We offer standard **25 KG bulk boxes** as well as **1 KG & 5 KG R&D trial packs**.\n\nHow else can I assist you today? Feel free to ask anything or reach **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281)! ✨`
   }
 
-  return `Hello! 👋 Welcome to **Nectar Intelligence** — your 24/7 technical, commercial & formulation assistant for **Nectar Ingredients** (Surendranagar, Gujarat). 🌿
+  return `Hello! 👋 Welcome to **Nectar Intelligence** (Surendranagar, Gujarat) 🌿
 
-Here is what I am built to help you with:
+How I can help you today:
+• 📦 **Orders & Samples:** 1kg & 5kg trial packs or 25kg bulk orders
+• 🚚 **Live Tracking:** Track dispatch status via Ref ID, phone, or email
+• 🔬 **Specs & COA:** Particle mesh (80–100), moisture <8% & lab test reports
+• 📄 **Brochure:** Instant PDF download of our full product range
+• 💡 **Formulations:** Recipe guidance for premixes, seasonings & soups
+• 💬 **WhatsApp Sales:** Direct pricing with **Mehul Patel** ([+91 98798 38281](https://wa.me/919879838281))
 
-• 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
-• 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID (\`NEC-...\`), phone number, or email.
-• 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
-• 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
-• 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
-• 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
-• 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
-
-Ask me any question in plain words below, or tap one of the quick options to get started! 😊✨`
+Ask me anything or tap a quick option below! ✨`
 }
 
 export async function OPTIONS() {
@@ -2145,7 +2146,7 @@ export async function POST(req: Request) {
           preferredModel: 'qwen/qwen3.8-27b',
           fallbackModel: 'openai/gpt-oss-120b',
           temperature: 0.65,
-          maxTokens: 1000,
+          maxTokens: 500,
         })
 
         // 1. Process native Groq tool call

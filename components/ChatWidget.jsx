@@ -184,7 +184,7 @@ function parseInlineTokens(text, isUser = false) {
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-semibold font-heading">{label}</span>
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-normal">Direct WhatsApp</span>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-normal"> (WhatsApp)</span>
           </a>
         );
       }
@@ -304,49 +304,47 @@ function FormattedChatMessage({ text, isStreaming = false, isUser = false }) {
 // EXECUTIVE STARTER PROMPTS
 // ============================================================================
 
-const WELCOME_MESSAGE = `Hello! 👋 Welcome to **Nectar Intelligence** — your 24/7 technical, commercial & formulation assistant for **Nectar Ingredients** (Surendranagar, Gujarat). 🌿
+const WELCOME_MESSAGE = `Hello! 👋 Welcome to **Nectar Intelligence** (Surendranagar, Gujarat) 🌿
 
-Here is what I am built to help you with:
+How I can help you today:
+• 📦 **Orders & Samples:** 1kg & 5kg trial packs or 25kg bulk orders
+• 🚚 **Live Tracking:** Track dispatch status via Ref ID, phone, or email
+• 🔬 **Specs & COA:** Particle mesh (80–100), moisture <8% & lab test reports
+• 📄 **Brochure:** Instant PDF download of our full product range
+• 💡 **Formulations:** Recipe guidance for premixes, seasonings & soups
+• 💬 **WhatsApp Sales:** Direct pricing with **Mehul Patel** ([+91 98798 38281](https://wa.me/919879838281))
 
-• 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
-• 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID (\`NEC-...\`), phone number, or email.
-• 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
-• 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
-• 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
-• 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
-• 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
-
-Ask me any question in plain words below, or tap one of the quick options to get started! 😊✨`;
+Ask me anything or tap a quick option below! ✨`;
 
 const EXECUTIVE_STARTERS = [
   {
     icon: "🔬",
-    label: "Product Specifications & Mesh Fineness",
+    label: "Product Specs & Mesh Fineness",
     query: "What are the technical specifications and mesh sizes for your vegetable powders?",
   },
   {
     icon: "📦",
-    label: "Request 1kg/5kg Samples or Place an Order",
+    label: "Order Samples (1kg/5kg) or Bulk",
     query: "I would like to request sample trial packs and place an order for pure powders.",
   },
   {
     icon: "🚚",
-    label: "Track Active Order or Sample Dispatch",
+    label: "Track Order / Sample Dispatch",
     query: "How do I track my active sample or dispatch status?",
   },
   {
     icon: "📑",
-    label: "Download Batch COA Lab Test Reports",
+    label: "Download Batch COA Lab Reports",
     query: "Can I download your batch Certificates of Analysis and lab reports?",
   },
   {
     icon: "📄",
-    label: "Download Official Company Brochure PDF",
+    label: "Download Company Brochure PDF",
     query: "Download company brochure",
   },
   {
     icon: "💬",
-    label: "Direct Wholesale Pricing & WhatsApp Support",
+    label: "Direct Wholesale Pricing on WhatsApp",
     query: "How can I contact Mehul Patel for commercial pricing and wholesale MOQs?",
   },
 ];
