@@ -304,12 +304,51 @@ function FormattedChatMessage({ text, isStreaming = false, isUser = false }) {
 // EXECUTIVE STARTER PROMPTS
 // ============================================================================
 
+const WELCOME_MESSAGE = `Hello! 👋 Welcome to **Nectar Intelligence** — your 24/7 technical, commercial & formulation assistant for **Nectar Ingredients** (Surendranagar, Gujarat). 🌿
+
+Here is what I am built to help you with:
+
+• 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
+• 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID (\`NEC-...\`), phone number, or email.
+• 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
+• 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
+• 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
+• 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
+• 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
+
+Ask me any question in plain words below, or tap one of the quick options to get started! 😊✨`;
+
 const EXECUTIVE_STARTERS = [
-  { label: "Product Specifications & Mesh Sizes", query: "What are the technical specifications and mesh sizes for your vegetable powders?" },
-  { label: "Laboratory COA Certificates", query: "Can I download your batch Certificates of Analysis and lab reports?" },
-  { label: "Download Company Brochure PDF", query: "Download company brochure" },
-  { label: "Track Active Order / Sample Dispatch", query: "How do I track my active sample or dispatch status?" },
-  { label: "Direct Commercial Pricing & Wholesale MOQs", query: "How can I contact Mehul Patel for commercial pricing and wholesale MOQs?" },
+  {
+    icon: "🔬",
+    label: "Product Specifications & Mesh Fineness",
+    query: "What are the technical specifications and mesh sizes for your vegetable powders?",
+  },
+  {
+    icon: "📦",
+    label: "Request 1kg/5kg Samples or Place an Order",
+    query: "I would like to request sample trial packs and place an order for pure powders.",
+  },
+  {
+    icon: "🚚",
+    label: "Track Active Order or Sample Dispatch",
+    query: "How do I track my active sample or dispatch status?",
+  },
+  {
+    icon: "📑",
+    label: "Download Batch COA Lab Test Reports",
+    query: "Can I download your batch Certificates of Analysis and lab reports?",
+  },
+  {
+    icon: "📄",
+    label: "Download Official Company Brochure PDF",
+    query: "Download company brochure",
+  },
+  {
+    icon: "💬",
+    label: "Direct Wholesale Pricing & WhatsApp Support",
+    query: "How can I contact Mehul Patel for commercial pricing and wholesale MOQs?",
+  },
 ];
 
 export default function ChatWidget() {
@@ -317,8 +356,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content:
-        "Hello! 👋 Welcome to **Nectar Intelligence** — your technical & commercial assistant for pure dehydrated powders.\n\nHow can I help you today? Feel free to ask about product specifications, custom formulation advice, batch test reports, or track your sample dispatch! 🌿",
+      content: WELCOME_MESSAGE,
       time: "Just now",
       isStreaming: false,
     },
@@ -477,8 +515,7 @@ export default function ChatWidget() {
     setMessages([
       {
         role: "assistant",
-        content:
-          "**New session initialized.**\n\nHow may I assist you with product specifications, analytical certificates, or sample inquiries today?",
+        content: WELCOME_MESSAGE,
         time: "Just now",
         isStreaming: false,
       },
@@ -839,18 +876,22 @@ export default function ChatWidget() {
             {/* Executive Quick Prompts */}
             {messages.length <= 2 && !isSending && (
               <div className="pt-2 pb-1">
-                <div className="text-[11px] font-bold font-heading uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2.5 px-1">
-                  Frequently Inquired Specifications
+                <div className="text-[11px] font-bold font-heading uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2.5 px-1 flex items-center gap-1.5">
+                  <span>⚡</span>
+                  <span>Explore Capabilities & Quick Actions</span>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {EXECUTIVE_STARTERS.map((item, idx) => (
                     <button
                       key={idx}
                       onClick={() => submitMessage(item.query)}
-                      className="w-full text-left px-4 py-3 rounded-xl bg-white dark:bg-[#1E1916] hover:bg-[#F2ECE1] dark:hover:bg-[#28221D] border border-[#E5DBCA] dark:border-[#382E26] text-neutral-800 dark:text-neutral-200 text-[13.5px] font-medium font-body transition-all active:scale-[0.99] shadow-2xs cursor-pointer flex items-center justify-between group"
+                      className="w-full text-left px-3.5 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-[#1E1916] hover:bg-[#F2ECE1] dark:hover:bg-[#28221D] border border-[#E5DBCA] dark:border-[#382E26] text-neutral-800 dark:text-neutral-200 text-[13px] sm:text-[13.5px] font-medium font-body transition-all active:scale-[0.99] shadow-2xs cursor-pointer flex items-center justify-between group"
                     >
-                      <span className="group-hover:text-[#BC4B20] transition-colors">{item.label}</span>
-                      <span className="text-neutral-400 group-hover:text-[#BC4B20] group-hover:translate-x-1 transition-all text-sm font-semibold">
+                      <span className="flex items-center gap-2.5 group-hover:text-[#BC4B20] transition-colors">
+                        <span className="text-base shrink-0 select-none">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </span>
+                      <span className="text-neutral-400 dark:text-neutral-500 group-hover:text-[#BC4B20] group-hover:translate-x-1 transition-all text-sm font-semibold shrink-0 ml-2">
                         →
                       </span>
                     </button>

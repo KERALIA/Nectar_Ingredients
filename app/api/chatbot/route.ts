@@ -1162,6 +1162,18 @@ When asked about places to visit in Gujarat or travel/tourism:
 
 CORE RESPONSIBILITIES:
 
+0. GREETINGS & CAPABILITY EXPLANATIONS (WHEN USERS SAY HI, HELLO, OR ASK "WHAT CAN YOU DO?" / "WHAT ARE YOUR CAPABILITIES?"):
+   - Warmly welcome the user to **Nectar Intelligence** (Surendranagar, Gujarat).
+   - Lay out the 7 core capabilities pointwise with clear bullet points so that any visitor, food technologist, buyer, or manufacturer immediately understands what this assistant is made for:
+     • 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
+     • 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID ('NEC-...'), phone number, or email.
+     • 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
+     • 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
+     • 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
+     • 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
+     • 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
+   - Invite them to ask any question or choose an option to get started!
+
 1. NEW ORDER INTAKE & CREATION (HIGHEST PRIORITY):
    - When a customer says "take a new order", "place a new order", "place a custom order", "order powders", "buy tomato powder", "I want to purchase", "sample request", or lists products they want:
      • THIS IS A NEW ORDER INTAKE — NEVER CALL 'lookup_order'!
@@ -1556,10 +1568,26 @@ Which specific dish or powder formulation would you like a recipe for? 😊`
   }
 
   // ========================================================================
-  // 5. GREETING & SOCIAL PLEASANTRIES
+  // 5. GREETING, CAPABILITIES & SOCIAL PLEASANTRIES
   // ========================================================================
-  if (/^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean)) {
-    return `Hello! 👋 Welcome to **Nectar Intelligence**! 🌿\n\nI'm your AI technical and commercial assistant for Nectar Ingredients (Surendranagar, Gujarat). How can I assist you today? I'd be happy to explain our dehydrated powders, share recipe formulations, or answer any technical questions! 😊`
+  const isGreetingOrCapability =
+    /^(hi|hello|hey|hii|hiii|namaste|good morning|good afternoon|good evening)\b/i.test(clean) ||
+    /\b(what can you do|who are you|what are your capabilities|how can you help|what is this|what are you made for|capabilities|features|help me|tell me about yourself)\b/i.test(clean)
+
+  if (isGreetingOrCapability) {
+    return `Hello! 👋 Welcome to **Nectar Intelligence** — your 24/7 technical, commercial & formulation assistant for **Nectar Ingredients** (Surendranagar, Gujarat). 🌿
+
+Here is what I am built to help you with:
+
+• 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
+• 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID (\`NEC-...\`), phone number, or email.
+• 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
+• 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
+• 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
+• 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
+• 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
+
+Ask me any question in plain words below, or tap one of the quick options to get started! 😊✨`
   }
   if (/^(thanks|thank you|thankyou|thx|bye|goodbye)\b/i.test(clean)) {
     return `You're very welcome! 🌿 It's always a pleasure assisting you. If you ever need sample packs, Certificate of Analysis (COA) reports, or commercial bulk quotes, feel free to ask or WhatsApp **Mehul Patel** at [+91 98798 38281](https://wa.me/919879838281). Have a wonderful day! 😊✨`
@@ -1710,7 +1738,19 @@ If you're planning a visit or would like samples for your kitchen or food busine
     return `Thank you for asking! 😊 I'm always happy to assist with any questions, whether it's everyday life, culinary ideas, or wholesale ingredient advice! 🌿\n\nSpeaking of excellence, at **Nectar Ingredients** (Surendranagar, Gujarat), we supply 100% pure, additive-free dehydrated vegetable, spice, fruit, and dairy powders (Tomato, Onion, Garlic, Turmeric, Ginger, etc.). We offer standard **25 KG bulk boxes** as well as **1 KG & 5 KG R&D trial packs**.\n\nHow else can I assist you today? Feel free to ask anything or reach **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281)! ✨`
   }
 
-  return `Hello! 👋 Welcome to **Nectar Intelligence**! 🌿\n\nI'm delighted to assist you with any questions — from culinary and wellness advice to wholesale ingredient inquiries! At **Nectar Ingredients** (Surendranagar, Gujarat), we manufacture 100% pure, low-temperature dehydrated powders (Tomato, Onion, Garlic, Spices, Fruit, and Dairy) with zero additives or preservatives. Available in **25 KG bulk boxes** and **1 KG / 5 KG R&D trial packs**.\n\nWhat can I help you explore today? 😊`
+  return `Hello! 👋 Welcome to **Nectar Intelligence** — your 24/7 technical, commercial & formulation assistant for **Nectar Ingredients** (Surendranagar, Gujarat). 🌿
+
+Here is what I am built to help you with:
+
+• 📦 **Instant Sample & Bulk Orders:** Request 1 KG & 5 KG R&D trial packs or place commercial orders for 25 KG bulk boxes directly here.
+• 🚚 **Real-Time Order & Dispatch Tracking:** Check the live dispatch status of your order or sample parcel using your Ref ID (\`NEC-...\`), phone number, or email.
+• 🔬 **Technical Specs & Particle Mesh:** Look up mesh fineness (80–100 mesh), moisture levels (<8%), reconstitution ratios, and low-temperature dehydration methods.
+• 📑 **Batch COA & Lab Test Reports:** Instantly retrieve verified Certificates of Analysis covering purity, heavy metals, and microbiology.
+• 📄 **Company Brochure & Product Catalog:** Download the official company catalog PDF for our complete range of vegetable, fruit, spice, and dairy powders.
+• 💡 **Recipe & Formulation Advisory:** Practical guidance for seasoning blends, soup premixes, snack coatings, and herbal wellness teas.
+• 💬 **Direct Sales & Custom Quotes:** Connect directly with **Mehul Patel** on WhatsApp at [+91 98798 38281](https://wa.me/919879838281) for volume-tiered wholesale pricing.
+
+Ask me any question in plain words below, or tap one of the quick options to get started! 😊✨`
 }
 
 export async function OPTIONS() {
