@@ -1,6 +1,17 @@
 # 🌿 Nectar Ingredients – Digital B2B E-Commerce & Inquiry Platform
 
-**Official website and digital B2B platform for Nectar Ingredients Pvt. Ltd.** — premier wholesale manufacturer of pure single-ingredient dehydrated vegetable, fruit, spice, and dairy powders based in Surendranagar, Gujarat, India. Est. 2021.
+[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/keralia/nectar_ingredients?utm_source=readme&utm_medium=badge)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16%20(Turbopack)-000000?style=flat&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)  
+![AI Engine](https://img.shields.io/badge/AI_Engine-Groq_LPU_%7C_Qwen_3.8-F55036?style=flat)
+![Database](https://img.shields.io/badge/Database-Supabase_%7C_Sheets_DB-3ECF8E?style=flat&logo=supabase&logoColor=white)
+![Graphics](https://img.shields.io/badge/WebGL-Three.js-000000?style=flat&logo=threedotjs&logoColor=white)
+![Deployment](https://img.shields.io/badge/Deployment-Vercel-000000?style=flat&logo=vercel&logoColor=white)
+![Facility](https://img.shields.io/badge/Facility-Surendranagar%2C_Gujarat-7C3AED?style=flat)
+
+> **Official digital B2B commerce & inquiry platform for Nectar Ingredients Pvt. Ltd.** — premier wholesale manufacturer of pure single-ingredient dehydrated vegetable, fruit, spice, and dairy powders based in Surendranagar, Gujarat, India. Est. 2021.
 
 🌐 **Live Website:** [nectaringredients.vercel.app](https://nectaringredients.vercel.app)  
 📦 **Product Catalog:** 40+ Pure Single-Source Dehydrated Powders  
