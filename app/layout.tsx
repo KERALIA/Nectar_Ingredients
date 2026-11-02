@@ -17,8 +17,6 @@ import SwipeNavigation from '../components/ui/SwipeNavigation'
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-heading',
-  weight: ['400', '500', '600', '700', '800'],
-  style: ['normal', 'italic'],
   display: 'swap',
   preload: true,
 })
@@ -26,7 +24,6 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-body',
-  weight: ['400', '500', '600', '700'],
   display: 'swap',
   preload: true,
 })
