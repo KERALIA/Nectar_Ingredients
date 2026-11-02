@@ -4,6 +4,8 @@
 
 /* ─── Fluid Typography Scale ─────────────────────────────────────────────── */
 :root {
+  --font-fraunces: 'Fraunces', serif;
+  --font-serif: 'Fraunces', Georgia, serif;
   --text-hero:  clamp(2.75rem, 1.2rem + 6vw,  7rem);
   --text-h1:    clamp(2rem,    1.2rem + 3vw,   4rem);
   --text-h2:    clamp(1.75rem, 1.1rem + 2.5vw, 3rem);
@@ -94,7 +96,7 @@ body {
 }
 
 /* Horizontal overflow safety */
-html, body { overflow-x: hidden; width: 100%; }
+html, body { overflow-x: clip; width: 100%; }
 * { max-width: 100%; box-sizing: border-box; }
 .scrollbar-hide { max-width: none; }
 
@@ -457,27 +459,7 @@ html, body { overflow-x: hidden; width: 100%; }
   animation-delay: 0s;
 }
 
-/* ─── Gemini & ChatGPT Style Chatbot Animations ──────────────────────────── */
-@keyframes gemini-gradient-sweep {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-gemini-sweep {
-  background: linear-gradient(90deg, #BC4B20, #E06D40, #F59E0B, #E06D40, #BC4B20);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gemini-gradient-sweep 3s ease infinite;
-}
-
+/* ─── Chatbot Typing Cursor ──────────────────────────────────────────────── */
 @keyframes chatgpt-cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -543,4 +525,26 @@ html, body { overflow-x: hidden; width: 100%; }
   -webkit-box-shadow: none !important;
   -webkit-appearance: none !important;
   appearance: none !important;
-}
+}
+
+/* ─── Marquee Motion Classes & Reduced Motion Fallback ───────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap, 1rem))); }
+}
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-100% - var(--gap, 1rem))); }
+}
+.animate-marquee {
+  animation: marquee var(--duration, 40s) linear infinite;
+}
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration, 40s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-vertical {
+    animation: none !important;
+  }
+}

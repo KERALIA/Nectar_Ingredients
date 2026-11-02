@@ -28,11 +28,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(stored)
       setUserOverride(true)
       document.documentElement.setAttribute('data-theme', stored)
+      document.documentElement.classList.toggle('dark', stored === 'dark')
     } else {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       const initialTheme = prefersDark ? 'dark' : 'light'
       setTheme(initialTheme)
       document.documentElement.setAttribute('data-theme', initialTheme)
+      document.documentElement.classList.toggle('dark', initialTheme === 'dark')
     }
   }, [])
 
@@ -46,6 +48,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const newTheme = e.matches ? 'dark' : 'light'
         setTheme(newTheme)
         document.documentElement.setAttribute('data-theme', newTheme)
+        document.documentElement.classList.toggle('dark', newTheme === 'dark')
       }
     }
 
@@ -60,6 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setUserOverride(true)
     localStorage.setItem('ni-theme', newTheme)
     document.documentElement.setAttribute('data-theme', newTheme)
+    document.documentElement.classList.toggle('dark', newTheme === 'dark')
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transitioning')
     }, 350)

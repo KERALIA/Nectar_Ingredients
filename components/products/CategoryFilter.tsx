@@ -33,10 +33,10 @@ export default function CategoryFilter({ active, onChange }: CategoryFilterProps
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`flex-shrink-0 flex items-center gap-2 font-body text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer active:scale-[0.97] ${
+            className={`flex-shrink-0 flex items-center gap-2 font-body text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer ${
               isActive
-                ? 'bg-ni-rust text-white shadow-card scale-[1.02]'
-                : 'text-ni-secondary hover:text-ni-primary hover:bg-ni-surface2/60 dark:hover:bg-white/10'
+                ? 'bg-ni-rust text-white shadow-sm'
+                : 'text-ni-secondary hover:text-ni-primary hover:bg-ni-surface2'
             }`}
           >
             <span>{opt.label}</span>

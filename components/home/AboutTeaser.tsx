@@ -8,97 +8,75 @@ import { useScrollReveal } from '../../lib/hooks'
 export default function AboutTeaser() {
   const { ref, visible } = useScrollReveal()
 
+  /* ponytail: Core company intro. Expand to virtual facility tour module when video walkthrough assets are ready. */
   return (
-    <section className="py-[var(--space-section)] bg-ni-surface relative border-t border-ni-border/10">
-      {/* Subtle ambient glow */}
-      <div
-        className="absolute left-0 top-0 w-1/2 h-full pointer-events-none opacity-30"
-        aria-hidden="true"
-        style={{ background: 'radial-gradient(ellipse 60% 50% at 0% 50%, var(--glow-color) 0%, transparent 70%)' }}
-      />
-
+    <section className="py-16 sm:py-24 bg-ni-surface relative border-t border-ni-border/20" aria-label="About Nectar Ingredients">
       <div
         ref={ref}
         className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
-                    grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center
-                    transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                    grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center
+                    transition-opacity transition-transform duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
       >
         {/* ── Left: text ── */}
         <div className="space-y-6 order-2 lg:order-1">
-          <p className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-ni-rust">About</p>
-          <h2
-            className="font-heading font-bold text-ni-primary leading-[1.1] tracking-[-0.02em]"
-            style={{ fontSize: 'var(--text-h2)' }}
-          >
-            We've been making powders since before it was trendy.
+          <p className="font-body text-xs font-medium text-ni-rust">
+            About the facility
+          </p>
+          <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-ni-primary tracking-tight leading-[1.15]">
+            Built in Surendranagar around direct agricultural supply
           </h2>
-          <div className="space-y-4 font-body text-ni-secondary leading-[1.7]" style={{ fontSize: 'var(--text-base)' }}>
+          <div className="space-y-4 font-body text-ni-secondary text-base leading-relaxed">
             <p>
-              Established in 2021 in Surendranagar, Gujarat, Nectar Ingredients was built on one principle:
-              your supply chain deserves an ingredient partner you can trust — not just one you can call.
-              We began by serving regional food brands who needed consistent, clean-label raw materials,
-              and we've grown without ever changing how we produce them.
+              Founded in 2021 in Surendranagar, Gujarat, Nectar Ingredients was established to give food manufacturers and commercial kitchens consistent, clean-label raw materials directly from the processing plant.
             </p>
             <p>
-              Today we supply ready-to-eat manufacturers, cloud kitchens, nutraceutical brands, and
-              specialty importers across India. Every batch starts with whole raw produce, not concentrate.
-              If it doesn't meet our moisture, color, and aroma benchmarks, it doesn't ship.
+              We supply ready-to-eat manufacturers, cloud kitchen networks, nutraceutical brands, and institutional food processors across India. Every batch begins with whole raw produce, never imported concentrates. If a batch does not meet our moisture, color, and aroma benchmarks, it does not leave the facility.
             </p>
           </div>
 
           {/* Proof points */}
-          <div className="flex flex-wrap gap-4 pt-2">
-            {[
-              'Single-source produce',
-              'No concentrates',
-              'Batch certificates on request',
-            ].map((pt) => (
-              <span
-                key={pt}
-                className="flex items-center gap-2 font-body text-xs font-semibold uppercase tracking-wider text-ni-muted"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-ni-rust/60 flex-shrink-0" aria-hidden="true" />
-                {pt}
-              </span>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="p-3.5 rounded-lg bg-ni-bg border border-ni-border/30">
+              <p className="font-heading text-xs font-bold text-ni-primary">Direct farm produce</p>
+              <p className="text-[11px] text-ni-muted mt-0.5">Whole agricultural origin</p>
+            </div>
+            <div className="p-3.5 rounded-lg bg-ni-bg border border-ni-border/30">
+              <p className="font-heading text-xs font-bold text-ni-primary">Zero concentrates</p>
+              <p className="text-[11px] text-ni-muted mt-0.5">No maltodextrin or fillers</p>
+            </div>
+            <div className="p-3.5 rounded-lg bg-ni-bg border border-ni-border/30">
+              <p className="font-heading text-xs font-bold text-ni-primary">Batch lab tested</p>
+              <p className="text-[11px] text-ni-muted mt-0.5">CoA on request with each order</p>
+            </div>
           </div>
 
           <div className="pt-2">
-            <Button variant="outline" size="md" href="/about" className="rounded-full">
-              Our story →
+            <Button variant="outline" size="md" href="/about" className="rounded-lg text-xs sm:text-sm px-5 py-2.5">
+              Read Our Facility Story
             </Button>
           </div>
         </div>
 
-        {/* ── Right: sleek showcase photo card ── */}
+        {/* ── Right: showcase photo card ── */}
         <div className="relative order-1 lg:order-2 flex flex-col justify-center">
-          <div className="relative w-full h-[420px] sm:h-[480px] rounded-[32px] overflow-hidden shadow-premium border border-ni-border/20 group">
+          <div className="relative w-full h-[380px] sm:h-[440px] rounded-2xl overflow-hidden border border-ni-border/30 group">
             <Image
-              src="/Images/facility-process.jpg"
+              src="/Images/Facility_Photo.jpg"
               alt="Dehydration and quality processing at Nectar Ingredients facility in Surendranagar"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              className="object-cover object-center transition-transform duration-500 ease-out motion-reduce:transition-none group-hover:scale-[1.02]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
-            
-            {/* Top plant badge */}
-            <div className="absolute top-6 left-6 z-20">
-              <span className="glass-panel px-4 py-2 rounded-full shadow-card text-[10px] font-bold uppercase tracking-widest text-white bg-black/40 border border-white/20 backdrop-blur-md">
-                Surendranagar Plant, Gujarat
-              </span>
-            </div>
 
-            {/* Bottom floating info badge */}
-            <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl glass-panel bg-black/50 border border-white/15 backdrop-blur-md text-white">
-              <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-ni-rust animate-pulse" />
-                <span className="font-body text-xs font-bold uppercase tracking-wider">
-                  Established 2021 · Direct Facility Output
-                </span>
+            {/* Plant info bar */}
+            <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between p-3.5 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 text-white">
+              <div>
+                <p className="font-body text-xs font-semibold">Surendranagar Plant, Gujarat</p>
+                <p className="text-[11px] text-neutral-300">Operational since 2021</p>
               </div>
-              <span className="font-mono text-xs text-orange-400 font-semibold">
-                100% Pure Raw Produce
+              <span className="text-xs font-medium text-orange-300 px-2 py-0.5 rounded bg-white/10">
+                Direct facility
               </span>
             </div>
           </div>

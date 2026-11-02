@@ -134,6 +134,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-title" content="Nectar Ingredients" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,700&display=swap" rel="stylesheet" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -144,11 +147,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             (function() {
               try {
                 var t = localStorage.getItem('ni-theme');
-                if (t === 'dark' || t === 'light') {
-                  document.documentElement.setAttribute('data-theme', t);
+                var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
                 } else {
-                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                  document.documentElement.classList.remove('dark');
                 }
               } catch(e) {}
             })();

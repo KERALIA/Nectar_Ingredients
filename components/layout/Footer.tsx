@@ -8,16 +8,10 @@ const COMPANY_LINKS = [
   { label: 'Request Sample', href: '/contact' },
 ]
 
-const CATEGORIES = [
-  'Vegetable Powders',
-  'Fruit Powders',
-  'Spice Powders',
-  'Bulk Orders',
-]
-
 export default function Footer() {
+  /* ponytail: Core footer navigation. Extend to dynamic multi-language switcher when regional exports expand. */
   return (
-    <footer className="bg-gradient-to-b from-ni-bg via-ni-surface/50 to-ni-surface border-t border-ni-border/10 relative overflow-hidden shadow-premium">
+    <footer className="bg-ni-surface border-t border-ni-border/20 relative" aria-label="Site footer">
       {/* Row 1 — columns */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
         {/* Column 1 — Brand */}
@@ -26,17 +20,16 @@ export default function Footer() {
             href="/"
             className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg flex items-center"
           >
-            <span className="font-heading font-bold text-ni-primary text-xl tracking-tight">
+            <span className="font-heading font-extrabold text-ni-primary text-xl tracking-tight">
               Nectar
             </span>
             <span className="text-ni-muted/50 mx-2 font-light">|</span>
-            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-ni-muted">
+            <span className="font-body text-xs font-medium text-ni-muted">
               Ingredients
             </span>
           </Link>
-          <p className="font-body text-sm text-ni-muted mt-4 max-w-xs leading-relaxed">
-            Pure dehydrated powders from Surendranagar, Gujarat, India.
-            Single-ingredient, batch-tested, direct from facility.
+          <p className="font-body text-sm text-ni-secondary mt-3 max-w-xs leading-relaxed">
+            Pure dehydrated powders from Surendranagar, Gujarat, India. Single-ingredient, batch-tested, direct from facility.
           </p>
           <a
             href="mailto:nectaringredients@gmail.com"
@@ -54,62 +47,52 @@ export default function Footer() {
 
         {/* Column 2 — Company links */}
         <div>
-          <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-ni-muted mb-4">
+          <p className="font-body text-xs font-medium text-ni-primary mb-3">
             Company
           </p>
-          {COMPANY_LINKS.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="block font-body text-sm text-ni-secondary hover:text-ni-primary py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <div className="space-y-1">
+            {COMPANY_LINKS.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="block font-body text-sm text-ni-secondary hover:text-ni-primary py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Column 3 — Quality Standards & Categories */}
         <div>
-          <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-ni-muted mb-4">
-            Quality & Compliance
+          <p className="font-body text-xs font-medium text-ni-primary mb-3">
+            Quality &amp; Standards
           </p>
-          <div className="space-y-2 mb-6">
-            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>FSSAI Quality Compliant</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>ISO 22000 Food Safety Principles</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>100% Single-Ingredient Pure Powders</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-body text-ni-secondary">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>Batch-Specific Lab Tested COAs</span>
-            </div>
+          <div className="space-y-2 mb-6 text-xs text-ni-secondary">
+            <div>FSSAI Quality Compliant</div>
+            <div>ISO 22000 Principles</div>
+            <div>100% Single-Ingredient Powders</div>
+            <div>Batch-Specific Lab Tested CoAs</div>
           </div>
 
-          <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-ni-muted mb-2">
+          <p className="font-body text-xs font-medium text-ni-primary mb-2">
             Catalog Categories
           </p>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
-              Vegetable
+          <div className="flex flex-wrap gap-2 text-xs text-ni-secondary">
+            <Link href="/products" className="hover:text-ni-rust transition-colors">
+              Vegetable Powders
             </Link>
-            <span className="text-ni-muted/40">·</span>
-            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
-              Fruit
+            <span className="text-ni-border/80">/</span>
+            <Link href="/products" className="hover:text-ni-rust transition-colors">
+              Fruit Powders
             </Link>
-            <span className="text-ni-muted/40">·</span>
-            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
-              Spice
+            <span className="text-ni-border/80">/</span>
+            <Link href="/products" className="hover:text-ni-rust transition-colors">
+              Spice Powders
             </Link>
-            <span className="text-ni-muted/40">·</span>
-            <Link href="/products" className="text-xs text-ni-secondary hover:text-ni-rust transition-colors underline-offset-2 hover:underline">
-              Dairy Powders
+            <span className="text-ni-border/80">/</span>
+            <Link href="/products" className="hover:text-ni-rust transition-colors">
+              Dairy Bases
             </Link>
           </div>
         </div>
@@ -125,13 +108,13 @@ export default function Footer() {
             <Link href="/privacy" className="hover:text-ni-rust transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ni-rust">
               Privacy Policy
             </Link>
-            <span>·</span>
+            <span className="text-ni-border/80">/</span>
             <Link href="/terms" className="hover:text-ni-rust transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ni-rust">
               Terms of Service
             </Link>
           </div>
           <p className="font-body text-xs text-ni-muted">
-            Made in Surendranagar, Gujarat, India 🇮🇳 · All rights reserved
+            Surendranagar, Gujarat, India. All rights reserved.
           </p>
         </div>
       </div>

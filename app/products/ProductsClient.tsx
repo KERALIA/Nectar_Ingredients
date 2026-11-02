@@ -25,22 +25,22 @@ function SampleBoxBanner() {
   if (totalItems > 0) {
     return (
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
-                      glass-panel-premium border-l-4 border-l-emerald-500 p-6 mb-10 shadow-premium rounded-[24px] transition-all duration-300">
+                      border border-ni-border/30 bg-ni-surface p-6 mb-10 rounded-2xl shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20" aria-hidden="true">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h4 className="font-heading font-bold text-ni-primary text-base sm:text-lg">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 motion-safe:animate-pulse" />
+              <h4 className="font-heading font-bold text-ni-primary text-base">
                 Cart: {totalItems} Ingredient{totalItems !== 1 ? 's' : ''} Selected
               </h4>
             </div>
             <p className="font-body text-xs sm:text-sm text-ni-secondary mt-1 leading-relaxed">
-              1 kg commercial trial samples and bulk drum dispatches. Batch verified for moisture &amp; color. Dispatches within 24–48 hours.
+              1 kg commercial trial samples and bulk drum dispatches. Batch verified for moisture and color. Dispatches within 24 to 48 hours.
             </p>
           </div>
         </div>
@@ -51,9 +51,9 @@ function SampleBoxBanner() {
               window.dispatchEvent(new CustomEvent('open-sample-basket'))
             }
           }}
-          className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 px-7 py-3.5 rounded-full bg-ni-rust text-white font-body text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-ni-rust-lt shadow-card hover:shadow-hover transition-all btn-press cursor-pointer"
+          className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 px-6 py-3 rounded-xl bg-ni-rust text-white font-body text-xs sm:text-sm font-semibold hover:bg-ni-rust-lt transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
         >
-          Review Cart &amp; Checkout →
+          Review Cart &amp; Checkout
         </button>
       </div>
     )
@@ -62,15 +62,15 @@ function SampleBoxBanner() {
   // Initial discovery banner
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
-                    glass-panel-premium border-l-4 border-l-ni-rust p-6 mb-10 shadow-premium rounded-[24px] transition-all duration-300">
+                    border border-ni-border/30 bg-ni-surface p-6 mb-10 rounded-2xl shadow-sm">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-ni-rust/10 text-ni-rust flex items-center justify-center flex-shrink-0">
-          <svg className="w-6 h-6 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2">
+        <div className="w-10 h-10 rounded-xl bg-ni-rust/10 text-ni-rust flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
         </div>
         <div>
-          <h4 className="font-heading font-bold text-ni-primary text-base sm:text-lg">Order 1 kg Trial Packs or Bulk Drums</h4>
+          <h4 className="font-heading font-bold text-ni-primary text-base">Order 1 kg Trial Packs or Bulk Drums</h4>
           <p className="font-body text-xs sm:text-sm text-ni-secondary mt-1 leading-relaxed">
             Select any single-ingredient powders and add them directly to your cart for lab evaluation or commercial manufacturing.
           </p>
@@ -83,9 +83,9 @@ function SampleBoxBanner() {
             window.dispatchEvent(new CustomEvent('open-sample-basket'))
           }
         }}
-        className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 px-7 py-3.5 rounded-full border-2 border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white font-body text-xs sm:text-sm font-bold uppercase tracking-wider transition-all btn-press cursor-pointer"
+        className="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 px-6 py-3 rounded-xl border border-ni-rust text-ni-rust hover:bg-ni-rust hover:text-white font-body text-xs sm:text-sm font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
       >
-        View Cart →
+        View Cart
       </button>
     </div>
   )
@@ -186,9 +186,8 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ni-rust/10 border border-ni-rust/20 text-ni-rust font-body text-[10px] font-extrabold uppercase tracking-widest mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-ni-rust animate-pulse" />
-            <span>Official Product Catalog</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-ni-surface border border-ni-border/30 text-ni-rust font-body text-xs font-medium mb-6">
+            <span>Official product catalog</span>
           </div>
 
           <h1
@@ -203,16 +202,16 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
           </p>
 
           {/* Key Value Badges */}
-          <div className="flex flex-wrap gap-3 mt-6">
+          <div className="flex flex-wrap gap-2.5 mt-6">
             {[
               '100% Single-Ingredient',
               '0% Additives or Fillers',
               'FSSAI & ISO Quality Standard',
-              '80-100 Mesh Fine Grind Options',
+              '80 to 100 Mesh Fine Grind Options',
             ].map((badge) => (
               <span
                 key={badge}
-                className="font-body text-[11px] font-semibold text-ni-primary bg-ni-surface/80 dark:bg-white/[0.04] px-3 py-1.5 rounded-xl border border-ni-border/20 shadow-sm"
+                className="font-body text-xs text-ni-primary bg-ni-surface px-3 py-1.5 rounded-lg border border-ni-border/30 shadow-xs"
               >
                 ✓ {badge}
               </span>
@@ -220,25 +219,25 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
           </div>
 
           {/* Actions */}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
               href="/NECTAR_BROCHURE.pdf"
               download
-              className="inline-flex items-center gap-2 font-body text-xs font-bold uppercase tracking-wider text-white bg-ni-rust hover:bg-ni-rust-lt px-6 py-3.5 rounded-full shadow-card hover:shadow-hover hover:-translate-y-0.5 transition-all duration-300"
+              className="inline-flex items-center gap-2 font-body text-xs sm:text-sm font-semibold text-white bg-ni-rust hover:bg-ni-rust-lt px-5 py-3 rounded-xl transition-colors duration-200"
             >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
-              Download Full Brochure (PDF)
+              <span>Download Full Brochure (PDF)</span>
             </a>
 
             <Button
               variant="outline"
               size="md"
               href="/contact"
-              className="rounded-full border-ni-border text-ni-primary hover:border-ni-rust hover:text-ni-rust"
+              className="rounded-xl border-ni-border/40 text-ni-primary hover:border-ni-rust hover:text-ni-rust"
             >
-              Request Custom Formulation →
+              Request Custom Formulation
             </Button>
           </div>
         </div>
@@ -258,18 +257,18 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
         />
 
         {/* Quick Navigation Index — shown AFTER all 40 cards so users can jump back up */}
-        <nav aria-label="Quick Product Index" className="mt-16 p-6 rounded-[24px] bg-ni-surface/90 dark:bg-[#1A1A1D]/90 border border-ni-border/30 dark:border-white/10 shadow-card">
+        <nav aria-label="Quick Product Index" className="mt-16 p-6 rounded-2xl bg-ni-surface border border-ni-border/30 shadow-sm">
           <div className="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-ni-border/20">
             <div>
-              <h2 className="font-heading text-base font-extrabold text-ni-primary">
+              <h2 className="font-heading text-base font-bold text-ni-primary">
                 Quick Product Index ({products.length} Ingredients)
               </h2>
               <p className="font-body text-xs text-ni-secondary mt-0.5">
-                Click any powder to jump directly to its wholesale specifications, mesh size, and B2B pricing details.
+                Select any powder to jump directly to its specifications, mesh size, and commercial details.
               </p>
             </div>
-            <span className="hidden sm:inline-block font-mono text-[10px] font-bold uppercase tracking-wider text-ni-rust bg-ni-rust/10 px-3 py-1 rounded-full border border-ni-rust/20">
-              Direct Anchor Jump
+            <span className="hidden sm:inline-block font-body text-xs font-medium text-ni-rust bg-ni-rust/10 px-2.5 py-0.5 rounded-md border border-ni-rust/20">
+              Direct index jump
             </span>
           </div>
 
@@ -295,9 +294,9 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
                     }, 100)
                   }
                 }}
-                className="font-body text-xs font-semibold px-3 py-1.5 rounded-full bg-ni-surface2/60 dark:bg-white/[0.04] text-ni-primary border border-ni-border/20 hover:border-ni-rust hover:text-ni-rust hover:bg-ni-rust/10 transition-all flex items-center gap-1.5"
+                className="font-body text-xs font-medium px-3 py-1.5 rounded-lg bg-ni-bg text-ni-primary border border-ni-border/20 hover:border-ni-rust hover:text-ni-rust transition-colors flex items-center gap-1.5"
               >
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: p.swatchHex || '#BC4B20' }} />
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: p.swatchHex || 'var(--rust)' }} />
                 <span>{p.name}</span>
               </a>
             ))}
@@ -305,18 +304,22 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
         </nav>
 
         {/* ── Extended Dehydrated Range Section ── */}
-        <section className="mt-28 pt-16 border-t border-ni-border/20">
+        <section className="mt-24 pt-16 border-t border-ni-border/20">
           <SectionHeading
-            tag="Custom & Bulk Orders"
+            tag="Custom and bulk orders"
             heading="Extended Dehydrated Catalog"
             sub="Beyond our core 40 powders, we manufacture custom dehydrated flakes, granules, chopped cuts, and specialized botanical ingredients on demand."
           />
-          
-          {/* Chatbot Inquiry Instruction Notice */}
-          <div className="mt-8 mb-6 p-5 sm:p-6 rounded-2xl border border-ni-rust/30 bg-ni-rust/10 dark:bg-ni-rust/15 backdrop-blur-md flex items-start sm:items-center gap-4 shadow-sm max-w-4xl mx-auto">
-            <span className="text-2xl sm:text-3xl flex-shrink-0" aria-hidden="true">💬</span>
-            <p className="font-body text-sm sm:text-base text-ni-primary leading-relaxed">
-              <strong className="font-bold text-ni-rust">Inquiry Notice:</strong> To send an inquiry or request custom cuts for these extended items, please chat directly with our <strong className="font-bold text-ni-rust underline underline-offset-2">AI Chatbot</strong> (bottom-right widget). The standard cart form above only processes the core listed product cards above.
+
+          {/* Inquiry Instruction Notice */}
+          <div className="mt-8 mb-6 p-5 sm:p-6 rounded-xl border border-ni-border/30 bg-ni-surface flex items-start sm:items-center gap-4 shadow-sm max-w-4xl mx-auto">
+            <div className="w-9 h-9 rounded-lg bg-ni-rust/10 flex items-center justify-center text-ni-rust flex-shrink-0" aria-hidden="true">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <p className="font-body text-xs sm:text-sm text-ni-secondary leading-relaxed">
+              <strong className="font-semibold text-ni-primary">Inquiry Notice:</strong> To send an inquiry or request custom cuts for these extended items, use our chat assistant (bottom-right widget) or contact page. The standard sample cart above processes our 40 core listed powders.
             </p>
           </div>
 
@@ -324,26 +327,24 @@ export default function ProductsClient({ initialPrices = {} }: ProductsClientPro
             {extendedItems.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-5 rounded-[22px]
-                           border border-ni-border/20 bg-ni-surface/80 dark:bg-[#1A1A1D]/80 backdrop-blur-md
-                           hover:shadow-card hover:-translate-y-1 hover:border-ni-rust/30
-                           transition-all duration-300 group"
+                className="flex items-center justify-between p-5 rounded-xl
+                           border border-ni-border/30 bg-ni-surface
+                           hover:border-ni-rust/40 transition-colors duration-200 group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-2.5 h-2.5 rounded-full bg-ni-rust flex-shrink-0 group-hover:scale-125 transition-transform" aria-hidden="true" />
-                  <span className="font-body text-base font-bold text-ni-primary group-hover:text-ni-rust transition-colors">{item.name}</span>
+                  <span className="w-2 h-2 rounded-full bg-ni-rust flex-shrink-0" aria-hidden="true" />
+                  <span className="font-body text-sm font-semibold text-ni-primary group-hover:text-ni-rust transition-colors">{item.name}</span>
                 </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-ni-muted
-                                 bg-ni-surface2/60 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-ni-border/10">
+                <span className="font-mono text-xs text-ni-muted bg-ni-bg px-2.5 py-1 rounded border border-ni-border/20">
                   {item.forms}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-12 text-center">
-            <Button variant="ghost" size="lg" href="/contact" className="rounded-full text-ni-rust hover:bg-ni-rust/10 text-sm sm:text-base font-bold">
-              Inquire About Custom Cuts & Bulk Rates →
+          <div className="mt-10 text-center">
+            <Button variant="ghost" size="lg" href="/contact" className="rounded-xl text-ni-rust hover:bg-ni-rust/10 text-sm font-semibold">
+              Inquire About Custom Cuts &amp; Bulk Rates
             </Button>
           </div>
         </section>

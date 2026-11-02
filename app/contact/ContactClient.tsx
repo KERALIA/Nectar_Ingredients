@@ -49,7 +49,10 @@ function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null
   return (
     <p role="alert" className="font-body text-xs text-red-500 mt-1.5 flex items-center gap-1">
-      <span aria-hidden="true">⚠</span> {msg}
+      <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>{msg}</span>
     </p>
   )
 }
@@ -208,8 +211,8 @@ export default function ContactClient() {
       {/* Page Header */}
       <div className="border-b border-ni-border/20 relative overflow-hidden bg-gradient-to-b from-ni-surface2/30 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ni-rust/10 border border-ni-rust/20 text-ni-rust font-body text-[10px] font-extrabold uppercase tracking-widest mb-4">
-            <span>Direct Contact & Commercial Inquiries</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-ni-surface border border-ni-border/30 text-ni-rust font-body text-xs font-medium mb-4">
+            <span>Direct contact &amp; commercial inquiries</span>
           </div>
           <h1 className="font-heading text-display font-black tracking-tight text-ni-primary">
             Let's talk powder.
@@ -232,7 +235,7 @@ export default function ContactClient() {
             {/* Name + Company */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="contact-name" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
+                <label htmlFor="contact-name" className="font-body text-xs sm:text-sm font-semibold text-ni-primary block mb-2">
                   Name <span className="text-ni-rust">*</span>
                 </label>
                 <input
@@ -249,8 +252,8 @@ export default function ContactClient() {
               </div>
 
               <div>
-                <label htmlFor="contact-company" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
-                  Company / Brand <span className="text-ni-muted font-normal uppercase tracking-normal">(Optional)</span>
+                <label htmlFor="contact-company" className="font-body text-xs sm:text-sm font-semibold text-ni-primary block mb-2">
+                  Company / Brand <span className="text-ni-muted font-normal">(Optional)</span>
                 </label>
                 <input
                   id="contact-company"
@@ -266,7 +269,7 @@ export default function ContactClient() {
             {/* Email + Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="contact-email" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
+                <label htmlFor="contact-email" className="font-body text-xs sm:text-sm font-semibold text-ni-primary block mb-2">
                   Email Address <span className="text-ni-rust">*</span>
                 </label>
                 <input
@@ -283,7 +286,7 @@ export default function ContactClient() {
               </div>
 
               <div>
-                <label htmlFor="contact-phone" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
+                <label htmlFor="contact-phone" className="font-body text-xs sm:text-sm font-semibold text-ni-primary block mb-2">
                   Phone / WhatsApp <span className="text-ni-rust">*</span>
                 </label>
                 <CountryPhoneInput
@@ -299,12 +302,12 @@ export default function ContactClient() {
 
             {/* Product Interest Selector */}
             <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <label className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary">
+              <div className="flex items-center justify-between mb-2">
+                <label className="font-body text-xs sm:text-sm font-semibold text-ni-primary">
                   Select Ingredients / Order Items <span className="text-ni-rust">*</span>
                 </label>
                 {mounted && totalItems > 0 && (
-                  <span className="font-body text-sm font-bold text-ni-rust">
+                  <span className="font-body text-xs font-semibold text-ni-rust">
                     ({totalItems} selected)
                   </span>
                 )}
@@ -322,10 +325,10 @@ export default function ContactClient() {
                     key={cat.value}
                     type="button"
                     onClick={() => setCategoryFilter(cat.value as any)}
-                    className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-body font-bold transition-all cursor-pointer active:scale-95 ${
+                    className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-body font-medium transition-colors cursor-pointer ${
                       categoryFilter === cat.value
                         ? 'bg-ni-rust text-white shadow-xs'
-                        : 'bg-ni-surface2/60 dark:bg-white/[0.06] text-ni-secondary hover:text-ni-primary border border-ni-border/20 dark:border-white/5'
+                        : 'bg-ni-surface2 text-ni-secondary hover:text-ni-primary border border-ni-border/20'
                     }`}
                   >
                     {cat.label}
@@ -340,7 +343,7 @@ export default function ContactClient() {
                   value={productFilter}
                   onChange={e => setProductFilter(e.target.value)}
                   placeholder="Filter powders by name or sku..."
-                  className="w-full bg-ni-surface/60 dark:bg-[#1A1A1D]/60 border border-ni-border/20 dark:border-white/10 px-4 py-3 pr-9 text-sm text-ni-primary rounded-xl outline-none focus:ring-2 focus:ring-ni-rust/50"
+                  className="w-full bg-ni-surface border border-ni-border/30 px-4 py-2.5 pr-9 text-sm text-ni-primary rounded-xl outline-none focus:ring-2 focus:ring-ni-rust/50"
                 />
                 {productFilter && (
                   <button
@@ -357,13 +360,13 @@ export default function ContactClient() {
               {/* Scrollable Checkbox Grid */}
               <div
                 id="contact-product"
-                className={`rounded-2xl border overflow-hidden transition-all ${
-                  showError('product') ? 'border-red-500' : 'border-ni-border/30 dark:border-white/10'
+                className={`rounded-2xl border overflow-hidden ${
+                  showError('product') ? 'border-red-500' : 'border-ni-border/30'
                 }`}
               >
                 <div
                   data-lenis-prevent="true"
-                  className="max-h-60 overflow-y-auto bg-ni-surface/80 dark:bg-[#161618]/80 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ni-border/10 lenis-prevent"
+                  className="max-h-60 overflow-y-auto bg-ni-surface grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ni-border/10 lenis-prevent"
                   style={{ touchAction: 'pan-y', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}
                 >
                   {filteredProducts.map((p) => {
@@ -385,7 +388,7 @@ export default function ContactClient() {
                           className="flex items-center gap-3 text-left flex-1 min-w-0 py-1 cursor-pointer"
                         >
                           <span
-                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all flex-shrink-0 text-xs font-bold ${
+                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors duration-150 flex-shrink-0 text-xs font-bold ${
                               isSelected ? 'bg-ni-rust border-ni-rust text-white shadow-sm' : 'border-ni-border bg-transparent'
                             }`}
                           >
@@ -428,7 +431,7 @@ export default function ContactClient() {
 
             {/* Address */}
             <div>
-              <label htmlFor="contact-address" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
+              <label htmlFor="contact-address" className="font-body text-xs sm:text-sm font-semibold text-ni-primary block mb-2">
                 Delivery Address <span className="text-ni-rust">*</span>
               </label>
               <textarea
@@ -445,8 +448,8 @@ export default function ContactClient() {
 
             {/* Additional Message */}
             <div>
-              <label htmlFor="contact-message" className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-primary block mb-2.5">
-                Special Specs / Custom Message <span className="text-ni-muted font-normal uppercase tracking-normal">(Optional)</span>
+              <label htmlFor="contact-message" className="font-body text-xs sm:text-sm font-semibold text-ni-primary block mb-2">
+                Special Specs / Custom Message <span className="text-ni-muted font-normal">(Optional)</span>
               </label>
               <textarea
                 id="contact-message"
@@ -460,7 +463,7 @@ export default function ContactClient() {
 
             {/* Error banner */}
             {errorMessage && (
-              <div role="alert" className="p-4 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-500 font-body text-sm font-medium">
+              <div role="alert" className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-500 font-body text-sm font-medium">
                 {errorMessage}
               </div>
             )}
@@ -469,9 +472,9 @@ export default function ContactClient() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full font-body font-extrabold text-sm uppercase tracking-widest py-4 rounded-full bg-ni-rust text-white shadow-card hover:bg-ni-rust-lt hover:shadow-hover transition-all duration-300 disabled:opacity-50 min-h-[56px] cursor-pointer active:scale-[0.99] touch-manipulation relative z-10 btn-press"
+              className="w-full font-body font-semibold text-sm py-4 rounded-xl bg-ni-rust text-white shadow-sm hover:bg-ni-rust-lt transition-colors duration-200 disabled:opacity-50 min-h-[52px] cursor-pointer touch-manipulation relative z-10"
             >
-              {isSubmitting ? 'Submitting Inquiry...' : 'Submit Commercial Order Inquiry →'}
+              {isSubmitting ? 'Submitting Inquiry...' : 'Submit Commercial Order Inquiry'}
             </button>
 
             {/* Success Card with Reference Number and Chatbot Tracking Instructions Below Submit Button */}
@@ -479,16 +482,16 @@ export default function ContactClient() {
               <div
                 ref={successRef}
                 role="status"
-                className="mt-6 rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-emerald-500/15 via-emerald-500/10 to-emerald-500/5 p-6 sm:p-7 text-emerald-950 dark:text-emerald-50 shadow-2xl backdrop-blur-md space-y-5 transition-all duration-500 animate-fade-in"
+                className="mt-6 rounded-2xl border border-emerald-500/40 bg-gradient-to-b from-emerald-500/15 via-emerald-500/10 to-emerald-500/5 p-6 text-emerald-950 dark:text-emerald-50 shadow-lg space-y-4 motion-safe:animate-fade-in"
               >
                 {/* Header Icon + Title */}
                 <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-md">
-                    <span className="text-xl font-black">✓</span>
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg font-bold">✓</span>
                   </div>
                   <div>
-                    <h3 className="font-heading text-lg sm:text-xl font-extrabold text-emerald-800 dark:text-emerald-300">
-                      Inquiry Successfully Received!
+                    <h3 className="font-heading text-lg font-bold text-emerald-800 dark:text-emerald-300">
+                      Inquiry Successfully Received
                     </h3>
                     <p className="font-body text-xs sm:text-sm text-emerald-700 dark:text-emerald-200 mt-1 leading-relaxed">
                       {successMessage}
@@ -498,12 +501,12 @@ export default function ContactClient() {
 
                 {/* Reference ID Pill & Copy Box */}
                 {orderRef && (
-                  <div className="p-4 rounded-2xl bg-white/80 dark:bg-black/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+                  <div className="p-4 rounded-xl bg-white/80 dark:bg-black/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <span className="font-body text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 block mb-1">
-                        YOUR INQUIRY REFERENCE NUMBER
+                      <span className="font-body text-xs font-semibold text-emerald-700 dark:text-emerald-400 block mb-1">
+                        Inquiry Reference Number
                       </span>
-                      <span className="font-mono text-base sm:text-lg font-black text-[#BC4B20] dark:text-amber-400 tracking-wide select-all">
+                      <span className="font-mono text-base sm:text-lg font-bold text-ni-rust dark:text-amber-400 tracking-wide select-all">
                         {orderRef}
                       </span>
                     </div>
@@ -511,16 +514,16 @@ export default function ContactClient() {
                     <button
                       type="button"
                       onClick={handleCopyRef}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold font-body transition-all active:scale-95 shadow-sm self-start sm:self-auto cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium font-body transition-colors cursor-pointer"
                     >
                       {copiedRef ? (
                         <>
                           <span>✓</span>
-                          <span>Copied!</span>
+                          <span>Copied</span>
                         </>
                       ) : (
                         <>
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
                           <span>Copy Ref ID</span>
@@ -531,13 +534,12 @@ export default function ContactClient() {
                 )}
 
                 {/* Instructions Box */}
-                <div className="rounded-2xl p-4 bg-emerald-500/10 dark:bg-emerald-500/10 border border-emerald-500/20 text-xs leading-relaxed space-y-2">
-                  <p className="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-200">
-                    <span>📌</span>
-                    <span>Save Your Reference Number:</span>
+                <div className="rounded-xl p-4 bg-emerald-500/10 border border-emerald-500/20 text-xs leading-relaxed space-y-1.5">
+                  <p className="font-semibold text-emerald-800 dark:text-emerald-200">
+                    Save Your Reference Number:
                   </p>
                   <p className="text-emerald-700 dark:text-emerald-300">
-                    Please copy this reference number (<strong className="font-mono text-emerald-900 dark:text-white">{orderRef || 'NEC-...'}</strong>) or take a screenshot to save it for future updates of your order. You can give this reference number to our <strong>AI Chatbot</strong> (💬 bottom-right) at any time to instantly track your order and dispatch status.
+                    Please copy this reference number (<strong className="font-mono text-emerald-900 dark:text-white">{orderRef || 'NEC-...'}</strong>) or save it for updates. You can give this reference number to our chat assistant at any time to check status.
                   </p>
                 </div>
 
@@ -546,10 +548,9 @@ export default function ContactClient() {
                   <button
                     type="button"
                     onClick={handleOpenChatWithRef}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-[#BC4B20] hover:bg-[#D45E30] text-white font-body text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-ni-rust hover:bg-ni-rust-lt text-white font-body text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                   >
-                    <span>Track in AI Chatbot</span>
-                    <span>🤖</span>
+                    <span>Track in Chatbot</span>
                   </button>
                 </div>
               </div>
@@ -559,10 +560,10 @@ export default function ContactClient() {
 
         {/* Right Info Sidebar */}
         <div className="lg:col-span-2">
-          <div className="glass-panel-premium p-8 sm:p-9 rounded-[32px] border border-ni-border/30 dark:border-white/10 shadow-premium space-y-8 sticky top-28 hairline-card">
+          <div className="p-7 sm:p-8 rounded-2xl border border-ni-border/30 bg-ni-surface space-y-7 sticky top-28">
             <div>
-              <h3 className="font-heading text-2xl font-extrabold text-ni-primary mb-4">Head Office &amp; Inquiries</h3>
-              <p className="font-body text-sm sm:text-base text-ni-secondary leading-relaxed">
+              <h3 className="font-heading text-xl font-bold text-ni-primary mb-3">Head Office &amp; Facility</h3>
+              <p className="font-body text-sm text-ni-secondary leading-relaxed">
                 Nectar Ingredients<br />
                 Shop No. 18 &amp; 19, Second Floor, Brahmanand Chamber<br />
                 Opp. M.P. Shah Arts &amp; Science College, S.T. Road<br />
@@ -570,32 +571,32 @@ export default function ContactClient() {
               </p>
             </div>
 
-            <div className="space-y-5 font-body border-t border-ni-border/20 pt-6">
+            <div className="space-y-4 font-body border-t border-ni-border/20 pt-5 text-sm">
               <div>
-                <p className="font-extrabold text-ni-rust uppercase tracking-wider text-xs mb-1">Key Contact Person</p>
-                <p className="font-bold text-ni-primary text-base sm:text-lg">Mehul Patel</p>
+                <p className="font-medium text-ni-rust text-xs mb-0.5">Key Contact Person</p>
+                <p className="font-bold text-ni-primary">Mehul Patel</p>
               </div>
 
               <div>
-                <p className="font-extrabold text-ni-rust uppercase tracking-wider text-xs mb-1">Direct Call &amp; WhatsApp</p>
-                <a href="https://wa.me/919879838281" className="text-ni-primary hover:text-ni-rust font-bold text-base sm:text-lg transition-colors inline-block">
+                <p className="font-medium text-ni-rust text-xs mb-0.5">Direct Call &amp; WhatsApp</p>
+                <a href="https://wa.me/919879838281" className="text-ni-primary hover:text-ni-rust font-bold transition-colors inline-block">
                   +91 98798 38281
                 </a>
               </div>
 
               <div>
-                <p className="font-extrabold text-ni-rust uppercase tracking-wider text-xs mb-1">Commercial Email</p>
-                <a href="mailto:nectaringredients@gmail.com" className="text-ni-rust font-bold hover:underline text-base sm:text-lg inline-block">
+                <p className="font-medium text-ni-rust text-xs mb-0.5">Commercial Email</p>
+                <a href="mailto:nectaringredients@gmail.com" className="text-ni-rust font-bold hover:underline inline-block">
                   nectaringredients@gmail.com
                 </a>
               </div>
             </div>
 
             {/* Order & Trial Policy */}
-            <div className="p-6 rounded-2xl bg-ni-surface2/50 dark:bg-white/[0.04] border border-ni-border/20">
-              <p className="font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-rust mb-2">Order &amp; Trial Policy</p>
-              <p className="font-body text-sm text-ni-secondary leading-relaxed">
-                1 kg commercial trial packs dispatched for ₹350–₹600 per powder. Trial fee is 100% credited against your first commercial bulk order.
+            <div className="p-5 rounded-xl bg-ni-bg border border-ni-border/20">
+              <p className="font-body text-xs font-semibold text-ni-rust mb-1.5">Order &amp; Trial Policy</p>
+              <p className="font-body text-xs sm:text-sm text-ni-secondary leading-relaxed">
+                1 kg commercial trial packs dispatched for ₹350 to ₹600 per powder. Trial fee is 100% credited against your first commercial bulk order.
               </p>
             </div>
 
@@ -603,9 +604,9 @@ export default function ContactClient() {
             <a
               href="/NECTAR_BROCHURE.pdf"
               download
-              className="inline-flex items-center justify-center gap-2 font-body text-xs sm:text-sm font-extrabold uppercase tracking-wider text-ni-rust border-2 border-ni-rust px-6 py-4 rounded-full hover:bg-ni-rust hover:text-white transition-all w-full text-center shadow-sm hover:shadow-md btn-press"
+              className="inline-flex items-center justify-center gap-2 font-body text-xs sm:text-sm font-semibold text-ni-rust border border-ni-rust px-5 py-3 rounded-xl hover:bg-ni-rust hover:text-white transition-colors w-full text-center"
             >
-              Download Full Brochure (PDF) ↓
+              Download Full Brochure (PDF)
             </a>
           </div>
         </div>

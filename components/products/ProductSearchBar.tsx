@@ -34,7 +34,7 @@ export default function ProductSearchBar({
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by name, category, or application (e.g. Onion, Bakery, Soups)..."
-          className="w-full bg-ni-surface/80 dark:bg-[#1A1A1D]/80 border border-ni-border/30 dark:border-white/10 pl-11 pr-10 py-3 font-body text-xs sm:text-sm text-ni-primary placeholder:text-ni-muted outline-none focus:border-ni-rust focus:ring-1 focus:ring-ni-rust transition-all duration-300 rounded-2xl shadow-sm backdrop-blur-md"
+          className="w-full bg-ni-surface border border-ni-border/30 pl-11 pr-10 py-2.5 font-body text-xs sm:text-sm text-ni-primary placeholder:text-ni-muted outline-none focus:border-ni-rust focus:ring-1 focus:ring-ni-rust transition-colors duration-200 rounded-xl shadow-sm"
           aria-label="Search products"
         />
         {searchTerm && (
@@ -53,16 +53,16 @@ export default function ProductSearchBar({
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-ni-surface2/30 dark:bg-white/[0.03] border border-ni-border/20 dark:border-white/5">
           {([
             { value: 'default', label: 'Default' },
-            { value: 'alpha', label: 'A–Z' },
+            { value: 'alpha', label: 'A to Z' },
             { value: 'featured', label: 'Featured' },
           ] as const).map((opt) => (
             <button
               key={opt.value}
               onClick={() => onSortChange(opt.value)}
               aria-pressed={sortMode === opt.value}
-              className={`font-body text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
+              className={`font-body text-xs font-medium px-3 py-1 rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer ${
                 sortMode === opt.value
-                  ? 'bg-ni-surface dark:bg-white/10 text-ni-primary shadow-sm border border-ni-border/30 dark:border-white/10'
+                  ? 'bg-ni-surface text-ni-primary shadow-sm border border-ni-border/30 font-semibold'
                   : 'text-ni-muted hover:text-ni-primary'
               }`}
             >

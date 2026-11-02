@@ -160,7 +160,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-3 sm:px-6 ${
+        className={`fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 ${
           scrolled ? 'py-2' : 'py-3 sm:py-4'
         }`}
         style={{
@@ -169,18 +169,18 @@ export default function Navbar() {
         }}
       >
         <div
-          className={`max-w-7xl mx-auto rounded-full transition-all duration-500 backdrop-blur-2xl border ${
+          className={`max-w-7xl mx-auto rounded-full backdrop-blur-2xl border ${
             scrolled
-              ? 'bg-white/95 dark:bg-[#141416]/95 border-neutral-200/80 dark:border-white/15 shadow-2xl py-2 px-4 sm:px-6'
-              : 'bg-white/95 dark:bg-[#141416]/95 border-neutral-200/80 dark:border-white/15 shadow-xl py-2.5 px-4 sm:px-6'
+              ? 'bg-white/95 dark:bg-neutral-900/95 border-neutral-200/80 dark:border-neutral-800 shadow-2xl py-2 px-4 sm:px-6'
+              : 'bg-white/95 dark:bg-neutral-900/95 border-neutral-200/80 dark:border-neutral-800 shadow-xl py-2.5 px-4 sm:px-6'
           }`}
         >
           <div className="flex items-center justify-between h-11 relative">
-            
+
             {/* Official Nectar Logo Image + Brand Mark */}
             <Link
               href="/"
-              className="group flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC4B20] focus-visible:ring-offset-2 rounded-full flex-shrink-0"
+              className="group flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust focus-visible:ring-offset-2 rounded-full flex-shrink-0"
               aria-label="Nectar Ingredients Home"
             >
               <div className="relative w-8 h-8 flex-shrink-0 flex items-center justify-center">
@@ -197,27 +197,27 @@ export default function Navbar() {
               <div className="flex flex-col justify-center">
                 <div className="flex items-baseline gap-1 font-heading text-lg font-extrabold tracking-tight leading-none">
                   <span className="text-neutral-900 dark:text-white">Nectar</span>
-                  <span className="text-[#BC4B20] font-black">.</span>
+                  <span className="text-ni-rust font-black">.</span>
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200 text-base">Ingredients</span>
                 </div>
-                <span className="hidden sm:block font-body text-[8.5px] font-black tracking-[0.22em] uppercase text-[#BC4B20] mt-0.5">
-                  Pure Dehydrated Powders
+                <span className="hidden sm:block font-body text-[9px] font-medium text-ni-rust dark:text-orange-400 mt-0.5">
+                  Pure dehydrated powders
                 </span>
               </div>
             </Link>
 
             {/* Desktop Navigation Links — Uncompressed, spacious layout */}
-            <nav className="hidden md:flex items-center gap-1 bg-neutral-100/90 dark:bg-white/[0.08] px-2 py-1 rounded-full border border-neutral-200/80 dark:border-white/10 shadow-inner">
+            <nav className="hidden md:flex items-center gap-1 bg-neutral-100/90 dark:bg-neutral-800/90 px-2 py-1 rounded-full border border-neutral-200/80 dark:border-neutral-700 shadow-inner">
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`font-body text-xs font-black tracking-wide px-4 py-1.5 transition-all duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC4B20] ${
+                    className={`font-body text-xs font-semibold px-4 py-1.5 transition-colors duration-200 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
                       isActive
-                        ? 'bg-[#BC4B20] text-white shadow-sm font-black'
-                        : 'text-neutral-900 dark:text-neutral-100 hover:text-[#BC4B20] hover:bg-neutral-200/70 dark:hover:bg-white/15'
+                        ? 'bg-ni-rust text-white shadow-sm font-bold'
+                        : 'text-neutral-700 dark:text-neutral-200 hover:text-ni-rust dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700'
                     }`}
                   >
                     {link.label}
@@ -228,12 +228,12 @@ export default function Navbar() {
 
             {/* Right Action Bar (Search Icon + Expandable Input, Sample Basket, Theme Toggle & CTA) */}
             <div className="hidden md:flex items-center gap-3">
-              
+
               {/* OG Search Bar & Expandable Input with Live Dropdown */}
               <div ref={desktopSearchContainerRef} className="relative flex items-center">
                 <button
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2 text-neutral-900 dark:text-white hover:text-[#BC4B20] hover:bg-neutral-100 dark:hover:bg-white/10 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC4B20] cursor-pointer"
+                  className="p-2 text-neutral-700 dark:text-neutral-200 hover:text-ni-rust dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust cursor-pointer"
                   aria-label="Toggle search bar"
                   title="Search powders"
                 >
@@ -245,7 +245,7 @@ export default function Navbar() {
                 {/* Inline Expandable Search Bar */}
                 <form
                   onSubmit={handleViewAllResults}
-                  className={`transition-all duration-300 overflow-visible flex items-center ${
+                  className={`overflow-visible flex items-center ${
                     isSearchOpen ? 'w-48 sm:w-60 ml-1 opacity-100' : 'w-0 opacity-0 pointer-events-none'
                   }`}
                 >
@@ -258,7 +258,7 @@ export default function Navbar() {
                       value={searchTerm}
                       onChange={(e) => handleSearchChange(e.target.value)}
                       placeholder="Search 40 powders..."
-                      className="w-full bg-neutral-100 dark:bg-[#202024] border border-neutral-300 dark:border-white/15 rounded-full text-xs px-3.5 py-1.5 pr-7 text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#BC4B20]"
+                      className="w-full bg-neutral-100 dark:bg-ni-surface2 border border-neutral-300 dark:border-white/15 rounded-full text-xs px-3.5 py-1.5 pr-7 text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-ni-rust"
                     />
                     {searchTerm && (
                       <button
@@ -276,16 +276,16 @@ export default function Navbar() {
                 {/* Desktop Live Product Card Dropdown List */}
                 {isSearchOpen && searchTerm.trim().length > 0 && (
                   <div
-                    className="absolute top-full right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-white/15 rounded-3xl shadow-2xl overflow-hidden z-[100] animate-scale-up flex flex-col"
+                    className="absolute top-full right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-ni-surface border border-neutral-200 dark:border-white/15 rounded-2xl shadow-xl overflow-hidden z-[100] flex flex-col"
                     role="listbox"
                   >
                     {/* Header */}
                     <div className="px-4 py-3 bg-neutral-50 dark:bg-white/[0.04] border-b border-neutral-200/60 dark:border-white/10 flex items-center justify-between">
-                      <span className="font-body text-[11px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                        Matching Ingredients ({matchingProducts.length})
+                      <span className="font-body text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                        Matching ingredients ({matchingProducts.length})
                       </span>
-                      <span className="text-[10px] text-[#BC4B20] font-bold font-mono">
-                        Click to jump to card
+                      <span className="text-[11px] text-ni-rust font-medium">
+                        Click to select
                       </span>
                     </div>
 
@@ -301,24 +301,24 @@ export default function Navbar() {
                             key={product.id}
                             type="button"
                             onClick={() => handleSelectProduct(product)}
-                            className="w-full flex items-center gap-3 p-2.5 rounded-2xl text-left transition-all duration-200 hover:bg-[#BC4B20]/10 dark:hover:bg-white/[0.08] group cursor-pointer border border-transparent hover:border-[#BC4B20]/20"
+                            className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-colors duration-150 hover:bg-ni-rust/10 dark:hover:bg-white/[0.08] group cursor-pointer border border-transparent hover:border-ni-rust/20"
                           >
-                            <div className="relative w-11 h-11 flex-shrink-0 rounded-xl bg-neutral-100 dark:bg-white/5 border border-neutral-200/60 dark:border-white/10 p-1 flex items-center justify-center overflow-hidden">
+                            <div className="relative w-11 h-11 flex-shrink-0 rounded-lg bg-neutral-100 dark:bg-white/5 border border-neutral-200/60 dark:border-white/10 p-1 flex items-center justify-center overflow-hidden">
                               <Image
                                 src={product.imageSrc || '/Images/Tomato_Powder.webp'}
                                 alt={product.name}
                                 width={40}
                                 height={40}
-                                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
                               />
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="font-heading text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-[#BC4B20] transition-colors">
+                                <span className="font-heading text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-ni-rust transition-colors">
                                   {product.name}
                                 </span>
-                                <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full cat-badge-${product.category} flex-shrink-0`}>
+                                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded cat-badge-${product.category} flex-shrink-0`}>
                                   {product.category}
                                 </span>
                               </div>
@@ -326,10 +326,6 @@ export default function Navbar() {
                                 {product.mesh || 'Standard Mesh'} · {product.sku}
                               </p>
                             </div>
-
-                            <span className="text-[#BC4B20] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-xs font-black pr-1">
-                              →
-                            </span>
                           </button>
                         ))
                       ) : (
@@ -338,9 +334,9 @@ export default function Navbar() {
                           <button
                             type="button"
                             onClick={() => handleViewAllResults()}
-                            className="mt-2 text-xs font-bold text-[#BC4B20] hover:underline"
+                            className="mt-2 text-xs font-semibold text-ni-rust hover:underline"
                           >
-                            Browse all 40 powders in catalog →
+                            Browse all 40 powders in catalog
                           </button>
                         </div>
                       )}
@@ -351,9 +347,9 @@ export default function Navbar() {
                       <button
                         type="button"
                         onClick={() => handleViewAllResults()}
-                        className="w-full py-2.5 px-4 text-center font-body text-xs font-bold text-[#BC4B20] hover:bg-[#BC4B20]/10 border-t border-neutral-200/60 dark:border-white/10 transition-colors"
+                        className="w-full py-2.5 px-4 text-center font-body text-xs font-semibold text-ni-rust hover:bg-ni-rust/10 border-t border-neutral-200/60 dark:border-white/10 transition-colors"
                       >
-                        View all {matchingProducts.length} results on Products page →
+                        View all {matchingProducts.length} results
                       </button>
                     )}
                   </div>
@@ -363,7 +359,7 @@ export default function Navbar() {
               {/* Theme Toggle */}
               <ThemeToggle />
 
-              {/* Single Unified Cart CTA — Shows count badge when items > 0 */}
+              {/* Single Unified Cart CTA */}
               <button
                 type="button"
                 onClick={() => {
@@ -371,7 +367,7 @@ export default function Navbar() {
                     window.dispatchEvent(new CustomEvent('open-sample-basket'))
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 font-heading text-xs font-extrabold uppercase tracking-wider px-5 py-2.5 rounded-full bg-[#BC4B20] text-white shadow-md hover:bg-[#D45E30] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 whitespace-nowrap cursor-pointer btn-press"
+                className="inline-flex items-center justify-center gap-2 font-heading text-xs font-semibold px-4 py-2 rounded-full bg-ni-rust text-white shadow-sm hover:bg-ni-rust-lt hover:shadow-md transition-colors duration-200 whitespace-nowrap cursor-pointer btn-press motion-safe:hover:-translate-y-0.5"
                 title={mounted && totalItems > 0 ? `View Cart (${totalItems} items)` : 'View Cart'}
               >
                 <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -379,13 +375,12 @@ export default function Navbar() {
                   <circle cx="19" cy="21" r="1" fill="currentColor"/>
                   <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
                 </svg>
-                <span>CART</span>
+                <span>Cart</span>
                 {mounted && totalItems > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-white text-[#BC4B20] text-[10px] font-black flex items-center justify-center shadow-xs">
+                  <span className="w-5 h-5 rounded-full bg-white text-ni-rust text-[10px] font-bold flex items-center justify-center shadow-xs">
                     {totalItems}
                   </span>
                 )}
-                <span className="text-xs font-black">→</span>
               </button>
             </div>
 
@@ -398,11 +393,11 @@ export default function Navbar() {
                     window.dispatchEvent(new CustomEvent('open-sample-basket'))
                   }
                 }}
-                className="flex items-center justify-center min-w-[36px] h-9 px-2 rounded-full bg-[#BC4B20]/10 text-[#BC4B20] border border-[#BC4B20]/30 cursor-pointer btn-press"
+                className="flex items-center justify-center min-w-[36px] h-9 px-2 rounded-full bg-ni-rust/10 text-ni-rust border border-ni-rust/30 cursor-pointer btn-press"
                 title="Open Cart"
                 aria-label={mounted && totalItems > 0 ? `Cart (${totalItems} items)` : 'Cart'}
               >
-                <svg className="w-4 h-4 text-[#BC4B20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg className="w-4 h-4 text-ni-rust" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="8" cy="21" r="1" fill="currentColor"/>
                   <circle cx="19" cy="21" r="1" fill="currentColor"/>
                   <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -436,7 +431,7 @@ export default function Navbar() {
       {/* Mobile Menu Overlay Drawer */}
       <div
         id="mobile-menu"
-        className={`md:hidden fixed inset-x-0 top-[72px] z-40 bg-white/98 dark:bg-[#161618]/98 backdrop-blur-2xl border-b border-neutral-200 dark:border-white/10 p-6 transition-all duration-500 shadow-2xl ${
+        className={`md:hidden fixed inset-x-0 top-[72px] z-40 bg-white/98 dark:bg-neutral-900/98 backdrop-blur-2xl border-b border-neutral-200 dark:border-neutral-800 p-6 transition-[opacity,transform] duration-300 shadow-2xl ${
           mobileOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'
         }`}
       >
@@ -453,7 +448,7 @@ export default function Navbar() {
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Search 40 powders..."
-                  className="w-full bg-neutral-100 dark:bg-[#202024] border border-neutral-300 dark:border-white/15 rounded-full px-4 py-3 pr-10 font-body text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#BC4B20]"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-full px-4 py-3 pr-10 font-body text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-ni-rust"
                 />
                 {searchTerm && (
                   <button
@@ -471,13 +466,13 @@ export default function Navbar() {
             {/* Mobile Live Matching Product Cards */}
             {searchTerm.trim().length > 0 && (
               <div
-                className="mt-2 w-full bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-white/15 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col animate-scale-up"
+                className="mt-2 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col"
               >
                 <div className="px-3.5 py-2 bg-neutral-50 dark:bg-white/[0.04] border-b border-neutral-200/60 dark:border-white/10 flex items-center justify-between">
-                  <span className="font-body text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                  <span className="font-body text-xs text-neutral-500 font-medium">
                     Matches ({matchingProducts.length})
                   </span>
-                  <span className="text-[10px] text-[#BC4B20] font-bold">Tap to view card</span>
+                  <span className="text-xs text-ni-rust font-medium">Tap to view</span>
                 </div>
 
                 <div
@@ -491,7 +486,7 @@ export default function Navbar() {
                         key={product.id}
                         type="button"
                         onClick={() => handleSelectProduct(product)}
-                        className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-[#BC4B20]/10 dark:hover:bg-white/[0.08] active:bg-[#BC4B20]/15"
+                        className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-ni-rust/10 dark:hover:bg-white/[0.08] active:bg-ni-rust/15"
                       >
                         <div className="w-9 h-9 flex-shrink-0 rounded-lg bg-neutral-100 dark:bg-white/5 border border-neutral-200/60 dark:border-white/10 p-0.5 flex items-center justify-center">
                           <Image
@@ -511,8 +506,6 @@ export default function Navbar() {
                             {product.category} · {product.sku}
                           </p>
                         </div>
-
-                        <span className="text-[#BC4B20] text-xs font-black">→</span>
                       </button>
                     ))
                   ) : (
@@ -526,9 +519,9 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={() => handleViewAllResults()}
-                    className="w-full py-2 px-3 text-center font-body text-xs font-bold text-[#BC4B20] bg-neutral-50/50 dark:bg-white/[0.02] border-t border-neutral-200/60 dark:border-white/10"
+                    className="w-full py-2 px-3 text-center font-body text-xs font-medium text-ni-rust bg-neutral-50/50 dark:bg-white/[0.02] border-t border-neutral-200/60 dark:border-white/10"
                   >
-                    View on Products page →
+                    View on Products page
                   </button>
                 )}
               </div>
@@ -543,14 +536,13 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center justify-between px-5 py-3.5 rounded-2xl font-body text-sm font-black uppercase tracking-wider transition-all ${
+                  className={`flex items-center justify-between px-5 py-3 rounded-xl font-body text-sm font-semibold transition-colors ${
                     isActive
-                      ? 'bg-[#BC4B20] text-white shadow-md'
-                      : 'text-neutral-900 dark:text-white bg-neutral-100 dark:bg-white/[0.06] hover:bg-neutral-200'
+                      ? 'bg-ni-rust text-white shadow-sm'
+                      : 'text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
                 >
                   <span>{link.label}</span>
-                  <span className="opacity-60">→</span>
                 </Link>
               )
             })}
@@ -565,11 +557,10 @@ export default function Navbar() {
                 window.dispatchEvent(new CustomEvent('open-sample-basket'))
               }
             }}
-            className="w-full inline-flex items-center justify-center gap-2 font-body text-xs font-black uppercase tracking-widest py-4 rounded-full bg-[#BC4B20] text-white shadow-card text-center cursor-pointer btn-press"
+            className="w-full inline-flex items-center justify-center gap-2 font-body text-xs font-bold py-3.5 rounded-xl bg-ni-rust text-white shadow-sm text-center cursor-pointer btn-press"
           >
-            <span>VIEW CART &amp; INQUIRY</span>
+            <span>View Cart &amp; Inquiry</span>
             {mounted && totalItems > 0 && <span>({totalItems})</span>}
-            <span>→</span>
           </button>
         </div>
       </div>

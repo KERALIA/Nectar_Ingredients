@@ -34,30 +34,29 @@ export default function FAQSection() {
 
   const toggle = (idx: number) => setActiveIndex(activeIndex === idx ? null : idx)
 
+  /* ponytail: CSS grid transition for accordion expansion without JS height measurements. */
   return (
-    <section className="py-[var(--space-section)] bg-transparent border-t border-ni-border/10">
+    <section className="py-16 sm:py-24 bg-transparent border-t border-ni-border/20" aria-label="Frequently asked questions">
       <div
         ref={ref}
-        className={`max-w-3xl mx-auto px-4 sm:px-6 transition-all duration-700 ${
-          visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        className={`max-w-3xl mx-auto px-4 sm:px-6 transition-opacity transition-transform duration-500 ${
+          visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`}
       >
         {/* Heading */}
-        <div className="text-center mb-14">
-          <p className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-ni-rust mb-4">
-            FAQ
+        <div className="text-center mb-12">
+          <p className="font-body text-xs font-medium text-ni-rust mb-2">
+            Common questions
           </p>
           <h2
-            className="font-heading font-bold text-ni-primary tracking-[-0.02em]"
-            style={{ fontSize: 'var(--text-h2)' }}
+            className="font-heading font-extrabold text-3xl sm:text-4xl text-ni-primary tracking-tight"
           >
             Frequently Asked Questions
           </h2>
           <p
-            className="font-body text-ni-secondary mt-4 leading-relaxed"
-            style={{ fontSize: 'var(--text-base)' }}
+            className="font-body text-ni-secondary mt-3 text-sm sm:text-base leading-relaxed"
           >
-            Answers to common questions about our products, sourcing, and ordering.
+            Specifications, custom milling, batch testing, and commercial dispatch.
           </p>
         </div>
 
@@ -72,11 +71,10 @@ export default function FAQSection() {
                   aria-expanded={isOpen}
                   className="w-full flex items-center justify-between gap-4 py-5 text-left
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust
-                             focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg"
+                             focus-visible:ring-offset-2 focus-visible:ring-offset-ni-bg cursor-pointer"
                 >
                   <span
-                    className="font-heading font-bold text-ni-primary group-hover:text-ni-rust transition-colors duration-200"
-                    style={{ fontSize: 'var(--text-base)' }}
+                    className="font-heading font-bold text-ni-primary group-hover:text-ni-rust transition-colors duration-200 text-sm sm:text-base"
                   >
                     {faq.question}
                   </span>
@@ -86,7 +84,7 @@ export default function FAQSection() {
                     className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center
                                 border border-ni-border/40 text-ni-muted
                                 group-hover:border-ni-rust group-hover:text-ni-rust
-                                transition-all duration-300
+                                transition-transform transition-colors duration-200
                                 ${isOpen ? 'bg-ni-rust border-ni-rust !text-white rotate-180' : ''}`}
                     aria-hidden="true"
                   >
@@ -105,18 +103,16 @@ export default function FAQSection() {
                   </span>
                 </button>
 
-                {/* Answer panel — grid-template-rows trick: no height JS, no CLS */}
+                {/* Answer panel — grid-template-rows trick */}
                 <div
-                  className="grid transition-all duration-300"
+                  className="grid transition-[grid-template-rows] duration-200"
                   style={{
                     gridTemplateRows: isOpen ? '1fr' : '0fr',
-                    transitionTimingFunction: 'var(--ease-out-expo)',
                   }}
                 >
                   <div className="overflow-hidden">
                     <p
-                      className="font-body text-ni-secondary leading-[1.7] pb-5"
-                      style={{ fontSize: 'var(--text-sm)' }}
+                      className="font-body text-ni-secondary leading-relaxed pb-5 text-sm"
                     >
                       {faq.answer}
                     </p>

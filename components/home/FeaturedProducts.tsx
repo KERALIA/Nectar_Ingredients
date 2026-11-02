@@ -11,23 +11,24 @@ export default function FeaturedProducts() {
   const { ref, visible } = useScrollReveal()
   const featuredProducts = products.filter(p => p.featured)
 
+  /* ponytail: Highlights 4 lead powders. Add category filter pills when catalog expands past 50 SKUs. */
   return (
-    <section className="py-[var(--space-section)] bg-transparent">
+    <section className="py-16 sm:py-24 bg-transparent" aria-label="Featured food powders">
       <div
         ref={ref}
         className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
-                    transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+                    transition-opacity transition-transform duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
       >
         {/* ── Section header: two-column editorial split ── */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
           <SectionHeading
-            tag="PRODUCTS"
-            heading="Pure ingredients, nothing added"
-            sub="Each powder is single-source, batch-tested, and available from 1 kg trial packs to 25 kg commercial bags."
+            tag="Ingredient catalog"
+            heading="Single-source powders, zero additives"
+            sub="Each powder is processed from whole produce, batch-tested, and available from 1 kg trial packs to 25 kg commercial bags."
           />
           <div className="flex-shrink-0">
-            <Button variant="outline" size="md" href="/products" className="rounded-full whitespace-nowrap">
-              View all {products.length} powders →
+            <Button variant="outline" size="md" href="/products" className="rounded-lg whitespace-nowrap text-xs sm:text-sm">
+              View all {products.length} powders
             </Button>
           </div>
         </div>

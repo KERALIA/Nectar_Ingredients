@@ -80,7 +80,8 @@ export default function ArtisticProductCard({ product, index, isVisible }: Props
       <div className="relative flex-shrink-0 w-full max-w-[320px] sm:max-w-[400px]" style={{ aspectRatio: '3/4' }}>
         <canvas
           ref={canvasRef}
-          className="w-full h-full"
+          className="w-full h-full motion-reduce:transition-none"
+          aria-hidden="true"
           style={{ transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1)' }}
         />
         {/* Fallback image if WebGL unavailable */}
@@ -103,7 +104,7 @@ export default function ArtisticProductCard({ product, index, isVisible }: Props
       {/* Text block — no card, just text floating in space */}
       <div className="flex-1 space-y-4 min-w-0">
         {product.category && (
-          <span className="font-body text-[9px] font-bold uppercase tracking-[0.22em] text-ni-rust block">
+          <span className="font-body text-xs font-medium text-ni-rust block">
             {product.category}
           </span>
         )}
@@ -120,12 +121,11 @@ export default function ArtisticProductCard({ product, index, isVisible }: Props
         )}
         <a
           href={`/products#product-${product.slug}`}
-          className="inline-flex items-center gap-3 font-body text-[11px] font-bold uppercase tracking-widest
+          className="inline-flex items-center gap-2 font-body text-xs font-semibold
                      text-ni-rust border-b border-ni-rust/30 pb-1
-                     hover:border-ni-rust transition-colors duration-300 group mt-4"
+                     hover:border-ni-rust transition-colors duration-200 mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
         >
           Sample this powder
-          <span className="transition-transform duration-300 group-hover:translate-x-2">→</span>
         </a>
       </div>
 

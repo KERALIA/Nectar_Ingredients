@@ -102,21 +102,17 @@ export default function ProductCard({
       ref={cardRef}
       id={product.slug}
       data-legacy-id={`product-${product.slug}`}
-      role="button"
-      tabIndex={0}
-      onClick={() => handleOpenSpecs()}
-      onKeyDown={handleKeyDown}
       aria-label={`Bulk ${product.name} Supplier & Wholesale Distributor — Nectar Ingredients`}
       className={`
-        scroll-mt-28 relative flex flex-col h-full group cursor-pointer rounded-[24px] overflow-hidden
-        transition-all duration-300 ease-out border backdrop-blur-md hairline-card select-none transform-gpu
+        scroll-mt-28 relative flex flex-col h-full group rounded-2xl overflow-hidden
+        border select-none
         ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
         ${
           highlighted
-            ? 'bg-[#FAF0EB] dark:bg-[#2A1A10] border-[#BC4B20] ring-4 ring-[#BC4B20]/40 ring-inset shadow-2xl scale-[1.02]'
-            : 'bg-white dark:bg-[#18181B] border-neutral-200/80 dark:border-white/10 hover:border-[#BC4B20]/60 shadow-card hover:shadow-2xl hover:-translate-y-1.5'
+            ? 'bg-ni-rust-bg border-ni-rust ring-2 ring-ni-rust/30 shadow-lg'
+            : 'bg-ni-surface border-ni-border/30 hover:border-ni-rust/50 shadow-sm hover:shadow-md'
         }
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust
+        transition-colors duration-200
       `}
     >
       {/* Secondary legacy anchor for backward compatibility */}
@@ -127,14 +123,14 @@ export default function ProductCard({
         <div className="flex items-center gap-2">
           <span
             className="w-2.5 h-2.5 rounded-full ring-2 ring-white/30 shadow-sm"
-            style={{ backgroundColor: product.swatchHex || '#BC4B20' }}
+            style={{ backgroundColor: product.swatchHex || 'var(--rust)' }}
             aria-hidden="true"
           />
-          <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border cat-badge-${product.category}`}>
+          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border cat-badge-${product.category}`}>
             {product.category}
           </span>
         </div>
-        <span className="font-mono text-[11px] font-medium text-neutral-400 dark:text-neutral-500 tracking-wider select-none">
+        <span className="font-mono text-[11px] text-neutral-500 select-none">
           {product.sku}
         </span>
       </div>
@@ -142,18 +138,22 @@ export default function ProductCard({
       {/* Image Area with Botanical Swatch Tint & Ambient Aura */}
       <div className="px-4 pt-3 pb-2">
         <div
-          className={`relative w-full overflow-hidden flex items-center justify-center rounded-[20px] transition-all duration-500 group-hover:shadow-inner ${
+          onClick={handleOpenSpecs}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenSpecs(); } }}
+          className={`relative w-full overflow-hidden flex items-center justify-center rounded-xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
             isReplacedImage ? 'p-2' : 'p-6'
           }`}
           style={{
             aspectRatio: '4/3',
-            backgroundColor: `${product.swatchHex || '#BC4B20'}0C`,
+            backgroundColor: product.swatchHex ? `${product.swatchHex}0C` : 'var(--ni-rust-bg)',
           }}
         >
           {/* Ambient Swatch Glow Effect */}
           <div
-            className="absolute w-32 h-32 rounded-full filter blur-[28px] opacity-25 pointer-events-none transition-all duration-700 group-hover:scale-150 group-hover:opacity-45"
-            style={{ backgroundColor: product.swatchHex || '#BC4B20' }}
+            className="absolute w-32 h-32 rounded-full filter blur-[28px] opacity-25 pointer-events-none transition-transform motion-reduce:transition-none duration-500 group-hover:scale-125"
+            style={{ backgroundColor: product.swatchHex || 'var(--rust)' }}
           />
 
           {!imgError && product.imageSrc ? (
@@ -173,17 +173,19 @@ export default function ProductCard({
           ) : (
             <div
               className="flex flex-col items-center justify-center text-ni-muted p-4 rounded-xl w-full h-full"
-              style={{ backgroundColor: `${product.swatchHex || '#BC4B20'}15` }}
+              style={{ backgroundColor: `${product.swatchHex || 'var(--rust)'}15` }}
             >
-              <span className="text-2xl mb-1">🌿</span>
-              <span className="text-xs font-bold text-ni-primary">{product.name}</span>
+              <svg className="w-6 h-6 text-ni-rust mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+              <span className="text-xs font-semibold text-ni-primary">{product.name}</span>
             </div>
           )}
 
           {/* Quick Details Overlay Badge */}
-          <div className="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <span className="text-[9px] font-black uppercase tracking-wider bg-ni-surface/95 dark:bg-black/85 backdrop-blur-md text-ni-primary px-3 py-1 rounded-full border border-ni-border/30 shadow-md">
-              Quick Specs ↗
+          <div className="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <span className="text-xs font-medium bg-ni-surface/95 dark:bg-black/85 backdrop-blur-md text-ni-primary px-2.5 py-0.5 rounded-md border border-ni-border/30 shadow-sm">
+              View Specs
             </span>
           </div>
         </div>
@@ -192,13 +194,16 @@ export default function ProductCard({
       {/* Product Content Details */}
       <div className="p-5 pt-2 flex flex-col flex-1">
         {/* Clean, Bold, Authoritative H2 */}
-        <h2 className="font-heading text-lg sm:text-xl font-black tracking-tight text-ni-primary group-hover:text-ni-rust transition-colors duration-300 leading-snug">
+        <h2
+          onClick={handleOpenSpecs}
+          className="font-heading text-lg font-bold tracking-tight text-ni-primary group-hover:text-ni-rust transition-colors duration-200 leading-snug cursor-pointer"
+        >
           {product.name}
         </h2>
 
-        {/* Refined Terracotta Tagline */}
+        {/* Refined Tagline */}
         {product.tagline && (
-          <p className="font-body text-[11px] font-extrabold text-ni-rust tracking-wide uppercase mt-1 line-clamp-1">
+          <p className="font-body text-xs text-ni-rust mt-0.5 line-clamp-1">
             {product.tagline}
           </p>
         )}
@@ -227,16 +232,15 @@ export default function ProductCard({
         )}
 
         {/* Dual Balanced Action Footer */}
-        <div className="mt-auto pt-3 border-t border-ni-border/20 dark:border-white/5 flex items-center gap-2">
+        <div className="mt-auto pt-3 border-t border-ni-border/20 flex items-center gap-2">
           {/* Secondary Action: Quick Specs */}
           <button
             type="button"
             onClick={handleOpenSpecs}
-            className="flex-1 py-2.5 px-3 rounded-full border border-ni-border/40 dark:border-white/10 hover:border-ni-rust hover:text-ni-rust font-body text-[11px] font-bold uppercase tracking-wider text-ni-secondary hover:bg-ni-rust/5 transition-all text-center flex items-center justify-center gap-1.5 btn-press active:scale-[0.97] cursor-pointer"
+            className="flex-1 py-2 px-3 rounded-lg border border-ni-border/40 hover:border-ni-rust hover:text-ni-rust font-body text-xs font-semibold text-ni-secondary hover:bg-ni-rust/5 transition-colors text-center flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
             aria-label={`View full technical specs for ${product.name}`}
           >
             <span>Specs</span>
-            <span className="text-xs">↗</span>
           </button>
 
           {/* Primary Action: Add to Cart */}
@@ -254,23 +258,21 @@ export default function ProductCard({
             }}
             aria-label={inBasket ? `Remove ${product.name} from cart` : `Add ${product.name} to cart`}
             aria-pressed={inBasket}
-            className={`flex-1 py-2.5 px-3 rounded-full font-body text-[11px] font-extrabold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 btn-press shadow-sm active:scale-[0.97] cursor-pointer ${
+            className={`flex-1 py-2 px-3 rounded-lg font-body text-xs font-semibold transition-colors duration-200 flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust ${
               inBasket
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-card hover:-translate-y-0.5'
+                : 'bg-ni-rust text-white hover:bg-ni-rust-lt'
             }`}
           >
             {inBasket ? (
               <>
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20" aria-hidden="true">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                 <span>In Cart</span>
               </>
             ) : (
-              <>
-                <span>+ Add to Cart</span>
-              </>
+              <span>Add to Cart</span>
             )}
           </button>
         </div>

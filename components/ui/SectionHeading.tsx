@@ -16,7 +16,7 @@ export default function SectionHeading({
   return (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>
       {tag && (
-        <p className="font-body text-xs font-semibold uppercase tracking-widest text-[#C05621] mb-4">
+        <p className="font-body text-xs font-medium text-ni-rust mb-3">
           {tag}
         </p>
       )}

@@ -51,9 +51,11 @@ const config: Config = {
         'pw-banana':       '#F0E15A',
       },
       fontFamily: {
-        heading: ['var(--font-heading)', 'system-ui', 'sans-serif'],
-        body:    ['var(--font-body)', 'system-ui', 'sans-serif'],
-        mono:    ['JetBrains Mono', 'monospace'],
+        heading:  ['var(--font-heading)', 'system-ui', 'sans-serif'],
+        body:     ['var(--font-body)', 'system-ui', 'sans-serif'],
+        fraunces: ['var(--font-fraunces)', 'serif'],
+        serif:    ['var(--font-serif)', 'Georgia', 'serif'],
+        mono:     ['JetBrains Mono', 'monospace'],
       },
       fontSize: {
         'hero':    ['clamp(2.2rem, 7vw, 5rem)',  { lineHeight: '1.05', letterSpacing: '-0.03em' }],

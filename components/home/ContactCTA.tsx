@@ -5,9 +5,9 @@ import Button from '../ui/Button'
 import { useScrollReveal } from '../../lib/hooks'
 
 const proofPoints = [
-  { icon: 'box',      text: '1 kg trial packs available' },
-  { icon: 'factory',  text: 'Up to 2 MT/month capacity' },
-  { icon: 'location', text: 'Surendranagar, Gujarat' },
+  { icon: 'box',      text: '1 kg trial packs dispatched' },
+  { icon: 'factory',  text: 'Up to 2 MT monthly facility capacity' },
+  { icon: 'location', text: 'Surendranagar, Gujarat plant' },
 ]
 
 function Icon({ name }: { name: string }) {
@@ -32,77 +32,54 @@ function Icon({ name }: { name: string }) {
 export default function ContactCTA() {
   const { ref, visible } = useScrollReveal()
 
+  /* ponytail: CTA contact anchor. Hook into direct WhatsApp commercial routing if needed for local buyers. */
   return (
-    <section className="relative py-[var(--space-section)] overflow-hidden border-t border-ni-border/15">
-      {/* Background: warm sage wash */}
-      <div className="absolute inset-0 bg-ni-sage" aria-hidden="true" />
-
-      {/* Terracotta ambient glow — bottom left */}
-      <div
-        className="absolute left-0 bottom-0 w-1/2 h-2/3 pointer-events-none opacity-50"
-        aria-hidden="true"
-        style={{ background: 'radial-gradient(ellipse 60% 60% at 0% 100%, var(--glow-color) 0%, transparent 70%)' }}
-      />
-      {/* Terracotta ambient glow — top right */}
-      <div
-        className="absolute right-0 top-0 w-1/3 h-1/2 pointer-events-none opacity-30"
-        aria-hidden="true"
-        style={{ background: 'radial-gradient(ellipse 50% 50% at 100% 0%, var(--glow-color) 0%, transparent 70%)' }}
-      />
-
+    <section className="relative py-16 sm:py-24 bg-ni-surface border-t border-ni-border/20" aria-label="Contact and sample requests">
       <div
         ref={ref}
         className={`relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center
-                    transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                    transition-opacity transition-transform duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
       >
-        <p className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-ni-rust mb-5">Get in Touch</p>
+        <p className="font-body text-xs font-medium text-ni-rust mb-3">Direct procurement inquiries</p>
 
-        <h2
-          className="font-heading font-bold text-ni-primary tracking-[-0.025em] mb-6"
-          style={{ fontSize: 'var(--text-h1)' }}
-        >
-          Ready to talk powder?
+        <h2 className="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-ni-primary tracking-tight mb-4">
+          Request a Sample or Commercial Quote
         </h2>
 
-        <p
-          className="font-body text-ni-secondary leading-[1.7] max-w-xl mx-auto mb-10"
-          style={{ fontSize: 'var(--text-lead)' }}
-        >
-          Send us your product spec and quantity. We'll respond with availability,
-          pricing, and a free sample offer within one business day.
+        <p className="font-body text-ni-secondary text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-8 font-normal">
+          Share your target mesh specification and volume. Our Surendranagar technical sales team confirms availability, pricing, and trial dispatches within one business day.
         </p>
 
-        <div className="flex flex-wrap justify-center gap-4 items-center">
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 items-center">
           <Button
             variant="primary"
             size="lg"
             href="/contact"
-            className="group h-14 px-8 flex items-center justify-center rounded-full text-xs font-bold uppercase tracking-widest
-                       bg-ni-rust text-white hover:bg-ni-rust-lt hover:shadow-premium hover:-translate-y-0.5
-                       transition-all duration-300 min-w-[200px]"
+            className="h-12 sm:h-13 px-7 flex items-center justify-center rounded-xl text-sm font-semibold
+                       bg-ni-rust text-white hover:bg-ni-rust-lt shadow-sm hover:-translate-y-0.5
+                       transition-colors transition-transform min-w-[180px]"
           >
-            Send an Inquiry
-            <span className="inline-block ml-2 transition-transform duration-300 group-hover:translate-x-1">→</span>
+            Send Inquiry
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="lg"
             href="mailto:nectaringredients@gmail.com"
-            className="h-14 px-8 flex items-center justify-center rounded-full text-xs font-bold uppercase tracking-widest
-                       glass-panel border border-ni-border/40 text-ni-primary
+            className="h-12 sm:h-13 px-7 flex items-center justify-center rounded-xl text-sm font-semibold
+                       border border-ni-border/40 text-ni-primary bg-ni-bg
                        hover:border-ni-rust hover:text-ni-rust hover:-translate-y-0.5
-                       transition-all duration-300 min-w-[200px]"
+                       transition-colors transition-transform min-w-[180px]"
           >
             Email Directly
           </Button>
         </div>
 
         {/* Proof points row */}
-        <div className="flex flex-wrap justify-center gap-6 mt-12">
+        <div className="flex flex-wrap justify-center gap-6 mt-10 pt-8 border-t border-ni-border/15">
           {proofPoints.map(({ icon, text }) => (
             <span
               key={text}
-              className="flex items-center gap-2.5 font-body text-[10px] font-bold uppercase tracking-wider text-ni-muted"
+              className="flex items-center gap-2 font-body text-xs text-ni-secondary"
             >
               <Icon name={icon} />
               {text}

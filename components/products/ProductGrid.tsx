@@ -137,9 +137,13 @@ export default function ProductGrid({
 
       {/* Empty state with Smart 1-Click Discovery Pills */}
       {displayed.length === 0 && (
-        <div className="py-20 text-center max-w-md mx-auto p-8 rounded-3xl border border-ni-border/20 bg-ni-surface/60 dark:bg-white/[0.02] backdrop-blur-md shadow-sm">
-          <span className="text-3xl mb-3 block" aria-hidden="true">🔍</span>
-          <p className="font-heading text-lg font-bold text-ni-primary">No matching powders found</p>
+        <div className="py-16 text-center max-w-md mx-auto p-8 rounded-2xl border border-ni-border/30 bg-ni-surface shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-ni-surface2 flex items-center justify-center mx-auto mb-3 text-ni-muted" aria-hidden="true">
+            <svg className="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <p className="font-heading text-base font-bold text-ni-primary">No matching powders found</p>
           <p className="font-body text-xs text-ni-muted mt-1 leading-relaxed">
             We couldn't find anything matching &ldquo;{searchTerm}&rdquo;. Try browsing our top industrial ingredients:
           </p>
@@ -153,9 +157,9 @@ export default function ProductGrid({
                   setSearchTerm(suggestion)
                   setActive('all')
                 }}
-                className="font-body text-xs font-bold px-3.5 py-1.5 rounded-full bg-ni-rust/10 hover:bg-ni-rust text-ni-rust hover:text-white border border-ni-rust/20 transition-all active:scale-95"
+                className="font-body text-xs font-medium px-3 py-1 rounded-lg bg-ni-rust/10 hover:bg-ni-rust text-ni-rust hover:text-white border border-ni-rust/20 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ni-rust"
               >
-                + {suggestion}
+                {suggestion}
               </button>
             ))}
           </div>
